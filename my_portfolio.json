@@ -1,0 +1,10 @@
+[
+  {"ticker": "4452.T", "name": "花王", "entry_price": 6807, "shares": 2, "entry_date": "2026-03-02"},
+  {"ticker": "4502.T", "name": "武田薬品", "entry_price": 4218, "shares": 1, "entry_date": "2026-03-02"},
+  {"ticker": "5020.T", "name": "ENEOS", "entry_price": 794, "shares": 8, "entry_date": "2026-03-02"},
+  {"ticker": "6981.T", "name": "村田製作所", "entry_price": 2436, "shares": 2, "entry_date": "2026-03-02"},
+  {"ticker": "8031.T", "name": "三井物産", "entry_price": 2991, "shares": 6, "entry_date": "2026-03-02"},
+  {"ticker": "8306.T", "name": "三菱UFJ", "entry_price": 2099, "shares": 4, "entry_date": "2026-03-02"},
+  {"ticker": "9020.T", "name": "JR東", "entry_price": 3689, "shares": 1, "entry_date": "2026-03-02"},
+  {"ticker": "9433.T", "name": "KDDI", "entry_price": 2422, "shares": 2, "entry_date": "2026-03-02"}
+]

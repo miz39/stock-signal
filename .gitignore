@@ -1,0 +1,14 @@
+# Secrets
+deploy/env.conf
+.env
+
+# Logs
+*.log
+log.txt
+
+# Data — trades.json, my_portfolio.json は GitHub Actions で状態保持のため追跡対象
+
+# Python
+__pycache__/
+*.pyc
+venv/

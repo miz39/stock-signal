@@ -1,0 +1,25 @@
+watchlist: "nikkei225"  # 日経225全銘柄を自動読み込み
+
+account:
+  balance: 300000
+  risk_per_trade: 0.02
+  max_allocation: 0.10  # 1銘柄あたり資産の10%まで
+  max_positions: 10     # 上限10銘柄
+  unit: 1
+
+strategy:
+  sma_short: 25
+  sma_long: 75
+  sma_trend: 200
+  rsi_period: 14
+  rsi_overbought: 70
+  rsi_oversold: 30
+
+discord:
+  # シークレットは環境変数から読み込み（systemd EnvironmentFile or export）
+  # DISCORD_WEBHOOK_URL, DISCORD_BOT_TOKEN, DISCORD_POLICY_WEBHOOK_URL
+  webhook_url: ""
+  bot_token: ""
+  policy_webhook_url: ""
+
+mode: "paper"
