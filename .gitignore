@@ -12,3 +12,4 @@ log.txt
 __pycache__/
 *.pyc
 venv/
+my_portfolio.json
