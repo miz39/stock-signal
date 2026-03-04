@@ -1,1 +1,112 @@
-[]
+[
+  {
+    "ticker": "8233.T",
+    "entry_price": 1796.0,
+    "shares": 16,
+    "entry_date": "2026-03-04",
+    "exit_price": null,
+    "exit_date": null,
+    "status": "open",
+    "high_price": 1796.0,
+    "stop_price": 1706.2
+  },
+  {
+    "ticker": "8604.T",
+    "entry_price": 1218.5,
+    "shares": 24,
+    "entry_date": "2026-03-04",
+    "exit_price": null,
+    "exit_date": null,
+    "status": "open",
+    "high_price": 1218.5,
+    "stop_price": 1157.6
+  },
+  {
+    "ticker": "6479.T",
+    "entry_price": 2920.5,
+    "shares": 10,
+    "entry_date": "2026-03-04",
+    "exit_price": null,
+    "exit_date": null,
+    "status": "open",
+    "high_price": 2920.5,
+    "stop_price": 2774.5
+  },
+  {
+    "ticker": "5411.T",
+    "entry_price": 1968.0,
+    "shares": 15,
+    "entry_date": "2026-03-04",
+    "exit_price": null,
+    "exit_date": null,
+    "status": "open",
+    "high_price": 1968.0,
+    "stop_price": 1869.6
+  },
+  {
+    "ticker": "7751.T",
+    "entry_price": 4495.0,
+    "shares": 6,
+    "entry_date": "2026-03-04",
+    "exit_price": null,
+    "exit_date": null,
+    "status": "open",
+    "high_price": 4495.0,
+    "stop_price": 4270.2
+  },
+  {
+    "ticker": "5406.T",
+    "entry_price": 2054.5,
+    "shares": 14,
+    "entry_date": "2026-03-04",
+    "exit_price": null,
+    "exit_date": null,
+    "status": "open",
+    "high_price": 2054.5,
+    "stop_price": 1951.8
+  },
+  {
+    "ticker": "5401.T",
+    "entry_price": 605.2000122070312,
+    "shares": 49,
+    "entry_date": "2026-03-04",
+    "exit_price": null,
+    "exit_date": null,
+    "status": "open",
+    "high_price": 605.2000122070312,
+    "stop_price": 574.9
+  },
+  {
+    "ticker": "4042.T",
+    "entry_price": 2412.5,
+    "shares": 12,
+    "entry_date": "2026-03-04",
+    "exit_price": null,
+    "exit_date": null,
+    "status": "open",
+    "high_price": 2412.5,
+    "stop_price": 2291.9
+  },
+  {
+    "ticker": "6472.T",
+    "entry_price": 366.1000061035156,
+    "shares": 81,
+    "entry_date": "2026-03-04",
+    "exit_price": null,
+    "exit_date": null,
+    "status": "open",
+    "high_price": 366.1000061035156,
+    "stop_price": 347.8
+  },
+  {
+    "ticker": "4005.T",
+    "entry_price": 475.29998779296875,
+    "shares": 63,
+    "entry_date": "2026-03-04",
+    "exit_price": null,
+    "exit_date": null,
+    "status": "open",
+    "high_price": 475.29998779296875,
+    "stop_price": 451.5
+  }
+]
