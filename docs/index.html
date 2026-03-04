@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Paper Trade Dashboard</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:#121212; color:#E0E0E0; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; padding:16px; max-width:960px; margin:0 auto; }
+h1 { font-size:1.3rem; margin-bottom:4px; }
+.updated { font-size:0.75rem; color:#757575; margin-bottom:16px; }
+.cards { display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:10px; margin-bottom:20px; }
+.card { background:#1E1E1E; border-radius:10px; padding:14px; text-align:center; }
+.card .label { font-size:0.7rem; color:#9E9E9E; margin-bottom:4px; text-transform:uppercase; letter-spacing:0.5px; }
+.card .value { font-size:1.4rem; font-weight:700; }
+.card .sub { font-size:0.7rem; color:#757575; margin-top:2px; }
+.section { margin-bottom:20px; }
+.section h2 { font-size:1rem; margin-bottom:8px; padding-bottom:4px; border-bottom:1px solid #333; }
+.chart-wrap { background:#1E1E1E; border-radius:10px; padding:12px; margin-bottom:20px; }
+table { width:100%; border-collapse:collapse; font-size:0.8rem; }
+th { background:#1E1E1E; color:#9E9E9E; text-align:left; padding:8px 6px; font-weight:500; font-size:0.7rem; text-transform:uppercase; position:sticky; top:0; }
+td { padding:8px 6px; border-bottom:1px solid #2A2A2A; }
+td.num { text-align:right; font-variant-numeric:tabular-nums; }
+.ticker { color:#757575; font-size:0.7rem; }
+.small { font-size:0.7rem; }
+.empty { text-align:center; color:#757575; padding:24px; }
+.hero-card { background:#1E1E1E; border-radius:12px; padding:20px; text-align:center; margin-bottom:12px; }
+.hero-card .label { font-size:0.7rem; color:#9E9E9E; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:4px; }
+.hero-value { font-size:2rem; font-weight:700; }
+.hero-change { font-size:1rem; font-weight:600; margin-top:2px; }
+.green { color:#00C853; }
+.red { color:#FF1744; }
+.policy-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:10px; }
+.policy-card { background:#1E1E1E; border-radius:10px; padding:14px; }
+.policy-title { font-size:0.7rem; color:#9E9E9E; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px; font-weight:500; }
+.policy-body { font-size:0.8rem; }
+.policy-name { color:#64B5F6; font-weight:600; margin-bottom:6px; }
+.policy-rule { color:#B0BEC5; font-size:0.75rem; margin:3px 0; padding:4px 8px; background:#262626; border-radius:4px; }
+.buy-rule { border-left:3px solid #00C853; }
+.sell-rule { border-left:3px solid #FF1744; }
+.policy-item { display:flex; justify-content:space-between; padding:3px 0; border-bottom:1px solid #2A2A2A; }
+.policy-item:last-child { border-bottom:none; }
+.policy-val { color:#E0E0E0; font-weight:600; }
+a.stock-link { color:#64B5F6; text-decoration:none; }
+a.stock-link:hover { text-decoration:underline; }
+@media(max-width:480px) {
+  .cards { grid-template-columns:repeat(2,1fr); }
+  .card .value { font-size:1.2rem; }
+  .policy-grid { grid-template-columns:1fr; }
+  table { font-size:0.75rem; }
+  td, th { padding:6px 4px; }
+}
+</style>
+</head>
+<body>
+<h1>Paper Trade Dashboard</h1>
+<div class="updated">最終更新: 2026-03-04 23:21 JST</div>
+
+<div class="hero-card">
+  <div class="label">総資産</div>
+  <div class="hero-value">&yen;300,000</div>
+  <div class="hero-change" style="color:#9E9E9E">0（+0.00%）</div>
+  <div class="sub">初期資金 &yen;300,000</div>
+</div>
+
+<div class="cards">
+  <div class="card">
+    <div class="label">確定損益</div>
+    <div class="value" style="color:#9E9E9E">&yen;0</div>
+    <div class="sub">0トレード</div>
+  </div>
+  <div class="card">
+    <div class="label">含み損益</div>
+    <div class="value" style="color:#9E9E9E">&yen;0</div>
+    <div class="sub">10銘柄保有</div>
+  </div>
+  <div class="card">
+    <div class="label">勝率</div>
+    <div class="value">0%</div>
+  </div>
+  <div class="card">
+    <div class="label">最大DD</div>
+    <div class="value red">&yen;0</div>
+  </div>
+</div>
+
+<div class="chart-wrap">
+  <canvas id="equityChart" height="200"></canvas>
+</div>
+
+<div class="section">
+  <h2>運用方針</h2>
+  <div class="policy-grid">
+    <div class="policy-card">
+      <div class="policy-title">戦略</div>
+      <div class="policy-body">
+        <div class="policy-name">ゴールデンクロス + RSI コンファーメーション</div>
+        <div class="policy-rule buy-rule">買い: SMA25 &gt; SMA75 &amp; RSI &lt; 70 &amp; 株価 &gt; SMA200</div>
+        <div class="policy-rule sell-rule">売り: SMA25 &lt; SMA75 or RSI &gt; 75</div>
+      </div>
+    </div>
+    <div class="policy-card">
+      <div class="policy-title">リスク管理</div>
+      <div class="policy-body">
+        <div class="policy-item">損切り <span class="policy-val">-5%</span></div>
+        <div class="policy-item">1トレードリスク <span class="policy-val">2%</span></div>
+        <div class="policy-item">1銘柄上限 <span class="policy-val">10%</span></div>
+      </div>
+    </div>
+    <div class="policy-card">
+      <div class="policy-title">口座</div>
+      <div class="policy-body">
+        <div class="policy-item">初期資金 <span class="policy-val">&yen;300,000</span></div>
+        <div class="policy-item">最大銘柄数 <span class="policy-val">10銘柄</span></div>
+        <div class="policy-item">モード <span class="policy-val">ペーパー</span></div>
+      </div>
+    </div>
+    <div class="policy-card">
+      <div class="policy-title">スキャン</div>
+      <div class="policy-body">
+        <div class="policy-item">対象 <span class="policy-val">日経225全銘柄</span></div>
+        <div class="policy-item">実行 <span class="policy-val">1日3回</span></div>
+        <div class="policy-item">時刻 <span class="policy-val">8:50 / 12:35 / 15:10</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<div class="section">
+  <h2>保有中ポジション</h2>
+  <div style="overflow-x:auto">
+  <table>
+    <thead><tr><th>銘柄</th><th>取得</th><th>現在</th><th>株数</th><th>損益</th><th>保有</th></tr></thead>
+    <tbody><tr>
+<td><a class="stock-link" href="stock/8233.html">高島屋</a><br><span class="ticker">8233</span></td>
+<td class="num">&yen;1,796</td>
+<td class="num">&yen;1,796</td>
+<td class="num">16</td>
+<td class="num" style="color:#9E9E9E">0<br><span class="small">(+0.0%)</span></td>
+<td class="num">0日</td>
+</tr><tr>
+<td><a class="stock-link" href="stock/8604.html">野村ホールディングス</a><br><span class="ticker">8604</span></td>
+<td class="num">&yen;1,218</td>
+<td class="num">&yen;1,218</td>
+<td class="num">24</td>
+<td class="num" style="color:#9E9E9E">0<br><span class="small">(+0.0%)</span></td>
+<td class="num">0日</td>
+</tr><tr>
+<td><a class="stock-link" href="stock/6479.html">ミネベアミツミ</a><br><span class="ticker">6479</span></td>
+<td class="num">&yen;2,920</td>
+<td class="num">&yen;2,920</td>
+<td class="num">10</td>
+<td class="num" style="color:#9E9E9E">0<br><span class="small">(+0.0%)</span></td>
+<td class="num">0日</td>
+</tr><tr>
+<td><a class="stock-link" href="stock/5411.html">JFEホールディングス</a><br><span class="ticker">5411</span></td>
+<td class="num">&yen;1,968</td>
+<td class="num">&yen;1,968</td>
+<td class="num">15</td>
+<td class="num" style="color:#9E9E9E">0<br><span class="small">(+0.0%)</span></td>
+<td class="num">0日</td>
+</tr><tr>
+<td><a class="stock-link" href="stock/7751.html">キヤノン</a><br><span class="ticker">7751</span></td>
+<td class="num">&yen;4,495</td>
+<td class="num">&yen;4,495</td>
+<td class="num">6</td>
+<td class="num" style="color:#9E9E9E">0<br><span class="small">(+0.0%)</span></td>
+<td class="num">0日</td>
+</tr><tr>
+<td><a class="stock-link" href="stock/5406.html">神戸製鋼所</a><br><span class="ticker">5406</span></td>
+<td class="num">&yen;2,054</td>
+<td class="num">&yen;2,054</td>
+<td class="num">14</td>
+<td class="num" style="color:#9E9E9E">0<br><span class="small">(+0.0%)</span></td>
+<td class="num">0日</td>
+</tr><tr>
+<td><a class="stock-link" href="stock/5401.html">日本製鉄</a><br><span class="ticker">5401</span></td>
+<td class="num">&yen;605</td>
+<td class="num">&yen;605</td>
+<td class="num">49</td>
+<td class="num" style="color:#9E9E9E">-0<br><span class="small">(+-0.0%)</span></td>
+<td class="num">0日</td>
+</tr><tr>
+<td><a class="stock-link" href="stock/4042.html">東ソー</a><br><span class="ticker">4042</span></td>
+<td class="num">&yen;2,412</td>
+<td class="num">&yen;2,412</td>
+<td class="num">12</td>
+<td class="num" style="color:#9E9E9E">0<br><span class="small">(+0.0%)</span></td>
+<td class="num">0日</td>
+</tr><tr>
+<td><a class="stock-link" href="stock/6472.html">NTN</a><br><span class="ticker">6472</span></td>
+<td class="num">&yen;366</td>
+<td class="num">&yen;366</td>
+<td class="num">81</td>
+<td class="num" style="color:#9E9E9E">-0<br><span class="small">(+-0.0%)</span></td>
+<td class="num">0日</td>
+</tr><tr>
+<td><a class="stock-link" href="stock/4005.html">住友化学</a><br><span class="ticker">4005</span></td>
+<td class="num">&yen;475</td>
+<td class="num">&yen;475</td>
+<td class="num">63</td>
+<td class="num" style="color:#9E9E9E">0<br><span class="small">(+0.0%)</span></td>
+<td class="num">0日</td>
+</tr></tbody>
+  </table>
+  </div>
+</div>
+
+<div class="section">
+  <h2>直近クローズドトレード</h2>
+  <div style="overflow-x:auto">
+  <table>
+    <thead><tr><th>銘柄</th><th>取得</th><th>売却</th><th>株数</th><th>損益</th><th>期間</th></tr></thead>
+    <tbody><tr><td colspan="6" class="empty">クローズドトレードはありません</td></tr></tbody>
+  </table>
+  </div>
+</div>
+
+<script>
+const labels = [];
+const data = [];
+if (labels.length > 0) {
+  const ctx = document.getElementById('equityChart').getContext('2d');
+  const gradient = ctx.createLinearGradient(0,0,0,200);
+  gradient.addColorStop(0, 'rgba(0,200,83,0.3)');
+  gradient.addColorStop(1, 'rgba(0,200,83,0)');
+  new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: labels,
+      datasets: [{
+        label: '累計損益 (¥)',
+        data: data,
+        borderColor: '#00C853',
+        backgroundColor: gradient,
+        fill: true,
+        tension: 0.3,
+        pointRadius: 2,
+        pointHoverRadius: 5,
+        borderWidth: 2,
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: function(ctx) { return '¥' + ctx.parsed.y.toLocaleString(); }
+          }
+        }
+      },
+      scales: {
+        x: {
+          ticks: { color:'#757575', maxTicksLimit:8, font:{ size:10 } },
+          grid: { color:'#2A2A2A' }
+        },
+        y: {
+          ticks: {
+            color:'#757575',
+            font:{ size:10 },
+            callback: function(v) { return '¥' + v.toLocaleString(); }
+          },
+          grid: { color:'#2A2A2A' }
+        }
+      }
+    }
+  });
+} else {
+  document.getElementById('equityChart').parentElement.innerHTML =
+    '<p style="text-align:center;color:#757575;padding:24px">チャートデータがありません</p>';
+}
+</script>
+</body>
+</html>
