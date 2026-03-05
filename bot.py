@@ -36,47 +36,61 @@ bot = commands.Bot(command_prefix="!", intents=intents)
 
 
 POLICY_WEBHOOK = None
-_command_list_posted = False
+_COMMAND_HASH_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".command_list_hash")
+
+_COMMAND_LIST_EMBED = {
+    "title": "🤖 Botコマンド一覧",
+    "color": 0x7C4DFF,
+    "description": "シグナル通知チャンネルで以下のコマンドが使えます。",
+    "fields": [
+        {"name": "📊 分析", "value": " ", "inline": False},
+        {"name": "!analyze", "value": "全銘柄のマルチエージェント総合分析", "inline": False},
+        {"name": "!analyze 7203", "value": "特定銘柄の詳細分析（各エージェントの根拠付き）", "inline": False},
+        {"name": "!signal", "value": "テクニカルシグナル簡易表示（SMA/RSI）", "inline": False},
+        {"name": "!backtest 7203 3y", "value": "過去データでの戦略シミュレーション", "inline": False},
+        {"name": "📝 売買記録", "value": " ", "inline": False},
+        {"name": "!buy 7203 2534 3", "value": "買い記録（銘柄コード 価格 株数）", "inline": False},
+        {"name": "!sell 7203 2600", "value": "売り記録（銘柄コード 価格）→ 損益自動計算", "inline": False},
+        {"name": "📈 確認", "value": " ", "inline": False},
+        {"name": "!status", "value": "保有ポジション一覧（評価額・含み損益・合計）", "inline": False},
+        {"name": "!weekly", "value": "週次レポート（勝敗・損益・最大DD）", "inline": False},
+        {"name": "!watchlist", "value": "監視銘柄一覧", "inline": False},
+        {"name": "!rule", "value": "運用ルール表示（売買条件・リスク管理）", "inline": False},
+    ],
+}
 
 
-def _post_command_list():
-    """運用方針チャンネルにコマンド一覧を投稿する。"""
+def _post_command_list_if_changed():
+    """コマンド一覧の内容が変わった場合のみ投稿する。"""
     if not POLICY_WEBHOOK:
         return
+    import hashlib
     import requests
-    embed = {
-        "title": "🤖 Botコマンド一覧",
-        "color": 0x7C4DFF,
-        "description": "シグナル通知チャンネルで以下のコマンドが使えます。",
-        "fields": [
-            {"name": "📊 分析", "value": " ", "inline": False},
-            {"name": "!analyze", "value": "全銘柄のマルチエージェント総合分析", "inline": False},
-            {"name": "!analyze 7203", "value": "特定銘柄の詳細分析（各エージェントの根拠付き）", "inline": False},
-            {"name": "!signal", "value": "テクニカルシグナル簡易表示（SMA/RSI）", "inline": False},
-            {"name": "!backtest 7203 3y", "value": "過去データでの戦略シミュレーション", "inline": False},
-            {"name": "📝 売買記録", "value": " ", "inline": False},
-            {"name": "!buy 7203 2534 3", "value": "買い記録（銘柄コード 価格 株数）", "inline": False},
-            {"name": "!sell 7203 2600", "value": "売り記録（銘柄コード 価格）→ 損益自動計算", "inline": False},
-            {"name": "📈 確認", "value": " ", "inline": False},
-            {"name": "!status", "value": "保有ポジション一覧（評価額・含み損益・合計）", "inline": False},
-            {"name": "!weekly", "value": "週次レポート（勝敗・損益・最大DD）", "inline": False},
-            {"name": "!watchlist", "value": "監視銘柄一覧", "inline": False},
-            {"name": "!rule", "value": "運用ルール表示（売買条件・リスク管理）", "inline": False},
-        ],
-    }
+
+    current_hash = hashlib.sha256(json.dumps(_COMMAND_LIST_EMBED, sort_keys=True).encode()).hexdigest()
+
+    prev_hash = ""
+    if os.path.exists(_COMMAND_HASH_FILE):
+        with open(_COMMAND_HASH_FILE, "r") as f:
+            prev_hash = f.read().strip()
+
+    if current_hash == prev_hash:
+        print("コマンド一覧: 変更なし（スキップ）")
+        return
+
     try:
-        requests.post(POLICY_WEBHOOK, json={"embeds": [embed]}, timeout=10)
+        requests.post(POLICY_WEBHOOK, json={"embeds": [_COMMAND_LIST_EMBED]}, timeout=10)
+        with open(_COMMAND_HASH_FILE, "w") as f:
+            f.write(current_hash)
+        print("コマンド一覧: 更新を投稿しました")
     except Exception as e:
         print(f"コマンド一覧投稿エラー: {e}")
 
 
 @bot.event
 async def on_ready():
-    global _command_list_posted
     print(f"Bot起動: {bot.user}")
-    if not _command_list_posted:
-        _post_command_list()
-        _command_list_posted = True
+    _post_command_list_if_changed()
 
 
 @bot.command(name="signal", help="全銘柄の現在のシグナルを分析")

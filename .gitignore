@@ -13,3 +13,4 @@ __pycache__/
 *.pyc
 venv/
 my_portfolio.json
+.command_list_hash
