@@ -18,8 +18,8 @@
     "exit_price": null,
     "exit_date": null,
     "status": "open",
-    "high_price": 1233.5,
-    "stop_price": 1171.8
+    "high_price": 1236.0,
+    "stop_price": 1174.2
   },
   {
     "ticker": "6479.T",
@@ -84,8 +84,8 @@
     "exit_price": null,
     "exit_date": null,
     "status": "open",
-    "high_price": 2485.0,
-    "stop_price": 2360.8
+    "high_price": 2491.5,
+    "stop_price": 2366.9
   },
   {
     "ticker": "6472.T",
