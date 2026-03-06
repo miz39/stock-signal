@@ -90,7 +90,6 @@ def _post_command_list_if_changed():
 @bot.event
 async def on_ready():
     print(f"Bot起動: {bot.user}")
-    _post_command_list_if_changed()
 
 
 @bot.command(name="signal", help="全銘柄の現在のシグナルを分析")
