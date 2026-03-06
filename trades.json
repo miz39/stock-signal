@@ -18,8 +18,8 @@
     "exit_price": null,
     "exit_date": null,
     "status": "open",
-    "high_price": 1236.0,
-    "stop_price": 1174.2
+    "high_price": 1246.5,
+    "stop_price": 1184.2
   },
   {
     "ticker": "6479.T",
@@ -40,8 +40,8 @@
     "exit_price": null,
     "exit_date": null,
     "status": "open",
-    "high_price": 1996.5,
-    "stop_price": 1896.7
+    "high_price": 2000.0,
+    "stop_price": 1900.0
   },
   {
     "ticker": "7751.T",
@@ -84,8 +84,8 @@
     "exit_price": null,
     "exit_date": null,
     "status": "open",
-    "high_price": 2491.5,
-    "stop_price": 2366.9
+    "high_price": 2505.0,
+    "stop_price": 2379.8
   },
   {
     "ticker": "6472.T",
@@ -106,7 +106,7 @@
     "exit_price": null,
     "exit_date": null,
     "status": "open",
-    "high_price": 507.20001220703125,
-    "stop_price": 481.8
+    "high_price": 507.5,
+    "stop_price": 482.1
   }
 ]
