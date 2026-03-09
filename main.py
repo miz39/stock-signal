@@ -132,6 +132,7 @@ def run():
     trailing_stop_exits = []
     for pos in open_positions:
         ticker = pos["ticker"]
+        name = NIKKEI_225.get(ticker, ticker)
         try:
             df = fetch_stock_data(ticker, period="5d")
             current = float(df["Close"].iloc[-1])
@@ -144,7 +145,9 @@ def run():
         # ストップ価格に達したら損切り（ペーパーモードのみ自動執行）
         if updated and mode == "paper":
             stop = updated.get("stop_price", pos["entry_price"] * 0.95)
+            print(f"  損切りチェック: {name}（{ticker}）現在値={current:.0f} / ストップ={stop:.0f} / 取得={pos['entry_price']:.0f}")
             if current <= stop:
+                print(f"  → 損切り発動: {name}")
                 trailing_stop_exits.append({"ticker": ticker, "price": current})
 
     # ペーパートレード: 自動売買
