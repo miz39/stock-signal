@@ -119,18 +119,45 @@ def build_dashboard_data(trades: list, initial_balance: float = 300000) -> dict:
         })
         unrealized_pnl += pnl
 
-    # 資産推移データ（クローズドトレードの exit_date 順に累積損益）
+    # 資産推移データ（運用開始日から今日まで日次の総資産）
     sorted_closed = sorted(
         [t for t in closed_trades if t.get("exit_date") and "pnl" in t],
         key=lambda t: t["exit_date"],
     )
-    equity_labels = []
-    equity_data = []
-    cum = 0
-    for t in sorted_closed:
-        cum += t["pnl"]
-        equity_labels.append(t["exit_date"])
-        equity_data.append(round(cum, 1))
+
+    # 運用開始日を特定
+    all_entry_dates = [t.get("entry_date") for t in trades if t.get("entry_date")]
+    if all_entry_dates:
+        from datetime import date
+        start_date = date.fromisoformat(min(all_entry_dates))
+        today = date.today()
+
+        # 日ごとの確定損益を集計
+        daily_realized = {}
+        for t in sorted_closed:
+            d = t["exit_date"]
+            daily_realized[d] = daily_realized.get(d, 0) + t["pnl"]
+
+        # 日ごとの含み損益を取得（保有銘柄の価格履歴から）
+        # まずは確定損益ベースで日次推移を作成
+        equity_labels = []
+        equity_data = []
+        cum_pnl = 0
+        d = start_date
+        while d <= today:
+            ds = d.isoformat()
+            cum_pnl += daily_realized.get(ds, 0)
+            # 最終日は含み損益も加算
+            if d == today:
+                total = initial_balance + cum_pnl + unrealized_pnl
+            else:
+                total = initial_balance + cum_pnl
+            equity_labels.append(ds)
+            equity_data.append(round(total, 1))
+            d += timedelta(days=1)
+    else:
+        equity_labels = []
+        equity_data = []
 
     # 直近クローズドトレード（最新20件）
     recent_closed = []
@@ -731,29 +758,37 @@ const data = {equity_data_json};
 if (labels.length > 0) {{
   const ctx = document.getElementById('equityChart').getContext('2d');
   const gradient = ctx.createLinearGradient(0,0,0,200);
-  gradient.addColorStop(0, 'rgba(0,200,83,0.3)');
-  gradient.addColorStop(1, 'rgba(0,200,83,0)');
+  gradient.addColorStop(0, 'rgba(33,150,243,0.3)');
+  gradient.addColorStop(1, 'rgba(33,150,243,0)');
   new Chart(ctx, {{
     type: 'line',
     data: {{
       labels: labels,
       datasets: [{{
-        label: '累計損益 (¥)',
+        label: '総資産 (¥)',
         data: data,
-        borderColor: '#00C853',
+        borderColor: '#2196F3',
         backgroundColor: gradient,
         fill: true,
         tension: 0.3,
         pointRadius: 2,
         pointHoverRadius: 5,
         borderWidth: 2,
+      }},{{
+        label: '初期資金 (¥{initial_balance:,.0f})',
+        data: labels.map(() => {initial_balance}),
+        borderColor: '#757575',
+        borderWidth: 1,
+        borderDash: [6,3],
+        pointRadius: 0,
+        fill: false,
       }}]
     }},
     options: {{
       responsive: true,
       maintainAspectRatio: false,
       plugins: {{
-        legend: {{ display: false }},
+        legend: {{ labels: {{ color:'#9E9E9E', font:{{ size:11 }}, usePointStyle:true, pointStyle:'line' }} }},
         tooltip: {{
           callbacks: {{
             label: function(ctx) {{ return '¥' + ctx.parsed.y.toLocaleString(); }}
