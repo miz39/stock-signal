@@ -74,6 +74,7 @@ def build_dashboard_data(trades: list, initial_balance: float = 300000) -> dict:
     pnls = [t["pnl"] for t in closed_trades if "pnl" in t]
     total_pnl = sum(pnls)
     wins = sum(1 for p in pnls if p > 0)
+    losses = len(pnls) - wins
     win_rate = round(wins / len(pnls) * 100, 1) if pnls else 0
     trade_count = len(closed_trades)
 
@@ -184,6 +185,8 @@ def build_dashboard_data(trades: list, initial_balance: float = 300000) -> dict:
         "total_return_pct": total_return_pct,
         "total_pnl": round(total_pnl, 1),
         "win_rate": win_rate,
+        "wins": wins,
+        "losses": losses,
         "trade_count": trade_count,
         "max_dd": round(max_dd, 1),
         "open_count": len(open_trades),
@@ -719,6 +722,7 @@ a.stock-link:hover {{ text-decoration:underline; }}
   <div class="card">
     <div class="label">勝率</div>
     <div class="value">{data['win_rate']}%</div>
+    <div class="sub">{data['wins']}勝{data['losses']}敗</div>
   </div>
   <div class="card">
     <div class="label">最大DD</div>
