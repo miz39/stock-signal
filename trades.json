@@ -123,8 +123,8 @@
     "exit_price": null,
     "exit_date": null,
     "status": "open",
-    "high_price": 1171.0,
-    "stop_price": 1112.5
+    "high_price": 1172.0,
+    "stop_price": 1113.4
   },
   {
     "ticker": "6952.T",
@@ -134,8 +134,8 @@
     "exit_price": null,
     "exit_date": null,
     "status": "open",
-    "high_price": 1356.0,
-    "stop_price": 1288.2
+    "high_price": 1358.5,
+    "stop_price": 1290.6
   },
   {
     "ticker": "9022.T",
@@ -145,8 +145,8 @@
     "exit_price": null,
     "exit_date": null,
     "status": "open",
-    "high_price": 4178.0,
-    "stop_price": 3969.1
+    "high_price": 4183.0,
+    "stop_price": 3973.8
   },
   {
     "ticker": "6472.T",
@@ -156,8 +156,8 @@
     "exit_price": null,
     "exit_date": null,
     "status": "open",
-    "high_price": 346.8999938964844,
-    "stop_price": 329.6
+    "high_price": 347.29998779296875,
+    "stop_price": 329.9
   },
   {
     "ticker": "6506.T",
@@ -167,8 +167,8 @@
     "exit_price": null,
     "exit_date": null,
     "status": "open",
-    "high_price": 4267.0,
-    "stop_price": 4053.6
+    "high_price": 4285.0,
+    "stop_price": 4070.8
   },
   {
     "ticker": "5406.T",
@@ -178,7 +178,7 @@
     "exit_price": null,
     "exit_date": null,
     "status": "open",
-    "high_price": 1989.0,
-    "stop_price": 1889.5
+    "high_price": 1995.0,
+    "stop_price": 1895.2
   }
 ]
