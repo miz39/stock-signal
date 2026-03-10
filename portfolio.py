@@ -52,6 +52,40 @@ def update_trailing_stop(ticker: str, current_price: float, trail_pct: float = 0
     return None
 
 
+def record_partial_exit(ticker: str, exit_shares: int, price: float, exit_date: str = None) -> Optional[dict]:
+    """保有株の一部を利確売りする。元tradeのsharesを減らし、売却分をclosedトレードとして追加する。"""
+    trades = _load_trades()
+    for trade in trades:
+        if trade["ticker"] == ticker and trade["status"] == "open" and not trade.get("partial_exit_done"):
+            if exit_shares >= trade["shares"]:
+                # 全株売却の場合は通常のexitとして処理
+                return record_exit(ticker, price, exit_date)
+
+            # 売却分をclosedトレードとして記録
+            closed_trade = {
+                "ticker": ticker,
+                "entry_price": trade["entry_price"],
+                "shares": exit_shares,
+                "entry_date": trade["entry_date"],
+                "exit_price": price,
+                "exit_date": exit_date or date.today().isoformat(),
+                "status": "closed",
+                "pnl": round((price - trade["entry_price"]) * exit_shares, 1),
+                "high_price": trade.get("high_price", trade["entry_price"]),
+                "stop_price": trade["stop_price"],
+                "reason": "利確（+7%）",
+            }
+            trades.append(closed_trade)
+
+            # 元tradeの株数を減らし、partial_exit_doneフラグを設定
+            trade["shares"] -= exit_shares
+            trade["partial_exit_done"] = True
+
+            _save_trades(trades)
+            return closed_trade
+    return None
+
+
 def record_exit(ticker: str, price: float, exit_date: str = None) -> Optional[dict]:
     """仮想イグジットを記録する。最も古いオープンポジションをクローズする。"""
     trades = _load_trades()

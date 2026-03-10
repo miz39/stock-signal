@@ -18,6 +18,7 @@ from portfolio import (
     get_weekly_report,
     record_entry,
     record_exit,
+    record_partial_exit,
     update_trailing_stop,
 )
 from notifier import (
@@ -128,30 +129,58 @@ def run():
     # 通知用シグナル（買い上位10 + 保有銘柄の売り）
     notify_signals = sell_signals + buy_signals[:10]
 
-    # トレーリングストップ更新 + 損切りチェック
+    # 利確パラメータ
+    strat = config.get("strategy", {})
+    profit_tighten_pct = strat.get("profit_tighten_pct", 0.03)
+    profit_tighten_trail = strat.get("profit_tighten_trail", 0.04)
+    profit_take_pct = strat.get("profit_take_pct", 0.07)
+    profit_take_ratio = strat.get("profit_take_ratio", 0.5)
+
+    # トレーリングストップ更新 + 利確チェック + 損切りチェック
     trailing_stop_exits = []
+    partial_exits = []
     for pos in open_positions:
         ticker = pos["ticker"]
         name = NIKKEI_225.get(ticker, ticker)
+        entry_price = pos["entry_price"]
         try:
             df = fetch_stock_data(ticker, period="5d")
             current = float(df["Close"].iloc[-1])
         except Exception:
-            current = pos["entry_price"]
+            current = entry_price
 
-        # 高値更新時にストップを引き上げ
-        updated = update_trailing_stop(ticker, current)
+        # 含み益%を計算
+        gain_pct = (current - entry_price) / entry_price
+
+        # Phase 1: +3%以上 → トレーリングストップを-4%に引き締め
+        if gain_pct >= profit_tighten_pct:
+            updated = update_trailing_stop(ticker, current, trail_pct=profit_tighten_trail)
+            if updated:
+                print(f"  ストップ引き締め: {name}（{ticker}）含み益{gain_pct*100:.1f}% → トレーリング-{profit_tighten_trail*100:.0f}%")
+        else:
+            updated = update_trailing_stop(ticker, current)
+
+        # Phase 2: +7%以上 & 未利確 → 半分利確売り
+        if gain_pct >= profit_take_pct and not pos.get("partial_exit_done") and mode == "paper":
+            exit_shares = max(1, int(pos["shares"] * profit_take_ratio))
+            if exit_shares > 0 and exit_shares < pos["shares"]:
+                print(f"  → 利確発動: {name}（{ticker}）含み益{gain_pct*100:.1f}% / {exit_shares}株売却（{pos['shares']}株中）")
+                partial_exits.append({"ticker": ticker, "shares": exit_shares, "price": current})
 
         # ストップ価格に達したら損切り（ペーパーモードのみ自動執行）
         if updated and mode == "paper":
-            stop = updated.get("stop_price", pos["entry_price"] * 0.95)
-            print(f"  損切りチェック: {name}（{ticker}）現在値={current:.0f} / ストップ={stop:.0f} / 取得={pos['entry_price']:.0f}")
+            stop = updated.get("stop_price", entry_price * 0.95)
+            print(f"  損切りチェック: {name}（{ticker}）現在値={current:.0f} / ストップ={stop:.0f} / 取得={entry_price:.0f}")
             if current <= stop:
                 print(f"  → 損切り発動: {name}")
                 trailing_stop_exits.append({"ticker": ticker, "price": current})
 
     # ペーパートレード: 自動売買
     if mode == "paper":
+        # 部分利確の実行
+        for pe in partial_exits:
+            record_partial_exit(pe["ticker"], pe["shares"], pe["price"])
+
         # トレーリングストップによる売却
         for ts in trailing_stop_exits:
             record_exit(ts["ticker"], ts["price"])

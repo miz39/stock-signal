@@ -59,18 +59,60 @@ def run_backtest(ticker, config, period="3y", initial_balance=100000):
                         "shares": shares,
                         "entry_date": date,
                         "stop_price": stop_price,
+                        "partial_exit_done": False,
+                        "high_price": price,
                     }
                     balance -= cost
 
-        # 売りシグナル or 損切り（ポジションあり時）
+        # 利確 + 売りシグナル or 損切り（ポジションあり時）
         elif position is not None:
+            entry_price = position["entry_price"]
+            gain_pct = (price - entry_price) / entry_price
+
+            profit_tighten_pct = strat.get("profit_tighten_pct", 0.03)
+            profit_tighten_trail = strat.get("profit_tighten_trail", 0.04)
+            profit_take_pct = strat.get("profit_take_pct", 0.07)
+            profit_take_ratio = strat.get("profit_take_ratio", 0.5)
+
+            # 高値更新 → ストップ引き上げ
+            if price > position.get("high_price", entry_price):
+                position["high_price"] = price
+                if gain_pct >= profit_tighten_pct:
+                    # Phase 1: +3%以上 → トレーリング幅を-4%に引き締め
+                    position["stop_price"] = round(price * (1 - profit_tighten_trail), 1)
+                else:
+                    position["stop_price"] = round(price * 0.95, 1)
+
+            # Phase 2: +7%以上 & 未利確 → 半分利確売り
+            if gain_pct >= profit_take_pct and not position.get("partial_exit_done"):
+                exit_shares = max(1, int(position["shares"] * profit_take_ratio))
+                if exit_shares > 0 and exit_shares < position["shares"]:
+                    partial_pnl = (price - entry_price) * exit_shares
+                    partial_pnl_pct = (price / entry_price - 1) * 100
+                    balance += price * exit_shares
+
+                    trades.append({
+                        "entry_date": position["entry_date"].strftime("%Y-%m-%d"),
+                        "exit_date": date.strftime("%Y-%m-%d"),
+                        "entry_price": round(entry_price, 1),
+                        "exit_price": round(price, 1),
+                        "shares": exit_shares,
+                        "pnl": round(partial_pnl, 1),
+                        "pnl_pct": round(partial_pnl_pct, 2),
+                        "reason": "利確（+7%）",
+                        "days_held": (date - position["entry_date"]).days,
+                    })
+
+                    position["shares"] -= exit_shares
+                    position["partial_exit_done"] = True
+
             sell = False
             reason = ""
 
             # 損切り
             if price <= position["stop_price"]:
                 sell = True
-                reason = "損切り（-5%）"
+                reason = "損切り" if gain_pct < 0 else "トレーリングストップ"
             # デッドクロス
             elif s_short < s_long:
                 sell = True
