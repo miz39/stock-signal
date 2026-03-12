@@ -205,8 +205,8 @@
     "exit_price": null,
     "exit_date": null,
     "status": "open",
-    "high_price": 1932.0,
-    "stop_price": 1835.4
+    "high_price": 1952.0,
+    "stop_price": 1854.4
   },
   {
     "ticker": "6472.T",
@@ -216,7 +216,7 @@
     "exit_price": null,
     "exit_date": null,
     "status": "open",
-    "high_price": 340.1000061035156,
-    "stop_price": 323.1
+    "high_price": 341.70001220703125,
+    "stop_price": 324.6
   }
 ]
