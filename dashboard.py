@@ -197,6 +197,22 @@ def render_stock_detail(pos, config):
             fig.add_trace(go.Scatter(x=hist.index, y=sma200, mode="lines", name="SMA200", line=dict(color="#607D8B", width=1, dash="dash")))
         fig.add_hline(y=entry_price, line_dash="dash", line_color="#F44336", annotation_text=f"取得単価 ¥{entry_price:,.0f}")
 
+        # 購入日マーカー
+        entry_date_str = pos.get("entry_date", "")
+        if entry_date_str:
+            entry_dt = pd.Timestamp(entry_date_str)
+            if hist.index.tz is not None:
+                entry_dt = entry_dt.tz_localize(hist.index.tz)
+            if entry_dt >= hist.index[0]:
+                fig.add_trace(go.Scatter(
+                    x=[entry_dt], y=[entry_price], mode="markers+text",
+                    marker=dict(size=12, color="#F44336", symbol="triangle-up"),
+                    text=[f"購入 {entry_date_str}"], textposition="top center",
+                    textfont=dict(color="#F44336", size=11),
+                    name="購入日", showlegend=True,
+                ))
+                fig.add_vline(x=entry_dt, line_dash="dot", line_color="rgba(244,67,54,0.4)")
+
         # 出来高
         fig.add_trace(go.Bar(x=hist.index, y=hist["Volume"], name="出来高", yaxis="y2", marker_color="rgba(158,158,158,0.3)"))
 

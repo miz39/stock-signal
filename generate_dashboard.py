@@ -15,9 +15,13 @@ TRADES_FILE = os.path.join(BASE_DIR, "trades.json")
 CONFIG_FILE = os.path.join(BASE_DIR, "config.yaml")
 DOCS_DIR = os.path.join(BASE_DIR, "docs")
 OUTPUT_FILE = os.path.join(DOCS_DIR, "index.html")
+HISTORY_FILE = os.path.join(BASE_DIR, "execution_history.json")
+HISTORY_OUTPUT = os.path.join(DOCS_DIR, "history.html")
+REVIEW_OUTPUT = os.path.join(DOCS_DIR, "weekly-review.html")
 
 # 銘柄名マッピング
 from nikkei225 import NIKKEI_225
+from portfolio import get_cash_balance
 
 
 def load_config() -> dict:
@@ -175,13 +179,19 @@ def build_dashboard_data(trades: list, initial_balance: float = 300000) -> dict:
             "exit_date": t.get("exit_date", ""),
         })
 
-    # 総資産 = 初期資金 + 確定損益 + 含み損益
-    total_assets = initial_balance + total_pnl + unrealized_pnl
-    total_return_pct = round((total_pnl + unrealized_pnl) / initial_balance * 100, 2) if initial_balance else 0
+    # 現金残高を計算
+    cash = get_cash_balance(initial_balance)
+    # 株時価
+    stock_value = round(sum(p["pnl"] + p["entry_price"] * p["shares"] for p in open_positions), 1) if open_positions else 0
+    # 総資産 = 現金 + 株時価
+    total_assets = round(cash + stock_value, 1)
+    total_return_pct = round((total_assets - initial_balance) / initial_balance * 100, 2) if initial_balance else 0
 
     return {
         "initial_balance": initial_balance,
-        "total_assets": round(total_assets, 1),
+        "total_assets": total_assets,
+        "cash": cash,
+        "stock_value": stock_value,
         "total_return_pct": total_return_pct,
         "total_pnl": round(total_pnl, 1),
         "win_rate": win_rate,
@@ -198,7 +208,7 @@ def build_dashboard_data(trades: list, initial_balance: float = 300000) -> dict:
     }
 
 
-def build_stock_detail(ticker: str, entry_price: float) -> dict:
+def build_stock_detail(ticker: str, entry_price: float, entry_date: str = "") -> dict:
     """銘柄の詳細データ（6ヶ月分の価格, SMA, RSI, ファンダメンタル）を取得する。"""
     import yfinance as yf
     import pandas as pd
@@ -209,6 +219,7 @@ def build_stock_detail(ticker: str, entry_price: float) -> dict:
         "ticker": ticker,
         "name": NIKKEI_225.get(ticker, ticker),
         "entry_price": entry_price,
+        "entry_date": entry_date,
     }
 
     try:
@@ -329,6 +340,8 @@ def generate_stock_html(data: dict) -> str:
     if div_yield: fund_cards += fund_card("配当利回り", f"{div_yield:.2f}%")
     if market_cap: fund_cards += fund_card("時価総額", fmt_market_cap(market_cap))
 
+    entry_date = data.get("entry_date", "")
+
     # Chart.js データ
     dates_json = json.dumps(data.get("dates", []))
     prices_json = json.dumps(data.get("prices", []))
@@ -343,6 +356,7 @@ def generate_stock_html(data: dict) -> str:
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>{name}（{code}）- Stock Detail</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3"></script>
 <style>
 * {{ margin:0; padding:0; box-sizing:border-box; }}
 body {{ background:#121212; color:#E0E0E0; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; padding:16px; max-width:960px; margin:0 auto; }}
@@ -419,6 +433,7 @@ const sma25 = {sma25_json};
 const sma75 = {sma75_json};
 const sma200 = {sma200_json};
 const entryPrice = {entry_price};
+const entryDate = '{entry_date}';
 
 if (dates.length > 0) {{
   const ctx = document.getElementById('priceChart').getContext('2d');
@@ -479,6 +494,17 @@ if (dates.length > 0) {{
           fill: false,
           order: 5,
         }},
+        ...(entryDate && dates.includes(entryDate) ? [{{
+          label: '購入日',
+          data: dates.map(d => d === entryDate ? entryPrice : null),
+          borderColor: 'transparent',
+          backgroundColor: '#F44336',
+          pointRadius: 8,
+          pointStyle: 'triangle',
+          pointRotation: 0,
+          showLine: false,
+          order: 0,
+        }}] : []),
       ]
     }},
     options: {{
@@ -487,6 +513,27 @@ if (dates.length > 0) {{
       interaction: {{ mode: 'index', intersect: false }},
       plugins: {{
         legend: {{ labels: {{ color:'#9E9E9E', font:{{ size:11 }}, usePointStyle:true, pointStyle:'line' }} }},
+        annotation: entryDate && dates.includes(entryDate) ? {{
+          annotations: {{
+            entryLine: {{
+              type: 'line',
+              xMin: entryDate,
+              xMax: entryDate,
+              borderColor: 'rgba(244,67,54,0.4)',
+              borderWidth: 1,
+              borderDash: [4,3],
+              label: {{
+                display: true,
+                content: '購入 ' + entryDate,
+                position: 'start',
+                backgroundColor: 'rgba(244,67,54,0.8)',
+                color: '#fff',
+                font: {{ size: 10 }},
+                padding: 4,
+              }}
+            }}
+          }}
+        }} : {{}},
         tooltip: {{
           callbacks: {{
             label: function(ctx) {{
@@ -604,7 +651,9 @@ def generate_html(data: dict, config: dict = None) -> str:
     total_assets = data["total_assets"]
     total_return_pct = data["total_return_pct"]
     initial_balance = data["initial_balance"]
-    total_change = total_pnl + unrealized_pnl
+    cash = data.get("cash", 0)
+    stock_value = data.get("stock_value", 0)
+    total_change = total_assets - initial_balance
 
     # オープンポジション行
     open_rows = ""
@@ -699,7 +748,7 @@ a.stock-link:hover {{ text-decoration:underline; }}
 </head>
 <body>
 <h1>Paper Trade Dashboard</h1>
-<div class="updated">最終更新: {now}</div>
+<div class="updated">最終更新: {now} &nbsp;|&nbsp; <a href="history.html" style="color:#64B5F6;text-decoration:none">実行履歴 &rarr;</a> &nbsp;|&nbsp; <a href="weekly-review.html" style="color:#64B5F6;text-decoration:none">週次レビュー &rarr;</a></div>
 
 <div class="hero-card">
   <div class="label">総資産</div>
@@ -710,6 +759,15 @@ a.stock-link:hover {{ text-decoration:underline; }}
 
 <div class="cards">
   <div class="card">
+    <div class="label">株時価</div>
+    <div class="value">&yen;{stock_value:,.0f}</div>
+    <div class="sub">{data['open_count']}銘柄保有</div>
+  </div>
+  <div class="card">
+    <div class="label">現金</div>
+    <div class="value">&yen;{cash:,.0f}</div>
+  </div>
+  <div class="card">
     <div class="label">確定損益</div>
     <div class="value" style="color:{pnl_color(total_pnl)}">&yen;{pnl_sign(total_pnl)}</div>
     <div class="sub">{data['trade_count']}トレード</div>
@@ -717,7 +775,6 @@ a.stock-link:hover {{ text-decoration:underline; }}
   <div class="card">
     <div class="label">含み損益</div>
     <div class="value" style="color:{pnl_color(unrealized_pnl)}">&yen;{pnl_sign(unrealized_pnl)}</div>
-    <div class="sub">{data['open_count']}銘柄保有</div>
   </div>
   <div class="card">
     <div class="label">勝率</div>
@@ -825,6 +882,645 @@ if (labels.length > 0) {{
     return html
 
 
+def load_history() -> list:
+    """execution_history.json を読み込む。"""
+    if not os.path.exists(HISTORY_FILE):
+        return []
+    try:
+        with open(HISTORY_FILE, "r") as f:
+            return json.load(f)
+    except (json.JSONDecodeError, IOError):
+        return []
+
+
+def build_weekly_review(trades: list, history: list, config: dict) -> dict:
+    """今週のトレードデータを分析し、週次レビュー用データを構築する。"""
+    from datetime import date
+
+    today = date.today()
+    # 今週の月曜日を算出（weekday: 0=月曜）
+    monday = today - timedelta(days=today.weekday())
+    monday_str = monday.isoformat()
+
+    # --- 今週クローズドトレード ---
+    closed_trades = [t for t in trades if t.get("status") == "closed"]
+    weekly_closed = [
+        t for t in closed_trades
+        if t.get("exit_date") and t["exit_date"] >= monday_str
+    ]
+
+    weekly_pnls = [t.get("pnl", 0) for t in weekly_closed]
+    weekly_total_pnl = sum(weekly_pnls)
+    weekly_wins = sum(1 for p in weekly_pnls if p > 0)
+    weekly_losses = sum(1 for p in weekly_pnls if p <= 0) if weekly_pnls else 0
+    weekly_win_rate = round(weekly_wins / len(weekly_pnls) * 100, 1) if weekly_pnls else 0
+
+    # --- ベスト & ワースト ---
+    best_trade = max(weekly_closed, key=lambda t: t.get("pnl", 0)) if weekly_closed else None
+    worst_trade = min(weekly_closed, key=lambda t: t.get("pnl", 0)) if weekly_closed else None
+
+    def enrich_trade(t):
+        """トレードにRSIや理由の情報を付加する。"""
+        if not t:
+            return None
+        ticker = t["ticker"]
+        name = NIKKEI_225.get(ticker, ticker)
+        entry_rsi = None
+        entry_reason = ""
+        # execution_historyからエントリー時のRSI・理由を探す
+        for h in history:
+            for e in (h.get("executions", {}).get("entries", [])):
+                if e.get("ticker") == ticker:
+                    entry_rsi = e.get("rsi")
+                    entry_reason = e.get("reason", "")
+                    break
+            # buy_signalsからも探す
+            if entry_rsi is None:
+                for s in h.get("buy_signals", []):
+                    if s.get("ticker") == ticker:
+                        entry_rsi = s.get("rsi")
+                        entry_reason = s.get("reason", "")
+                        break
+        pnl_pct = round((t.get("exit_price", 0) / t["entry_price"] - 1) * 100, 2) if t["entry_price"] else 0
+        return {
+            "ticker": ticker,
+            "name": name,
+            "entry_price": t["entry_price"],
+            "exit_price": t.get("exit_price", 0),
+            "pnl": t.get("pnl", 0),
+            "pnl_pct": pnl_pct,
+            "entry_date": t.get("entry_date", ""),
+            "exit_date": t.get("exit_date", ""),
+            "rsi": entry_rsi,
+            "reason": entry_reason,
+        }
+
+    # --- 損切り分析 ---
+    # ストップ発動トレード: exit_dateがあり、かつ損失が出ているもの
+    # execution_historyのexitsからreason="トレーリングストップ発動"を検出
+    stop_tickers_dates = set()
+    for h in history:
+        if h.get("date", "") < monday_str:
+            continue
+        for ex in h.get("executions", {}).get("exits", []):
+            if "ストップ" in ex.get("reason", ""):
+                stop_tickers_dates.add((ex.get("ticker"), h["date"]))
+
+    stop_trades = []
+    for t in weekly_closed:
+        if (t["ticker"], t.get("exit_date")) in stop_tickers_dates:
+            stop_trades.append(t)
+        elif t.get("pnl", 0) < 0 and t.get("stop_price"):
+            # ストップ価格とexit_priceが近い場合もストップ発動とみなす
+            if t.get("exit_price") and abs(t["exit_price"] - t["stop_price"]) / t["entry_price"] < 0.01:
+                stop_trades.append(t)
+
+    stop_count = len(stop_trades)
+    stop_avg_loss = round(sum(t.get("pnl", 0) for t in stop_trades) / stop_count, 1) if stop_count else 0
+    stop_total_loss = round(sum(t.get("pnl", 0) for t in stop_trades), 1)
+
+    # 「ストップなしなら」の仮想損失: high_priceから現在のexit_priceまでの差分ではなく
+    # entry_priceからexit_priceまでの全損失 vs entry_priceからhigh_priceまでの最大利益の機会損失を考慮
+    # ここではストップなしで保有し続けた場合の追加損失を推定
+    # → 実際にはストップがあったから損失がstop_priceで済んだ。なければさらに下がった可能性
+    # 簡易推計: ストップなしならentry_price - exit_priceの方向に更に5%損失が広がったと仮定
+    no_stop_est_loss = round(
+        sum(t.get("pnl", 0) * 1.5 for t in stop_trades), 1
+    ) if stop_trades else 0
+
+    # --- 今週のexecution_historyからアクション集計 ---
+    weekly_entries = 0
+    weekly_exits = 0
+    weekly_partial_exits = 0
+    weekly_stop_updates = 0
+    weekly_scanned = 0
+    for h in history:
+        if h.get("date", "") < monday_str:
+            continue
+        execs = h.get("executions", {})
+        weekly_entries += len(execs.get("entries", []))
+        weekly_exits += len(execs.get("exits", []))
+        weekly_partial_exits += len(execs.get("partial_exits", []))
+        weekly_stop_updates += len(execs.get("trailing_stop_updates", []))
+        weekly_scanned += h.get("scan", {}).get("total", 0)
+
+    # --- エントリー後の株価推移（買いが利益になったか） ---
+    # 全クローズドの勝率（全期間）
+    all_pnls = [t.get("pnl", 0) for t in closed_trades]
+    all_win_rate = round(sum(1 for p in all_pnls if p > 0) / len(all_pnls) * 100, 1) if all_pnls else 0
+    all_total_pnl = sum(all_pnls)
+
+    # 利確トレード（reasonに利確が含まれる）
+    profit_take_trades = [t for t in weekly_closed if "利確" in t.get("reason", "")]
+    profit_take_count = len(profit_take_trades)
+
+    # --- 来週のヒント ---
+    hint = _generate_weekly_hint(weekly_closed, weekly_win_rate, stop_count, profit_take_count, config)
+
+    return {
+        "week_start": monday_str,
+        "week_end": today.isoformat(),
+        "weekly_total_pnl": round(weekly_total_pnl, 1),
+        "weekly_trade_count": len(weekly_closed),
+        "weekly_wins": weekly_wins,
+        "weekly_losses": weekly_losses,
+        "weekly_win_rate": weekly_win_rate,
+        "best_trade": enrich_trade(best_trade),
+        "worst_trade": enrich_trade(worst_trade),
+        "stop_count": stop_count,
+        "stop_avg_loss": stop_avg_loss,
+        "stop_total_loss": stop_total_loss,
+        "no_stop_est_loss": no_stop_est_loss,
+        "weekly_entries": weekly_entries,
+        "weekly_exits": weekly_exits,
+        "weekly_partial_exits": weekly_partial_exits,
+        "weekly_stop_updates": weekly_stop_updates,
+        "weekly_scanned": weekly_scanned,
+        "all_win_rate": all_win_rate,
+        "all_total_pnl": round(all_total_pnl, 1),
+        "all_trade_count": len(closed_trades),
+        "profit_take_count": profit_take_count,
+        "hint": hint,
+        "weekly_closed": [enrich_trade(t) for t in weekly_closed],
+    }
+
+
+def _generate_weekly_hint(weekly_closed, win_rate, stop_count, profit_take_count, config):
+    """今週のパターンから1つ具体的改善案を生成する。"""
+    if not weekly_closed:
+        return "今週はクローズしたトレードがありません。来週のシグナルを待ちましょう。"
+
+    # 全敗パターン
+    if win_rate == 0 and len(weekly_closed) > 0:
+        return ("今週は全トレードが損失でした。エントリーのタイミングが早すぎる可能性があります。"
+                "RSIがより低い水準（30以下）での買いに絞ることを検討してみてください。")
+
+    # ストップ多発パターン
+    if stop_count >= 3:
+        return (f"ストップ発動が{stop_count}回と多めでした。ボラティリティが高い相場では "
+                "エントリーを厳選するか、ポジションサイズを小さくすることでリスクを抑えられます。")
+
+    # 利確なしパターン
+    if profit_take_count == 0 and len(weekly_closed) >= 2:
+        return ("利確ルールが発動しませんでした。含み益が出ている間に逃さないよう、"
+                "トレーリングストップの引き締め条件を見直すのも一案です。")
+
+    # 勝率低パターン
+    if win_rate < 40:
+        losing = [t for t in weekly_closed if t.get("pnl", 0) < 0]
+        avg_loss = abs(sum(t.get("pnl", 0) for t in losing) / len(losing)) if losing else 0
+        return (f"勝率{win_rate}%。平均損失¥{avg_loss:,.0f}を抑えるため、"
+                "損切りラインを-5%→-4%に引き締めるか、ポジションサイズの見直しを検討してみてください。")
+
+    # デフォルト
+    profit_take_pct = config.get("strategy", {}).get("profit_take_pct", 0.07)
+    return (f"勝率{win_rate}%と安定しています。現在の利確ライン（+{int(profit_take_pct*100)}%）を"
+            "維持しつつ、利益が伸びるトレードではトレーリングストップを活用して利益を伸ばしましょう。")
+
+
+def generate_weekly_review_html(data: dict) -> str:
+    """週次振り返りレポートHTMLを生成する。"""
+    now = datetime.now(JST).strftime("%Y-%m-%d %H:%M JST")
+    week_start = data["week_start"]
+    week_end = data["week_end"]
+
+    def pnl_color(val):
+        if val > 0: return "#00C853"
+        elif val < 0: return "#FF1744"
+        return "#9E9E9E"
+
+    def pnl_sign(val):
+        return f"+{val:,.0f}" if val > 0 else f"{val:,.0f}"
+
+    # ベスト/ワーストトレードカード
+    best = data.get("best_trade")
+    worst = data.get("worst_trade")
+
+    def trade_card(t, label, border_color):
+        if not t:
+            return f'<div class="bw-card" style="border-left-color:{border_color}"><div class="bw-label">{label}</div><div class="bw-empty">該当なし</div></div>'
+        rsi_text = f"RSI {t['rsi']:.1f}" if t.get("rsi") else "RSI -"
+        return f'''<div class="bw-card" style="border-left-color:{border_color}">
+  <div class="bw-label">{label}</div>
+  <div class="bw-name">{t['name']}</div>
+  <div class="bw-pnl" style="color:{pnl_color(t['pnl'])}">{pnl_sign(t['pnl'])}（{'+' if t['pnl_pct']>=0 else ''}{t['pnl_pct']:.1f}%）</div>
+  <div class="bw-detail">&yen;{t['entry_price']:,.0f} &rarr; &yen;{t['exit_price']:,.0f}</div>
+  <div class="bw-detail">{t['entry_date']} 〜 {t['exit_date']}</div>
+  <div class="bw-meta">{rsi_text}</div>
+  {f'<div class="bw-reason">{t["reason"]}</div>' if t.get('reason') else ''}
+</div>'''
+
+    best_html = trade_card(best, "ベストトレード", "#00C853")
+    worst_html = trade_card(worst, "ワーストトレード", "#FF1744")
+
+    # 損切りレビュー
+    stop_count = data["stop_count"]
+    stop_avg_loss = data["stop_avg_loss"]
+    stop_total_loss = data["stop_total_loss"]
+    no_stop_est = data["no_stop_est_loss"]
+    saved_by_stop = round(no_stop_est - stop_total_loss, 1)
+
+    # 週次クローズドトレード一覧
+    closed_rows = ""
+    for t in data.get("weekly_closed", []):
+        if not t:
+            continue
+        color = pnl_color(t["pnl"])
+        rsi_text = f"{t['rsi']:.1f}" if t.get("rsi") else "-"
+        closed_rows += f"""<tr>
+<td>{t['name']}<br><span class="ticker">{t['ticker'].replace('.T','')}</span></td>
+<td class="num">&yen;{t['entry_price']:,.0f}</td>
+<td class="num">&yen;{t['exit_price']:,.0f}</td>
+<td class="num" style="color:{color}">{pnl_sign(t['pnl'])}<br><span class="small">({'+' if t['pnl_pct']>=0 else ''}{t['pnl_pct']:.1f}%)</span></td>
+<td class="num">{rsi_text}</td>
+</tr>"""
+
+    if not closed_rows:
+        closed_rows = '<tr><td colspan="5" class="empty">今週のクローズドトレードはありません</td></tr>'
+
+    html = f"""<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>週次振り返りレポート（{week_start} 〜 {week_end}）</title>
+<style>
+* {{ margin:0; padding:0; box-sizing:border-box; }}
+body {{ background:#121212; color:#E0E0E0; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; padding:16px; max-width:960px; margin:0 auto; }}
+a.back {{ color:#64B5F6; text-decoration:none; font-size:0.85rem; display:inline-block; margin-bottom:12px; }}
+a.back:hover {{ text-decoration:underline; }}
+h1 {{ font-size:1.3rem; margin-bottom:4px; }}
+.subtitle {{ font-size:0.85rem; color:#9E9E9E; margin-bottom:4px; }}
+.updated {{ font-size:0.75rem; color:#757575; margin-bottom:20px; }}
+.section {{ margin-bottom:24px; }}
+.section h2 {{ font-size:1rem; margin-bottom:10px; padding-bottom:4px; border-bottom:1px solid #333; }}
+.cards {{ display:grid; grid-template-columns:repeat(auto-fit,minmax(130px,1fr)); gap:10px; margin-bottom:20px; }}
+.card {{ background:#1E1E1E; border-radius:10px; padding:14px; text-align:center; }}
+.card .label {{ font-size:0.7rem; color:#9E9E9E; margin-bottom:4px; text-transform:uppercase; letter-spacing:0.5px; }}
+.card .value {{ font-size:1.4rem; font-weight:700; }}
+.card .sub {{ font-size:0.7rem; color:#757575; margin-top:2px; }}
+.green {{ color:#00C853; }}
+.red {{ color:#FF1744; }}
+
+.bw-grid {{ display:grid; grid-template-columns:1fr 1fr; gap:12px; }}
+.bw-card {{ background:#1E1E1E; border-radius:10px; padding:16px; border-left:4px solid #757575; }}
+.bw-label {{ font-size:0.7rem; color:#9E9E9E; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px; }}
+.bw-name {{ font-size:1rem; font-weight:700; margin-bottom:4px; }}
+.bw-pnl {{ font-size:1.2rem; font-weight:700; margin-bottom:6px; }}
+.bw-detail {{ font-size:0.8rem; color:#B0BEC5; }}
+.bw-meta {{ font-size:0.75rem; color:#64B5F6; margin-top:6px; }}
+.bw-reason {{ font-size:0.72rem; color:#757575; margin-top:4px; padding:4px 8px; background:#262626; border-radius:4px; }}
+.bw-empty {{ color:#757575; font-size:0.85rem; }}
+
+.stop-grid {{ display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:10px; }}
+.stop-card {{ background:#1E1E1E; border-radius:10px; padding:14px; text-align:center; }}
+.stop-card .label {{ font-size:0.7rem; color:#9E9E9E; margin-bottom:4px; }}
+.stop-card .value {{ font-size:1.3rem; font-weight:700; }}
+.stop-card .sub {{ font-size:0.7rem; color:#757575; margin-top:2px; }}
+.saved {{ color:#64B5F6; }}
+
+.hint-box {{ background:#1B2A1B; border:1px solid #2E7D32; border-radius:10px; padding:16px; font-size:0.88rem; line-height:1.6; color:#C8E6C9; }}
+
+.action-grid {{ display:grid; grid-template-columns:repeat(auto-fit,minmax(100px,1fr)); gap:10px; }}
+.action-card {{ background:#1E1E1E; border-radius:10px; padding:12px; text-align:center; }}
+.action-card .label {{ font-size:0.65rem; color:#9E9E9E; margin-bottom:4px; text-transform:uppercase; }}
+.action-card .value {{ font-size:1.2rem; font-weight:700; }}
+
+table {{ width:100%; border-collapse:collapse; font-size:0.8rem; }}
+th {{ background:#1E1E1E; color:#9E9E9E; text-align:left; padding:8px 6px; font-weight:500; font-size:0.7rem; text-transform:uppercase; position:sticky; top:0; }}
+td {{ padding:8px 6px; border-bottom:1px solid #2A2A2A; }}
+td.num {{ text-align:right; font-variant-numeric:tabular-nums; }}
+.ticker {{ color:#757575; font-size:0.7rem; }}
+.small {{ font-size:0.7rem; }}
+.empty {{ text-align:center; color:#757575; padding:24px; }}
+
+@media(max-width:480px) {{
+  .cards {{ grid-template-columns:repeat(2,1fr); }}
+  .card .value {{ font-size:1.2rem; }}
+  .bw-grid {{ grid-template-columns:1fr; }}
+  .stop-grid {{ grid-template-columns:repeat(2,1fr); }}
+  table {{ font-size:0.75rem; }}
+  td, th {{ padding:6px 4px; }}
+}}
+</style>
+</head>
+<body>
+<a class="back" href="index.html">&larr; Dashboard</a>
+<h1>週次振り返りレポート</h1>
+<div class="subtitle">{week_start} 〜 {week_end}</div>
+<div class="updated">生成: {now}</div>
+
+<!-- 1. 今週のサマリー -->
+<div class="section">
+  <h2>今週のサマリー</h2>
+  <div class="cards">
+    <div class="card">
+      <div class="label">週間損益</div>
+      <div class="value" style="color:{pnl_color(data['weekly_total_pnl'])}">&yen;{pnl_sign(data['weekly_total_pnl'])}</div>
+    </div>
+    <div class="card">
+      <div class="label">勝率</div>
+      <div class="value">{data['weekly_win_rate']}%</div>
+      <div class="sub">{data['weekly_wins']}勝{data['weekly_losses']}敗</div>
+    </div>
+    <div class="card">
+      <div class="label">トレード数</div>
+      <div class="value">{data['weekly_trade_count']}</div>
+    </div>
+    <div class="card">
+      <div class="label">全期間勝率</div>
+      <div class="value">{data['all_win_rate']}%</div>
+      <div class="sub">全{data['all_trade_count']}件</div>
+    </div>
+    <div class="card">
+      <div class="label">全期間損益</div>
+      <div class="value" style="color:{pnl_color(data['all_total_pnl'])}">&yen;{pnl_sign(data['all_total_pnl'])}</div>
+    </div>
+  </div>
+</div>
+
+<!-- 2. ベスト & ワースト -->
+<div class="section">
+  <h2>ベスト &amp; ワースト</h2>
+  <div class="bw-grid">
+    {best_html}
+    {worst_html}
+  </div>
+</div>
+
+<!-- 3. 損切りレビュー -->
+<div class="section">
+  <h2>損切りレビュー</h2>
+  <div class="stop-grid">
+    <div class="stop-card">
+      <div class="label">ストップ発動</div>
+      <div class="value">{stop_count}回</div>
+    </div>
+    <div class="stop-card">
+      <div class="label">平均損失</div>
+      <div class="value red">&yen;{stop_avg_loss:,.0f}</div>
+    </div>
+    <div class="stop-card">
+      <div class="label">ストップ損失合計</div>
+      <div class="value red">&yen;{stop_total_loss:,.0f}</div>
+    </div>
+    <div class="stop-card">
+      <div class="label">ストップなし推定損失</div>
+      <div class="value red">&yen;{no_stop_est:,.0f}</div>
+    </div>
+    <div class="stop-card">
+      <div class="label">ストップで回避</div>
+      <div class="value saved">&yen;{saved_by_stop:,.0f}</div>
+      <div class="sub">推定回避額</div>
+    </div>
+  </div>
+</div>
+
+<!-- 4. 戦略の答え合わせ -->
+<div class="section">
+  <h2>戦略の答え合わせ</h2>
+  <div class="action-grid">
+    <div class="action-card">
+      <div class="label">スキャン銘柄</div>
+      <div class="value">{data['weekly_scanned']}</div>
+    </div>
+    <div class="action-card">
+      <div class="label">新規エントリー</div>
+      <div class="value">{data['weekly_entries']}</div>
+    </div>
+    <div class="action-card">
+      <div class="label">全売却</div>
+      <div class="value">{data['weekly_exits']}</div>
+    </div>
+    <div class="action-card">
+      <div class="label">利確</div>
+      <div class="value">{data['weekly_partial_exits'] + data['profit_take_count']}</div>
+    </div>
+    <div class="action-card">
+      <div class="label">ストップ更新</div>
+      <div class="value">{data['weekly_stop_updates']}</div>
+    </div>
+  </div>
+  <div style="overflow-x:auto; margin-top:12px">
+  <table>
+    <thead><tr><th>銘柄</th><th>取得</th><th>売却</th><th>損益</th><th>RSI</th></tr></thead>
+    <tbody>{closed_rows}</tbody>
+  </table>
+  </div>
+</div>
+
+<!-- 5. 来週のヒント -->
+<div class="section">
+  <h2>来週のヒント</h2>
+  <div class="hint-box">
+    {data['hint']}
+  </div>
+</div>
+
+</body>
+</html>"""
+    return html
+
+
+def generate_history_html(history: list) -> str:
+    """実行履歴のアコーディオンHTMLを生成する。アクション種別ごとにまとめて表示。"""
+    now = datetime.now(JST).strftime("%Y-%m-%d %H:%M JST")
+    history_json = json.dumps(history, ensure_ascii=False)
+
+    html = f"""<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>実行履歴</title>
+<style>
+* {{ margin:0; padding:0; box-sizing:border-box; }}
+body {{ background:#121212; color:#E0E0E0; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; padding:16px; max-width:960px; margin:0 auto; }}
+a.back {{ color:#64B5F6; text-decoration:none; font-size:0.85rem; display:inline-block; margin-bottom:12px; }}
+a.back:hover {{ text-decoration:underline; }}
+h1 {{ font-size:1.3rem; margin-bottom:4px; }}
+.updated {{ font-size:0.75rem; color:#757575; margin-bottom:16px; }}
+.empty {{ text-align:center; color:#757575; padding:48px 16px; }}
+
+details {{ margin-bottom:8px; }}
+details > summary {{ cursor:pointer; list-style:none; }}
+details > summary::-webkit-details-marker {{ display:none; }}
+details > summary::before {{ content:'\\25B6'; display:inline-block; margin-right:8px; font-size:0.7rem; transition:transform 0.2s; }}
+details[open] > summary::before {{ transform:rotate(90deg); }}
+
+.date-group > summary {{
+  background:#1E1E1E; border-radius:8px; padding:12px 16px; font-size:0.9rem; font-weight:600;
+  display:flex; align-items:center; gap:8px; flex-wrap:wrap;
+}}
+.date-group > .content {{ padding:8px 0 8px 16px; }}
+
+.session-group {{ margin-bottom:6px; }}
+.session-group > summary {{
+  background:#262626; border-radius:6px; padding:10px 14px; font-size:0.82rem; font-weight:500;
+  display:flex; align-items:center; gap:8px; flex-wrap:wrap;
+}}
+.session-group > .content {{ padding:10px 0 10px 4px; }}
+
+.badge {{ font-size:0.7rem; padding:2px 8px; border-radius:10px; font-weight:500; }}
+.badge-action {{ background:#0D47A1; color:#90CAF9; }}
+.badge-none {{ background:#333; color:#757575; }}
+.badge-scan {{ background:#263238; color:#90A4AE; font-size:0.65rem; }}
+
+/* Action block: one block per action type */
+.act {{ background:#1E1E1E; border-radius:8px; padding:12px 16px; margin-bottom:8px; border-left:3px solid #757575; }}
+.act-buy {{ border-left-color:#00C853; }}
+.act-sell {{ border-left-color:#FF1744; }}
+.act-partial {{ border-left-color:#FF9800; }}
+.act-stop {{ border-left-color:#64B5F6; }}
+
+.act-title {{ font-size:0.78rem; font-weight:700; margin-bottom:6px; display:flex; align-items:center; gap:6px; }}
+.act-title .tag {{ font-size:0.65rem; padding:1px 6px; border-radius:3px; }}
+.tag-buy {{ background:#1B5E20; color:#A5D6A7; }}
+.tag-sell {{ background:#B71C1C; color:#EF9A9A; }}
+.tag-partial {{ background:#E65100; color:#FFB74D; }}
+.tag-stop {{ background:#0D47A1; color:#90CAF9; }}
+
+.act-body {{ font-size:0.82rem; color:#B0BEC5; line-height:1.7; }}
+.act-body b {{ color:#E0E0E0; font-weight:600; }}
+.act-reason {{ font-size:0.75rem; color:#757575; margin-top:4px; }}
+.green {{ color:#00C853; }} .red {{ color:#FF1744; }}
+
+.no-action {{ background:#1E1E1E; border-radius:8px; padding:14px; color:#757575; font-size:0.82rem; text-align:center; }}
+.snapshot {{ margin-top:4px; padding:8px 16px; background:#1A1A1A; border-radius:6px; font-size:0.75rem; color:#757575; }}
+.snapshot b {{ color:#B0BEC5; font-weight:500; }}
+
+@media(max-width:480px) {{ .act-body {{ font-size:0.78rem; }} }}
+</style>
+</head>
+<body>
+<a class="back" href="index.html">&larr; Dashboard</a>
+<h1>実行履歴</h1>
+<div class="updated">最終更新: {now}</div>
+<div id="root"></div>
+<script>
+const H = {history_json};
+const $ = s => s ? String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') : '';
+const Y = v => v != null ? '&yen;' + Number(v).toLocaleString() : '-';
+const P = v => v > 0 ? '<span class="green">+' + v.toFixed(1) + '%</span>' : '<span class="red">' + v.toFixed(1) + '%</span>';
+const PNL = v => v > 0 ? '<span class="green">+' + Y(v) + '</span>' : v < 0 ? '<span class="red">' + Y(v) + '</span>' : Y(0);
+
+if (!H.length) {{
+  document.getElementById('root').innerHTML = '<div class="empty">データなし</div>';
+}} else {{
+  const byDate = {{}};
+  H.forEach(h => {{ (byDate[h.date] = byDate[h.date] || []).push(h); }});
+  const dates = Object.keys(byDate).sort().reverse();
+  let o = '';
+
+  dates.forEach((date, di) => {{
+    const ss = byDate[date];
+    let da = 0;
+    ss.forEach(h => {{
+      const x = h.executions || {{}};
+      da += (x.entries?.length||0)+(x.exits?.length||0)+(x.partial_exits?.length||0)+(x.trailing_stop_updates?.length||0);
+    }});
+    const latest = di === 0;
+    o += '<details class="date-group"' + (latest?' open':'') + '><summary>' + $(date);
+    o += da ? ' <span class="badge badge-action">' + da + '件</span>' : ' <span class="badge badge-none">変更なし</span>';
+    o += '</summary><div class="content">';
+
+    ss.forEach(h => {{
+      const scan = h.scan || {{}};
+      const x = h.executions || {{}};
+      const entries = x.entries || [], exits = x.exits || [], partials = x.partial_exits || [], stops = x.trailing_stop_updates || [];
+      const ac = entries.length + exits.length + partials.length + stops.length;
+
+      o += '<details class="session-group"' + (latest?' open':'') + '><summary>' + $(h.session);
+      o += ac ? ' <span class="badge badge-action">' + ac + '件</span>' : ' <span class="badge badge-none">変更なし</span>';
+      o += ' <span class="badge badge-scan">scan ' + (scan.total||0) + ' / buy ' + (scan.buy_count||0) + ' / sell ' + (scan.sell_count||0) + '</span>';
+      o += '</summary><div class="content">';
+
+      if (!ac) {{
+        o += '<div class="no-action">売買・ストップ更新なし</div>';
+      }}
+
+      // Exits block
+      if (exits.length) {{
+        o += '<div class="act act-sell"><div class="act-title"><span class="tag tag-sell">売却</span> ' + exits.length + '件</div><div class="act-body">';
+        exits.forEach((e,i) => {{
+          if (i) o += '<br>';
+          o += '<b>' + $(e.name) + '</b> ';
+          if (e.entry_price) o += Y(e.entry_price) + '&rarr;';
+          o += Y(e.price);
+          if (e.shares) o += ' &times;' + e.shares + '株';
+          o += ' &nbsp;損益 ' + PNL(e.pnl);
+          if (e.pnl_pct != null) o += '（' + P(e.pnl_pct) + '）';
+        }});
+        // Common reason
+        const reasons = [...new Set(exits.map(e => e.reason).filter(Boolean))];
+        if (reasons.length) o += '<div class="act-reason">' + reasons.map($).join(' / ') + '</div>';
+        o += '</div></div>';
+      }}
+
+      // Partial exits block
+      if (partials.length) {{
+        o += '<div class="act act-partial"><div class="act-title"><span class="tag tag-partial">利確</span> ' + partials.length + '件</div><div class="act-body">';
+        partials.forEach((p,i) => {{
+          if (i) o += '<br>';
+          o += '<b>' + $(p.name) + '</b> ' + (p.shares||0) + '株/' + (p.total_shares||'?') + '株を' + Y(p.price) + 'で売却';
+          o += ' &nbsp;損益 ' + PNL(p.pnl);
+        }});
+        const gmin = Math.min(...partials.map(p => p.gain_pct||0));
+        const gmax = Math.max(...partials.map(p => p.gain_pct||0));
+        const gpct = gmin === gmax ? '+' + gmin.toFixed(1) + '%' : '+' + gmin.toFixed(1) + '〜' + gmax.toFixed(1) + '%';
+        o += '<div class="act-reason">含み益 ' + gpct + ' で利確ルール適用（+7%到達で半分売却）</div>';
+        o += '</div></div>';
+      }}
+
+      // Stop updates block
+      if (stops.length) {{
+        o += '<div class="act act-stop"><div class="act-title"><span class="tag tag-stop">ストップ引き締め</span> ' + stops.length + '件</div><div class="act-body">';
+        o += stops.map(s => '<b>' + $(s.name) + '</b>(' + P(s.gain_pct||0) + ') &rarr;' + Y(s.new_stop)).join(' / ');
+        const smin = Math.min(...stops.map(s => s.gain_pct||0));
+        const smax = Math.max(...stops.map(s => s.gain_pct||0));
+        const spct = smin === smax ? '+' + smin.toFixed(1) + '%' : '+' + smin.toFixed(1) + '〜' + smax.toFixed(1) + '%';
+        o += '<div class="act-reason">含み益 ' + spct + ' のためトレーリングストップを-4%に引き締め</div>';
+        o += '</div></div>';
+      }}
+
+      // Entries block
+      if (entries.length) {{
+        o += '<div class="act act-buy"><div class="act-title"><span class="tag tag-buy">購入</span> ' + entries.length + '件</div><div class="act-body">';
+        entries.forEach((e,i) => {{
+          if (i) o += '<br>';
+          o += '<b>' + $(e.name) + '</b> ' + Y(e.price) + '&times;' + (e.shares||0) + '株';
+          o += '（RSI ' + (e.rsi != null ? e.rsi.toFixed(1) : '-') + '）';
+          o += ' ストップ ' + Y(e.stop_loss);
+        }});
+        const reasons = [...new Set(entries.map(e => e.reason).filter(Boolean))];
+        if (reasons.length) o += '<div class="act-reason">' + reasons.map($).join(' / ') + '</div>';
+        o += '</div></div>';
+      }}
+
+      // Snapshot
+      if (h.portfolio_snapshot) {{
+        const ps = h.portfolio_snapshot;
+        const sv = ps.stock_value != null ? ps.stock_value : ps.total_value;
+        o += '<div class="snapshot">';
+        o += '保有 <b>' + (ps.open_count||0) + '銘柄</b>';
+        o += ' / 株時価 <b>' + Y(sv) + '</b>';
+        if (ps.cash != null) o += ' / 現金 <b>' + Y(ps.cash) + '</b>';
+        if (ps.total_assets != null) o += ' / 総資産 <b>' + Y(ps.total_assets) + '</b>';
+        o += '</div>';
+      }}
+
+      o += '</div></details>';
+    }});
+    o += '</div></details>';
+  }});
+  document.getElementById('root').innerHTML = o;
+}}
+</script>
+</body>
+</html>"""
+    return html
+
+
 def main():
     config = load_config()
     balance = config.get("account", {}).get("balance", 300000)
@@ -838,6 +1534,25 @@ def main():
     print(f"  Closed trades: {data['trade_count']} / Open: {data['open_count']}")
     print(f"  Total P&L: ¥{data['total_pnl']:,.0f} / Unrealized: ¥{data['unrealized_pnl']:,.0f}")
 
+    # 実行履歴ページを生成
+    history = load_history()
+    if history:
+        history_html = generate_history_html(history)
+        with open(HISTORY_OUTPUT, "w", encoding="utf-8") as f:
+            f.write(history_html)
+        print(f"History page generated: {HISTORY_OUTPUT} ({len(history)} records)")
+    else:
+        print("No execution history found, skipping history page")
+
+    # 週次振り返りレポートを生成
+    review_data = build_weekly_review(trades, history, config)
+    review_html = generate_weekly_review_html(review_data)
+    with open(REVIEW_OUTPUT, "w", encoding="utf-8") as f:
+        f.write(review_html)
+    print(f"Weekly review generated: {REVIEW_OUTPUT}")
+    print(f"  Week: {review_data['week_start']} ~ {review_data['week_end']}")
+    print(f"  Weekly P&L: ¥{review_data['weekly_total_pnl']:,.0f} ({review_data['weekly_trade_count']} trades)")
+
     # 銘柄別詳細ページを生成
     open_trades = [t for t in trades if t.get("status") == "open"]
     if open_trades:
@@ -849,7 +1564,7 @@ def main():
             code = ticker.replace(".T", "")
             name = NIKKEI_225.get(ticker, ticker)
             print(f"  {name}（{code}）...", end=" ", flush=True)
-            detail = build_stock_detail(ticker, t["entry_price"])
+            detail = build_stock_detail(ticker, t["entry_price"], t.get("entry_date", ""))
             stock_html = generate_stock_html(detail)
             out_path = os.path.join(stock_dir, f"{code}.html")
             with open(out_path, "w", encoding="utf-8") as f:
