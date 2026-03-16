@@ -231,3 +231,26 @@ NIKKEI_225 = {
     "9983.T": "ファーストリテイリング",
     "9984.T": "ソフトバンクグループ",
 }
+
+
+def get_sector(ticker: str) -> str:
+    """証券コードの番号帯からセクターを推定する。"""
+    code = int(ticker.replace(".T", ""))
+    if code < 2000:
+        return "建設・資源"
+    elif code < 3000:
+        return "食品"
+    elif code < 4000:
+        return "不動産・倉庫"
+    elif code < 5000:
+        return "化学・医薬"
+    elif code < 6000:
+        return "鉄鋼・金属"
+    elif code < 7000:
+        return "機械・電機"
+    elif code < 8000:
+        return "自動車・精密"
+    elif code < 9000:
+        return "金融・商社"
+    else:
+        return "運輸・通信・サービス"

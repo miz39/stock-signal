@@ -6,6 +6,9 @@ account:
   max_allocation: 0.10  # 1銘柄あたり資産の10%まで
   max_positions: 10     # 上限10銘柄
   unit: 1
+  max_daily_entries: 3     # 1日あたりの新規エントリー上限
+  max_sector_positions: 2  # 同一セクターの同時保有上限
+  cooldown_days: 7         # 損切り後の再エントリー禁止日数
 
 strategy:
   sma_short: 25
@@ -14,9 +17,11 @@ strategy:
   rsi_period: 14
   rsi_overbought: 70
   rsi_oversold: 30
+  rsi_entry_min: 50        # 買いエントリー: RSI下限（上昇モメンタム確認）
+  rsi_entry_max: 65        # 買いエントリー: RSI上限（過熱前）
   profit_tighten_pct: 0.03    # +3%でトレーリングストップ引き締め
   profit_tighten_trail: 0.04  # 引き締め後のトレーリング幅（-4%）
-  profit_take_pct: 0.07       # +7%で半分利確
+  profit_take_pct: 0.10       # +10%で半分利確
   profit_take_ratio: 0.5      # 利確時の売却比率（50%）
 
 discord:

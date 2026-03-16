@@ -57,13 +57,15 @@ def generate_signal(df: pd.DataFrame, config: dict) -> dict:
         return result
 
     # 買いシグナル
+    rsi_entry_min = strat.get("rsi_entry_min", 50)
+    rsi_entry_max = strat.get("rsi_entry_max", 65)
     if (
         latest_sma_short > latest_sma_long
-        and latest_rsi < strat["rsi_overbought"]
+        and rsi_entry_min <= latest_rsi <= rsi_entry_max
         and latest_close > latest_sma_trend
     ):
         result["signal"] = "BUY"
-        result["reason"] = "ゴールデンクロス（SMA25 > SMA75）+ RSI適正 + 上昇トレンド"
+        result["reason"] = f"ゴールデンクロス（SMA{strat['sma_short']} > SMA{strat['sma_long']}）+ RSI適正（{latest_rsi:.1f}）+ 上昇トレンド"
 
     # 売りシグナル
     elif latest_sma_short < latest_sma_long or latest_rsi > 75:

@@ -106,6 +106,19 @@ def get_open_positions() -> list:
     return [t for t in trades if t["status"] == "open"]
 
 
+def get_cash_balance(initial_balance: float = 300000) -> float:
+    """現金残高を計算する。初期資金 - 全購入額 + 全売却額。"""
+    trades = _load_trades()
+    cash = initial_balance
+    for t in trades:
+        # エントリー時に現金が減る
+        cash -= t["entry_price"] * t["shares"]
+        # クローズ時に現金が戻る
+        if t["status"] == "closed" and t.get("exit_price"):
+            cash += t["exit_price"] * t["shares"]
+    return round(cash, 1)
+
+
 def get_performance_summary() -> dict:
     """累計損益、勝率、最大ドローダウンを返す。"""
     trades = _load_trades()
@@ -137,6 +150,23 @@ def get_performance_summary() -> dict:
         "max_drawdown": round(max_dd, 1),
         "trade_count": len(closed),
     }
+
+
+def get_recently_stopped_tickers(cooldown_days: int = 7) -> set:
+    """直近N日以内に損切り（損失クローズ）された銘柄のセットを返す。"""
+    trades = _load_trades()
+    today = date.today()
+    cutoff = date.fromordinal(today.toordinal() - cooldown_days)
+    stopped = set()
+    for t in trades:
+        if (
+            t["status"] == "closed"
+            and t.get("pnl", 0) < 0
+            and t.get("exit_date")
+            and date.fromisoformat(t["exit_date"]) >= cutoff
+        ):
+            stopped.add(t["ticker"])
+    return stopped
 
 
 def get_weekly_report() -> dict:
