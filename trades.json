@@ -313,11 +313,12 @@
     "entry_price": 1141.0,
     "shares": 26,
     "entry_date": "2026-03-18",
-    "exit_price": null,
-    "exit_date": null,
-    "status": "open",
+    "exit_price": 1089.0,
+    "exit_date": "2026-03-19",
+    "status": "closed",
     "high_price": 1148.0,
-    "stop_price": 1090.6
+    "stop_price": 1090.6,
+    "pnl": -1352.0
   },
   {
     "ticker": "4188.T",
@@ -340,5 +341,16 @@
     "status": "open",
     "high_price": 880.5,
     "stop_price": 836.5
+  },
+  {
+    "ticker": "7261.T",
+    "entry_price": 1089.0,
+    "shares": 27,
+    "entry_date": "2026-03-19",
+    "exit_price": null,
+    "exit_date": null,
+    "status": "open",
+    "high_price": 1089.0,
+    "stop_price": 1034.5
   }
 ]
