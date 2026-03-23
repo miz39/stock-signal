@@ -424,8 +424,8 @@
     "exit_price": null,
     "exit_date": null,
     "status": "open",
-    "high_price": 1046.0,
-    "stop_price": 993.7
+    "high_price": 1049.0,
+    "stop_price": 996.5
   },
   {
     "ticker": "6301.T",
