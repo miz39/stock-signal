@@ -1,3 +1,5 @@
+import time
+
 import requests
 import traceback
 
@@ -37,13 +39,16 @@ def send_discord(webhook_url: str, embeds: list, content: str = None) -> bool:
     if content:
         payload["content"] = content
 
-    try:
-        resp = requests.post(webhook_url, json=payload, timeout=10)
-        resp.raise_for_status()
-        return True
-    except Exception as e:
-        print(f"Discord送信エラー: {e}")
-        return False
+    for attempt in range(3):
+        try:
+            resp = requests.post(webhook_url, json=payload, timeout=10)
+            resp.raise_for_status()
+            return True
+        except Exception as e:
+            print(f"Discord送信エラー（試行{attempt + 1}/3）: {e}")
+            if attempt < 2:
+                time.sleep(2)
+    return False
 
 
 def send_error(webhook_url: str, error: Exception) -> None:
