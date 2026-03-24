@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 """
-改善後戦略のバックテスト（2026-02-01 〜 今日）
-旧戦略（RSI<70, 制限なし）と新戦略（RSI 50-65, セクター/日次/cooldown制限）を比較する。
+Standalone strategy comparison tool — run directly: python3 backtest_improved.py
+
+Compares old strategy (RSI<70, no limits) vs new strategy (RSI 50-65,
+sector/daily/cooldown limits) with index benchmark.
 """
 import numpy as np
 import pandas as pd

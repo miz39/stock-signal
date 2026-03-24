@@ -1,7 +1,8 @@
 """
-マルチエージェント バックテスト
-過去データで4エージェントの総合判断をシミュレーションする。
-各時点で未来のデータは一切使わない（look-ahead bias排除）。
+Multi-agent backtest — used by bot.py's !simulate command.
+
+Simulates 4-agent consensus decisions on historical data.
+No look-ahead bias: each decision point uses only past data.
 """
 
 import numpy as np

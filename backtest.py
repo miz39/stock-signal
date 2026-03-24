@@ -1,5 +1,7 @@
 """
-バックテスト — 過去データで戦略をシミュレーションする。
+Single-ticker backtest — used by bot.py's !backtest command.
+
+Runs a historical simulation for one ticker using SMA/RSI strategy.
 """
 import pandas as pd
 import numpy as np

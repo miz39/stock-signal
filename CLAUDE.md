@@ -21,15 +21,23 @@
 ## 主要ファイル
 | ファイル | 役割 |
 |----------|------|
-| `main.py` | エントリポイント。スキャン→シグナル→売買→通知→履歴保存 |
+| `main.py` | エントリポイント。スキャン→シグナル→売買→通知→履歴保存（logging: `signal.log`） |
 | `strategy.py` | シグナル生成ロジック（SMA, RSI計算） |
-| `portfolio.py` | トレード記録、ポジション管理、残高計算 |
+| `portfolio.py` | トレード記録、ポジション管理、残高計算（fcntlファイルロック付き） |
 | `risk.py` | ストップロス計算、ポジションサイジング |
 | `nikkei225.py` | 日経225銘柄名マッピング + セクター分類 |
-| `data.py` | yfinance経由の株価データ取得 |
-| `notifier.py` | Discord通知フォーマット |
+| `data.py` | yfinance経由の株価データ取得（3回リトライ付き） |
+| `notifier.py` | Discord通知フォーマット（3回リトライ付き） |
+| `holidays.py` | 東証休場日判定（年1回JPXカレンダーを参照して更新） |
 | `generate_dashboard.py` | HTML ダッシュボード + 週次レビュー生成 |
 | `config.yaml` | 全パラメータ設定 |
+
+## バックテストファイル
+| ファイル | 用途 |
+|----------|------|
+| `backtest.py` | bot.py の `!backtest` コマンド用（単一銘柄シミュレーション） |
+| `backtest_multi.py` | bot.py の `!simulate` コマンド用（マルチエージェント判断） |
+| `backtest_improved.py` | スタンドアロン戦略比較ツール（`python3 backtest_improved.py` で直接実行） |
 
 ## データファイル（git管理対象）
 | ファイル | 内容 |
