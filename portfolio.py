@@ -1,3 +1,4 @@
+import fcntl
 import json
 import os
 from datetime import datetime, date
@@ -10,12 +11,20 @@ def _load_trades() -> list:
     if not os.path.exists(TRADES_FILE):
         return []
     with open(TRADES_FILE, "r") as f:
-        return json.load(f)
+        fcntl.flock(f, fcntl.LOCK_SH)
+        try:
+            return json.load(f)
+        finally:
+            fcntl.flock(f, fcntl.LOCK_UN)
 
 
 def _save_trades(trades: list) -> None:
     with open(TRADES_FILE, "w") as f:
-        json.dump(trades, f, indent=2, ensure_ascii=False, default=str)
+        fcntl.flock(f, fcntl.LOCK_EX)
+        try:
+            json.dump(trades, f, indent=2, ensure_ascii=False, default=str)
+        finally:
+            fcntl.flock(f, fcntl.LOCK_UN)
 
 
 def record_entry(ticker: str, price: float, shares: int, entry_date: str = None) -> dict:
@@ -26,6 +35,7 @@ def record_entry(ticker: str, price: float, shares: int, entry_date: str = None)
         "ticker": ticker,
         "entry_price": price,
         "shares": shares,
+        "original_shares": shares,
         "entry_date": entry_date or date.today().isoformat(),
         "exit_price": None,
         "exit_date": None,
@@ -77,6 +87,10 @@ def record_partial_exit(ticker: str, exit_shares: int, price: float, exit_date: 
             }
             trades.append(closed_trade)
 
+            # original_sharesを保存（初回のpartial exitのみ）
+            if "original_shares" not in trade:
+                trade["original_shares"] = trade["shares"]
+
             # 元tradeの株数を減らし、partial_exit_doneフラグを設定
             trade["shares"] -= exit_shares
             trade["partial_exit_done"] = True
@@ -107,14 +121,23 @@ def get_open_positions() -> list:
 
 
 def get_cash_balance(initial_balance: float = 300000) -> float:
-    """現金残高を計算する。初期資金 - 全購入額 + 全売却額。"""
+    """現金残高を計算する。初期資金 - 全購入額 + 全売却額。
+
+    original_sharesを使ってエントリーコストを計算する（partial exit対応）。
+    partial exitされたトレードはsharesが減っているが、エントリー時の購入額は
+    original_shares分なので、それを使う。closedトレード（partial exitの売却分）は
+    エントリーコストを二重計上しない。
+    """
     trades = _load_trades()
     cash = initial_balance
     for t in trades:
-        # エントリー時に現金が減る
-        cash -= t["entry_price"] * t["shares"]
-        # クローズ時に現金が戻る
-        if t["status"] == "closed" and t.get("exit_price"):
+        original = t.get("original_shares", t["shares"])
+        if t["status"] == "open":
+            # openポジション: original_shares分の購入額を引く
+            cash -= t["entry_price"] * original
+        elif t["status"] == "closed" and t.get("exit_price"):
+            # closedトレード: original_shares分の購入額を引き、売却額を足す
+            cash -= t["entry_price"] * original
             cash += t["exit_price"] * t["shares"]
     return round(cash, 1)
 
