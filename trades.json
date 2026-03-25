@@ -7,8 +7,8 @@
     "exit_price": null,
     "exit_date": null,
     "status": "open",
-    "high_price": 1842.5,
-    "stop_price": 1750.4
+    "high_price": 1890.5,
+    "stop_price": 1814.9
   },
   {
     "ticker": "8604.T",
@@ -138,8 +138,8 @@
     "exit_price": null,
     "exit_date": null,
     "status": "open",
-    "high_price": 1432.0,
-    "stop_price": 1374.7
+    "high_price": 1460.0,
+    "stop_price": 1401.6
   },
   {
     "ticker": "9022.T",
@@ -223,8 +223,8 @@
     "exit_price": null,
     "exit_date": null,
     "status": "open",
-    "high_price": 904.5,
-    "stop_price": 859.3
+    "high_price": 933.9000244140625,
+    "stop_price": 896.5
   },
   {
     "ticker": "9502.T",
@@ -234,8 +234,8 @@
     "exit_price": null,
     "exit_date": null,
     "status": "open",
-    "high_price": 2550.5,
-    "stop_price": 2423.0
+    "high_price": 2651.5,
+    "stop_price": 2545.4
   },
   {
     "ticker": "9107.T",
@@ -256,8 +256,8 @@
     "exit_price": null,
     "exit_date": null,
     "status": "open",
-    "high_price": 6149.0,
-    "stop_price": 5903.0
+    "high_price": 6285.0,
+    "stop_price": 6033.6
   },
   {
     "ticker": "4063.T",
@@ -267,8 +267,8 @@
     "exit_price": null,
     "exit_date": null,
     "status": "open",
-    "high_price": 6073.0,
-    "stop_price": 5769.3
+    "high_price": 6388.0,
+    "stop_price": 6132.5
   },
   {
     "ticker": "6752.T",
@@ -278,8 +278,8 @@
     "exit_price": null,
     "exit_date": null,
     "status": "open",
-    "high_price": 2561.5,
-    "stop_price": 2433.4
+    "high_price": 2646.0,
+    "stop_price": 2540.2
   },
   {
     "ticker": "5801.T",
@@ -289,8 +289,8 @@
     "exit_price": null,
     "exit_date": null,
     "status": "open",
-    "high_price": 28085.0,
-    "stop_price": 26680.8
+    "high_price": 30870.0,
+    "stop_price": 29635.2
   },
   {
     "ticker": "2282.T",
@@ -300,7 +300,7 @@
     "exit_price": null,
     "exit_date": null,
     "status": "open",
-    "high_price": 6851.0,
-    "stop_price": 6508.4
+    "high_price": 6932.0,
+    "stop_price": 6585.4
   }
 ]
