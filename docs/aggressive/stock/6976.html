@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>高島屋（8233）- Stock Detail</title>
+<title>太陽誘電（6976）- Stock Detail</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3"></script>
 <style>
@@ -34,20 +34,20 @@ a.back:hover { text-decoration:underline; }
 <body>
 <a class="back" href="../index.html">&larr; ダッシュボードに戻る</a>
 <div class="header">
-  <h1>高島屋</h1>
-  <span class="code">8233.T</span>
+  <h1>太陽誘電</h1>
+  <span class="code">6976.T</span>
 </div>
 <div class="updated">最終更新: 2026-03-26 15:19 JST</div>
 
 <div class="cards">
   <div class="card">
     <div class="label">現在価格</div>
-    <div class="value" style="color:#00C853">&yen;1,871</div>
-    <div class="sub" style="color:#00C853">+4.2%</div>
+    <div class="value" style="color:#00C853">&yen;4,154</div>
+    <div class="sub" style="color:#00C853">+0.4%</div>
   </div>
   <div class="card">
     <div class="label">RSI(14)</div>
-    <div class="value" style="color:#64B5F6">46.9</div>
+    <div class="value" style="color:#64B5F6">50.4</div>
     <div class="sub">適正</div>
   </div>
   <div class="card">
@@ -56,7 +56,7 @@ a.back:hover { text-decoration:underline; }
   </div>
   <div class="card">
     <div class="label">損切りライン</div>
-    <div class="value" style="color:#FF1744">&yen;1,706</div>
+    <div class="value" style="color:#FF1744">&yen;3,932</div>
     <div class="sub">取得価格の -5%</div>
   </div>
 </div>
@@ -71,18 +71,18 @@ a.back:hover { text-decoration:underline; }
 <div class="section">
   <h2>ファンダメンタル</h2>
   <div class="cards">
-    <div class="card"><div class="label">PER</div><div class="value">16.3倍</div><div class="card-sub">適正</div></div><div class="card"><div class="label">PBR</div><div class="value">1.15倍</div><div class="card-sub">適正</div></div><div class="card"><div class="label">ROE</div><div class="value">8.9%</div><div class="card-sub">平均的</div></div><div class="card"><div class="label">配当利回り</div><div class="value">1.81%</div></div><div class="card"><div class="label">時価総額</div><div class="value">&yen;5482億</div></div>
+    <div class="card"><div class="label">PER</div><div class="value">136.6倍</div><div class="card-sub">割高</div></div><div class="card"><div class="label">PBR</div><div class="value">1.53倍</div><div class="card-sub">適正</div></div><div class="card"><div class="label">ROE</div><div class="value">2.0%</div><div class="card-sub">低収益</div></div><div class="card"><div class="label">配当利回り</div><div class="value">2.19%</div></div><div class="card"><div class="label">時価総額</div><div class="value">&yen;5195億</div></div>
   </div>
 </div>
 
 <script>
 const dates = ["2025-09-26", "2025-09-29", "2025-09-30", "2025-10-01", "2025-10-02", "2025-10-03", "2025-10-06", "2025-10-07", "2025-10-08", "2025-10-09", "2025-10-10", "2025-10-14", "2025-10-15", "2025-10-16", "2025-10-17", "2025-10-20", "2025-10-21", "2025-10-22", "2025-10-23", "2025-10-24", "2025-10-27", "2025-10-28", "2025-10-29", "2025-10-30", "2025-10-31", "2025-11-04", "2025-11-05", "2025-11-06", "2025-11-07", "2025-11-10", "2025-11-11", "2025-11-12", "2025-11-13", "2025-11-14", "2025-11-17", "2025-11-18", "2025-11-19", "2025-11-20", "2025-11-21", "2025-11-25", "2025-11-26", "2025-11-27", "2025-11-28", "2025-12-01", "2025-12-02", "2025-12-03", "2025-12-04", "2025-12-05", "2025-12-08", "2025-12-09", "2025-12-10", "2025-12-11", "2025-12-12", "2025-12-15", "2025-12-16", "2025-12-17", "2025-12-18", "2025-12-19", "2025-12-22", "2025-12-23", "2025-12-24", "2025-12-25", "2025-12-26", "2025-12-29", "2025-12-30", "2026-01-05", "2026-01-06", "2026-01-07", "2026-01-08", "2026-01-09", "2026-01-13", "2026-01-14", "2026-01-15", "2026-01-16", "2026-01-19", "2026-01-20", "2026-01-21", "2026-01-22", "2026-01-23", "2026-01-26", "2026-01-27", "2026-01-28", "2026-01-29", "2026-01-30", "2026-02-02", "2026-02-03", "2026-02-04", "2026-02-05", "2026-02-06", "2026-02-09", "2026-02-10", "2026-02-12", "2026-02-13", "2026-02-16", "2026-02-17", "2026-02-18", "2026-02-19", "2026-02-20", "2026-02-24", "2026-02-25", "2026-02-26", "2026-02-27", "2026-03-02", "2026-03-03", "2026-03-04", "2026-03-05", "2026-03-06", "2026-03-09", "2026-03-10", "2026-03-11", "2026-03-12", "2026-03-13", "2026-03-16", "2026-03-17", "2026-03-18", "2026-03-19", "2026-03-23", "2026-03-24", "2026-03-25", "2026-03-26"];
-const prices = [1664.5, 1685.8, 1681.3, 1704.1, 1731.4, 1731.9, 1744.8, 1750.3, 1742.8, 1742.8, 1723.0, 1709.6, 1660.5, 1623.3, 1600.5, 1664.0, 1631.7, 1662.0, 1664.0, 1669.4, 1690.3, 1642.6, 1608.4, 1643.1, 1639.2, 1616.9, 1653.1, 1670.9, 1687.3, 1691.7, 1682.3, 1685.3, 1694.2, 1718.0, 1611.9, 1597.5, 1604.0, 1597.5, 1632.7, 1638.7, 1674.9, 1674.4, 1667.4, 1653.6, 1642.1, 1609.9, 1647.6, 1638.7, 1643.6, 1645.6, 1664.0, 1653.6, 1686.3, 1682.8, 1639.2, 1632.2, 1625.3, 1634.7, 1614.9, 1620.3, 1620.8, 1613.4, 1621.8, 1627.3, 1628.3, 1639.2, 1686.3, 1846.0, 1815.2, 1842.5, 1900.0, 1924.4, 1913.4, 1894.6, 1900.5, 1900.5, 1893.6, 1891.6, 1905.5, 1897.6, 1904.0, 1866.3, 1874.3, 1914.4, 1985.9, 2131.2, 2126.2, 2139.6, 2215.0, 2325.6, 2369.2, 2372.2, 2344.9, 2312.2, 2282.9, 2322.6, 2297.8, 2278.5, 2191.7, 2090.5, 2014.5, 1979.0, 1933.5, 1814.5, 1796.0, 1824.5, 1782.5, 1746.0, 1843.0, 1814.0, 1800.0, 1806.0, 1804.5, 1849.5, 1885.0, 1798.0, 1799.0, 1833.0, 1877.5, 1871.0];
-const sma25 = [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, 1680.5, 1678.6, 1677.2, 1676.8, 1676.1, 1674.6, 1672.6, 1670.2, 1668.0, 1667.0, 1661.7, 1656.7, 1652.5, 1650.0, 1650.3, 1651.9, 1652.3, 1654.0, 1654.2, 1653.8, 1652.7, 1649.5, 1649.7, 1650.9, 1650.9, 1651.2, 1653.1, 1653.1, 1653.7, 1653.5, 1651.4, 1649.4, 1647.0, 1644.6, 1640.5, 1640.9, 1641.8, 1642.2, 1643.1, 1642.9, 1642.5, 1641.1, 1641.6, 1648.7, 1655.2, 1663.2, 1674.8, 1685.9, 1696.8, 1706.9, 1717.1, 1726.5, 1736.1, 1744.4, 1753.3, 1763.6, 1774.5, 1784.1, 1793.7, 1805.7, 1820.3, 1840.7, 1861.2, 1881.9, 1905.4, 1933.3, 1962.5, 1990.0, 2009.9, 2029.8, 2047.4, 2064.3, 2079.3, 2093.9, 2105.8, 2113.4, 2117.9, 2121.3, 2123.0, 2119.4, 2115.3, 2112.1, 2108.8, 2103.6, 2100.8, 2093.9, 2080.7, 2067.9, 2054.4, 2039.8, 2022.2, 1999.4, 1976.4, 1955.9, 1938.6, 1922.1];
-const sma75 = [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, 1682.9, 1686.1, 1688.8, 1691.6, 1694.3, 1696.5, 1698.8, 1700.4, 1702.1, 1704.4, 1707.6, 1713.1, 1718.6, 1725.0, 1732.9, 1742.6, 1752.0, 1761.8, 1771.0, 1779.6, 1787.8, 1796.2, 1804.9, 1813.9, 1821.2, 1827.2, 1832.5, 1836.9, 1840.4, 1842.1, 1843.4, 1845.3, 1846.6, 1847.3, 1849.0, 1851.7, 1854.4, 1857.1, 1859.8, 1862.7, 1866.0, 1867.7, 1869.3, 1871.5, 1874.5, 1877.6];
+const prices = [3290.0, 3275.0, 3310.0, 3333.0, 3382.0, 3443.0, 3542.0, 3475.0, 3598.0, 3633.0, 3474.0, 3348.0, 3462.0, 3562.0, 3547.0, 3700.0, 3677.0, 3730.0, 3643.0, 3889.0, 4125.0, 4102.0, 4216.0, 4209.0, 4401.0, 4482.0, 4209.0, 4345.0, 3645.0, 3550.0, 3408.0, 3359.0, 3308.0, 3368.0, 3287.0, 3128.0, 3146.0, 3264.0, 3160.0, 3205.0, 3228.0, 3246.0, 3259.0, 3356.0, 3474.0, 3699.0, 3874.0, 3861.0, 3859.0, 3842.0, 3796.0, 3635.0, 3637.0, 3519.0, 3401.0, 3415.0, 3363.0, 3370.0, 3489.0, 3503.0, 3555.0, 3577.0, 3537.0, 3533.0, 3540.0, 3673.0, 3615.0, 3626.0, 3408.0, 3405.0, 3446.0, 3684.0, 3618.0, 3630.0, 3624.0, 3550.0, 3532.0, 3601.0, 3581.0, 3391.0, 3371.0, 3273.0, 3229.0, 3241.0, 3268.0, 3408.0, 3447.0, 3506.0, 3531.0, 3901.0, 4016.0, 4129.0, 4063.0, 4088.0, 4444.0, 4607.0, 4665.0, 4634.0, 4972.0, 5131.0, 4889.0, 4796.0, 4867.0, 4457.0, 4241.0, 4367.0, 4325.0, 3940.0, 4089.0, 4100.0, 4000.0, 3936.0, 3978.0, 4182.0, 4340.0, 4154.0, 3926.0, 3971.0, 4108.0, 4154.0];
+const sma25 = [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, 3654.6, 3702.3, 3739.7, 3781.1, 3793.6, 3800.3, 3798.9, 3791.6, 3784.9, 3775.7, 3761.8, 3748.0, 3739.9, 3732.0, 3715.9, 3702.2, 3683.4, 3666.1, 3647.3, 3635.8, 3619.2, 3602.2, 3593.0, 3578.8, 3564.8, 3542.5, 3515.0, 3492.1, 3463.8, 3458.7, 3452.8, 3453.0, 3453.2, 3455.7, 3460.5, 3469.2, 3486.2, 3503.5, 3514.4, 3529.3, 3542.7, 3560.5, 3575.3, 3590.0, 3592.0, 3589.3, 3579.2, 3571.6, 3561.8, 3552.7, 3544.0, 3534.1, 3530.0, 3528.6, 3531.0, 3530.6, 3528.9, 3525.3, 3519.6, 3509.7, 3500.3, 3494.4, 3489.2, 3488.0, 3487.9, 3502.4, 3516.1, 3536.6, 3554.1, 3581.3, 3622.9, 3669.3, 3708.6, 3749.2, 3802.9, 3863.2, 3916.7, 3967.3, 4017.9, 4053.0, 4087.0, 4126.8, 4168.9, 4197.3, 4231.2, 4264.5, 4288.2, 4307.8, 4326.6, 4352.7, 4370.2, 4375.8, 4367.6, 4364.0, 4364.8, 4353.2];
+const sma75 = [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, 3580.4, 3583.8, 3587.3, 3591.1, 3594.4, 3594.6, 3593.6, 3590.0, 3586.7, 3582.0, 3577.1, 3576.2, 3577.5, 3578.1, 3577.7, 3582.4, 3586.7, 3592.7, 3597.1, 3603.1, 3610.5, 3616.9, 3624.4, 3630.0, 3640.1, 3649.9, 3655.3, 3663.1, 3670.1, 3680.9, 3690.1, 3702.9, 3715.8, 3724.2, 3733.8, 3744.7, 3756.3, 3766.8, 3776.3, 3790.0, 3805.1, 3817.5, 3826.5, 3836.0, 3846.0, 3855.1];
 const sma200 = [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null];
-const entryPrice = 1796.0;
-const entryDate = '2026-03-04';
+const entryPrice = 4139.0;
+const entryDate = '2026-03-26';
 
 if (dates.length > 0) {
   const ctx = document.getElementById('priceChart').getContext('2d');
