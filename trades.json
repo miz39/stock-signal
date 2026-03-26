@@ -245,8 +245,8 @@
     "exit_price": null,
     "exit_date": null,
     "status": "open",
-    "high_price": 2663.0,
-    "stop_price": 2556.5
+    "high_price": 2678.0,
+    "stop_price": 2463.8
   },
   {
     "ticker": "8031.T",
@@ -286,11 +286,12 @@
     "entry_price": 27680.0,
     "shares": 1,
     "entry_date": "2026-03-24",
-    "exit_price": null,
-    "exit_date": null,
-    "status": "open",
+    "exit_price": 33220.0,
+    "exit_date": "2026-03-26",
+    "status": "closed",
     "high_price": 33390.0,
-    "stop_price": 32054.4
+    "stop_price": 32054.4,
+    "pnl": 5540.0
   },
   {
     "ticker": "2282.T",
@@ -302,5 +303,17 @@
     "status": "open",
     "high_price": 6962.0,
     "stop_price": 6613.9
+  },
+  {
+    "ticker": "5214.T",
+    "entry_price": 6386.0,
+    "shares": 1,
+    "original_shares": 1,
+    "entry_date": "2026-03-26",
+    "exit_price": null,
+    "exit_date": null,
+    "status": "open",
+    "high_price": 6386.0,
+    "stop_price": 5875.1
   }
 ]

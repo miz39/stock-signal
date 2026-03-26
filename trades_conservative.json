@@ -1,0 +1,38 @@
+[
+  {
+    "ticker": "4005.T",
+    "entry_price": 504.0,
+    "shares": 59,
+    "original_shares": 59,
+    "entry_date": "2026-03-26",
+    "exit_price": null,
+    "exit_date": null,
+    "status": "open",
+    "high_price": 504.0,
+    "stop_price": 463.7
+  },
+  {
+    "ticker": "6952.T",
+    "entry_price": 1460.5,
+    "shares": 20,
+    "original_shares": 20,
+    "entry_date": "2026-03-26",
+    "exit_price": null,
+    "exit_date": null,
+    "status": "open",
+    "high_price": 1460.5,
+    "stop_price": 1343.7
+  },
+  {
+    "ticker": "5214.T",
+    "entry_price": 6381.0,
+    "shares": 4,
+    "original_shares": 4,
+    "entry_date": "2026-03-26",
+    "exit_price": null,
+    "exit_date": null,
+    "status": "open",
+    "high_price": 6381.0,
+    "stop_price": 5870.5
+  }
+]
