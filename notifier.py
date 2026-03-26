@@ -1,8 +1,7 @@
 import time
-
-import requests
 import traceback
 
+import requests
 
 # 銘柄コードから日本語名へのマッピング（日経225から読み込み）
 from nikkei225 import NIKKEI_225
@@ -197,3 +196,71 @@ def format_weekly_embed(weekly: dict, balance: float) -> dict:
             },
         ],
     }
+
+
+# --- Slack Webhook ---
+
+def send_slack(webhook_url: str, text: str) -> bool:
+    """Slack Incoming Webhookでメッセージを送信する。"""
+    if not webhook_url:
+        print("=== Slack通知（コンソール出力） ===")
+        print(text)
+        print("=" * 40)
+        return False
+
+    for attempt in range(3):
+        try:
+            resp = requests.post(webhook_url, json={"text": text}, timeout=10)
+            resp.raise_for_status()
+            return True
+        except Exception as e:
+            print(f"Slack送信エラー（試行{attempt + 1}/3）: {e}")
+            if attempt < 2:
+                time.sleep(2)
+    return False
+
+
+def send_slack_error(webhook_url: str, error: Exception) -> None:
+    """エラー内容をSlackに通知する。"""
+    text = f":x: *エラー発生*\n```\n{traceback.format_exc()}\n```"
+    send_slack(webhook_url, text)
+
+
+def format_signal_mrkdwn(
+    content: str,
+    embeds: list,
+) -> str:
+    """Discord embeds をSlack mrkdwnテキストに変換する。"""
+    lines = [content, ""]
+    for embed in embeds:
+        title = embed.get("title", "")
+        if title:
+            lines.append(f"*{title}*")
+        desc = embed.get("description", "")
+        if desc:
+            # Discord markdown (**bold**) -> Slack mrkdwn (*bold*)
+            desc = desc.replace("**", "*")
+            lines.append(desc)
+        for field in embed.get("fields", []):
+            name = field.get("name", "")
+            value = field.get("value", "").replace("**", "*")
+            lines.append(f"_{name}:_ {value}")
+        lines.append("")
+    return "\n".join(lines).strip()
+
+
+def format_weekly_mrkdwn(weekly: dict, balance: float) -> str:
+    """週次レポートのSlack mrkdwn版。"""
+    total_pnl_pct = (weekly["total_pnl"] / balance) * 100 if balance else 0
+    weekly_pnl_pct = (weekly["weekly_pnl"] / balance) * 100 if balance else 0
+
+    sign_w = "+" if weekly["weekly_pnl"] >= 0 else ""
+    sign_t = "+" if weekly["total_pnl"] >= 0 else ""
+
+    return (
+        f"*週次レポート*\n"
+        f"トレード: {weekly['weekly_trades']}回（勝{weekly['weekly_wins']} 負{weekly['weekly_losses']}）\n"
+        f"週間損益: {sign_w}¥{weekly['weekly_pnl']:,.0f}（{sign_w}{weekly_pnl_pct:.2f}%）\n"
+        f"累計損益: {sign_t}¥{weekly['total_pnl']:,.0f}（{sign_t}{total_pnl_pct:.2f}%）\n"
+        f"最大DD: ¥{weekly['max_drawdown']:,.0f}"
+    )

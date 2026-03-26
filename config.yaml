@@ -32,4 +32,22 @@ discord:
   bot_token: ""
   policy_webhook_url: ""
 
+slack:
+  # SLACK_WEBHOOK_URL 環境変数でも設定可能
+  webhook_url: ""
+
+profiles:
+  conservative:
+    strategy:
+      stop_loss_pct: 0.12
+      profit_tighten_pct: 0.08
+      profit_take_pct: 0.10
+      profit_take_full_pct: 0.20
+  aggressive:
+    strategy:
+      stop_loss_pct: 0.05
+      profit_tighten_pct: 0.03
+      profit_take_pct: 0.06
+      profit_take_full_pct: 0.10
+
 mode: "paper"

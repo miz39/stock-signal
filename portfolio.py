@@ -4,7 +4,21 @@ import os
 from datetime import datetime, date
 from typing import Optional
 
-TRADES_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "trades.json")
+_BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+TRADES_FILE = os.path.join(_BASE_DIR, "trades.json")
+
+
+def set_profile(name: str) -> None:
+    """Switch trades file based on profile name.
+
+    "default" -> trades.json (backward compatible)
+    others   -> trades_{name}.json
+    """
+    global TRADES_FILE
+    if name == "default":
+        TRADES_FILE = os.path.join(_BASE_DIR, "trades.json")
+    else:
+        TRADES_FILE = os.path.join(_BASE_DIR, f"trades_{name}.json")
 
 
 def _load_trades() -> list:

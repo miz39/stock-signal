@@ -9,13 +9,23 @@
 12:35 昼      — main.py 実行
 15:10 引け後  — main.py 実行
 ```
-平日のみ（月〜金）。通知はDiscord Webhook。
+平日のみ（月〜金）。通知はDiscord Webhook + Slack Webhook（並行送信）。
 
-## 現在の戦略パラメータ
-- エントリー: SMA25 > SMA75（ゴールデンクロス）+ RSI 50-65 + 終値 > SMA200
-- 損切り: 初期-8%トレーリングストップ → +6%到達で建値（取得価格）に移動
-- 利確: +8%で50%売却（半分利確）/ +15%で全部売却
-- 1株ポジションは+8%で全株売却
+## 戦略プロファイル
+`--profile` でプロファイルを切り替え可能。各プロファイルは `config.yaml` の `profiles:` で定義し、トップレベルの `strategy:` を継承して差分だけ上書きする。`account:` は全プロファイル共通。
+
+| プロファイル | ストップ | 建値移動 | 半分利確 | 全利確 | 狙い |
+|-------------|---------|---------|---------|-------|------|
+| default（現行） | -8% | +6% | +8% | +15% | バランス型 |
+| conservative | -12% | +8% | +10% | +20% | 広いストップで振り落とし回避 |
+| aggressive | -5% | +3% | +6% | +10% | 回転重視、早めの利確 |
+
+- トレード記録: `trades.json`（default）/ `trades_{name}.json`（それ以外）
+- 実行履歴: `execution_history.json`（default）/ `execution_history_{name}.json`（それ以外）
+- Discord通知にプロファイル名ラベルが付く（default以外）
+
+## エントリー条件（共通）
+- SMA25 > SMA75（ゴールデンクロス）+ RSI 50-65 + 終値 > SMA200
 - 1日最大3エントリー / 同一セクター最大2銘柄
 - 損切り後7日間は同一銘柄再エントリー禁止
 
@@ -28,7 +38,8 @@
 | `risk.py` | ストップロス計算、ポジションサイジング |
 | `nikkei225.py` | 日経225銘柄名マッピング + セクター分類 |
 | `data.py` | yfinance経由の株価データ取得（3回リトライ付き） |
-| `notifier.py` | Discord通知フォーマット（3回リトライ付き） |
+| `notifier.py` | Discord/Slack通知フォーマット（3回リトライ付き） |
+| `cli.py` | CLI ラッパー（Slack Bot から subprocess 経由で呼び出し用、JSON出力） |
 | `holidays.py` | 東証休場日判定（年1回JPXカレンダーを参照して更新） |
 | `generate_dashboard.py` | HTML ダッシュボード + 週次レビュー生成 |
 | `config.yaml` | 全パラメータ設定 |
@@ -43,8 +54,10 @@
 ## データファイル（git管理対象）
 | ファイル | 内容 |
 |----------|------|
-| `trades.json` | 全トレード記録（open/closed） |
-| `execution_history.json` | セッション毎の実行ログ（30日ローテーション） |
+| `trades.json` | default プロファイルのトレード記録 |
+| `trades_{profile}.json` | 各プロファイルのトレード記録 |
+| `execution_history.json` | default プロファイルの実行ログ（30日ローテーション） |
+| `execution_history_{profile}.json` | 各プロファイルの実行ログ |
 
 ## HTML出力（`docs/`）
 - `docs/index.html` — メインダッシュボード
@@ -64,19 +77,38 @@
 
 ## 環境変数
 ```
-DISCORD_WEBHOOK_URL       — シグナル通知用
-DISCORD_BOT_TOKEN         — Bot用（未使用）
-DISCORD_POLICY_WEBHOOK_URL — ポリシー通知用（未使用）
+DISCORD_WEBHOOK_URL       — Discord シグナル通知用
+DISCORD_BOT_TOKEN         — Discord Bot用（未使用）
+DISCORD_POLICY_WEBHOOK_URL — Discord ポリシー通知用（未使用）
+SLACK_WEBHOOK_URL         — Slack シグナル通知用（Incoming Webhook）
 ```
 
 ## コマンド
 ```bash
-# 手動スキャン実行
+# 手動スキャン実行（default プロファイル）
 python3 main.py
+
+# 特定プロファイルで実行
+python3 main.py --profile conservative
+python3 main.py --profile aggressive
+
+# 全プロファイル順次実行（cron用）
+python3 main.py --profile all
 
 # ダッシュボード再生成
 python3 generate_dashboard.py
 
 # バックテスト（旧 vs 新戦略 + インデックス比較）
 python3 backtest_improved.py
+
+# CLI（Slack Bot から利用、JSON出力）
+python3 cli.py rule
+python3 cli.py weekly
+python3 cli.py watchlist
+python3 cli.py status
+python3 cli.py analyze [ticker]
+python3 cli.py backtest ticker [period]
+python3 cli.py simulate [period]
+python3 cli.py buy ticker price shares
+python3 cli.py sell ticker price
 ```
