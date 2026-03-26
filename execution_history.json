@@ -1402,5 +1402,186 @@
       "cash": 7452.8,
       "total_assets": 292905.0
     }
+  },
+  {
+    "timestamp": "2026-03-26T10:08:10.783730+09:00",
+    "date": "2026-03-26",
+    "session": "12:35 昼",
+    "mode": "paper",
+    "scan": {
+      "total": 225,
+      "buy_count": 69,
+      "sell_count": 0,
+      "error_count": 0
+    },
+    "buy_signals": [
+      {
+        "ticker": "8309.T",
+        "name": "三井住友トラスト・ホールディングス",
+        "price": 5124.0,
+        "rsi": 50.1,
+        "reason": "ゴールデンクロス（SMA25 > SMA75）+ RSI適正（50.1）+ 上昇トレンド",
+        "stop_loss": 4867.8,
+        "shares": 1
+      },
+      {
+        "ticker": "6504.T",
+        "name": "富士電機",
+        "price": 11580.0,
+        "rsi": 50.3,
+        "reason": "ゴールデンクロス（SMA25 > SMA75）+ RSI適正（50.3）+ 上昇トレンド",
+        "stop_loss": 11001.0,
+        "shares": 1
+      },
+      {
+        "ticker": "1802.T",
+        "name": "大林組",
+        "price": 3925.0,
+        "rsi": 50.5,
+        "reason": "ゴールデンクロス（SMA25 > SMA75）+ RSI適正（50.5）+ 上昇トレンド",
+        "stop_loss": 3728.8,
+        "shares": 1
+      },
+      {
+        "ticker": "6952.T",
+        "name": "カシオ計算機",
+        "price": 1463.5,
+        "rsi": 50.7,
+        "reason": "ゴールデンクロス（SMA25 > SMA75）+ RSI適正（50.7）+ 上昇トレンド",
+        "stop_loss": 1390.3,
+        "shares": 1
+      },
+      {
+        "ticker": "6113.T",
+        "name": "アマダ",
+        "price": 2342.5,
+        "rsi": 50.7,
+        "reason": "ゴールデンクロス（SMA25 > SMA75）+ RSI適正（50.7）+ 上昇トレンド",
+        "stop_loss": 2225.4,
+        "shares": 1
+      },
+      {
+        "ticker": "8001.T",
+        "name": "伊藤忠商事",
+        "price": 2092.0,
+        "rsi": 50.8,
+        "reason": "ゴールデンクロス（SMA25 > SMA75）+ RSI適正（50.8）+ 上昇トレンド",
+        "stop_loss": 1987.4,
+        "shares": 1
+      },
+      {
+        "ticker": "1963.T",
+        "name": "日揮ホールディングス",
+        "price": 2213.5,
+        "rsi": 51.3,
+        "reason": "ゴールデンクロス（SMA25 > SMA75）+ RSI適正（51.3）+ 上昇トレンド",
+        "stop_loss": 2102.8,
+        "shares": 1
+      },
+      {
+        "ticker": "5631.T",
+        "name": "日本製鋼所",
+        "price": 9701.0,
+        "rsi": 51.3,
+        "reason": "ゴールデンクロス（SMA25 > SMA75）+ RSI適正（51.3）+ 上昇トレンド",
+        "stop_loss": 9215.9,
+        "shares": 1
+      },
+      {
+        "ticker": "5214.T",
+        "name": "日本電気硝子",
+        "price": 6431.0,
+        "rsi": 51.4,
+        "reason": "ゴールデンクロス（SMA25 > SMA75）+ RSI適正（51.4）+ 上昇トレンド",
+        "stop_loss": 6109.4,
+        "shares": 1
+      },
+      {
+        "ticker": "6976.T",
+        "name": "太陽誘電",
+        "price": 4194.0,
+        "rsi": 51.5,
+        "reason": "ゴールデンクロス（SMA25 > SMA75）+ RSI適正（51.5）+ 上昇トレンド",
+        "stop_loss": 3984.3,
+        "shares": 1
+      }
+    ],
+    "sell_signals": [],
+    "executions": {
+      "entries": [],
+      "exits": [],
+      "partial_exits": [],
+      "trailing_stop_updates": [
+        {
+          "ticker": "8233.T",
+          "name": "高島屋",
+          "new_stop": 1821.6,
+          "current_price": 1897.5,
+          "gain_pct": 5.7
+        },
+        {
+          "ticker": "6952.T",
+          "name": "カシオ計算機",
+          "new_stop": 1405.4,
+          "current_price": 1464.0,
+          "gain_pct": 8.0
+        },
+        {
+          "ticker": "4188.T",
+          "name": "三菱ケミカルグループ",
+          "new_stop": 908.7,
+          "current_price": 946.5999755859375,
+          "gain_pct": 4.7
+        },
+        {
+          "ticker": "9502.T",
+          "name": "中部電力",
+          "new_stop": 2525.8,
+          "current_price": 2631.0,
+          "gain_pct": 4.6
+        },
+        {
+          "ticker": "9107.T",
+          "name": "川崎汽船",
+          "new_stop": 2548.8,
+          "current_price": 2655.0,
+          "gain_pct": 3.2
+        },
+        {
+          "ticker": "8031.T",
+          "name": "三井物産",
+          "new_stop": 6126.7,
+          "current_price": 6382.0,
+          "gain_pct": 8.4
+        },
+        {
+          "ticker": "4063.T",
+          "name": "信越化学工業",
+          "new_stop": 6111.4,
+          "current_price": 6366.0,
+          "gain_pct": 4.8
+        },
+        {
+          "ticker": "6752.T",
+          "name": "パナソニック ホールディングス",
+          "new_stop": 2603.0,
+          "current_price": 2711.5,
+          "gain_pct": 8.2
+        },
+        {
+          "ticker": "5801.T",
+          "name": "古河電気工業",
+          "new_stop": 32524.8,
+          "current_price": 33880.0,
+          "gain_pct": 22.4
+        }
+      ]
+    },
+    "portfolio_snapshot": {
+      "open_count": 10,
+      "stock_value": 300828.0,
+      "cash": 7452.8,
+      "total_assets": 308281.0
+    }
   }
 ]
