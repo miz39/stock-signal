@@ -245,19 +245,21 @@
     "exit_price": null,
     "exit_date": null,
     "status": "open",
-    "high_price": 2679.5,
-    "stop_price": 2465.1
+    "high_price": 2693.5,
+    "stop_price": 2478.0
   },
   {
     "ticker": "8031.T",
     "entry_price": 5886.0,
-    "shares": 5,
+    "shares": 3,
     "entry_date": "2026-03-23",
     "exit_price": null,
     "exit_date": null,
     "status": "open",
-    "high_price": 6388.0,
-    "stop_price": 6132.5
+    "high_price": 6390.0,
+    "stop_price": 5878.8,
+    "original_shares": 5,
+    "partial_exit_done": true
   },
   {
     "ticker": "4063.T",
@@ -313,7 +315,20 @@
     "exit_price": null,
     "exit_date": null,
     "status": "open",
-    "high_price": 6386.0,
-    "stop_price": 5875.1
+    "high_price": 6441.0,
+    "stop_price": 5925.7
+  },
+  {
+    "ticker": "8031.T",
+    "entry_price": 5886.0,
+    "shares": 2,
+    "entry_date": "2026-03-23",
+    "exit_price": 6390.0,
+    "exit_date": "2026-03-26",
+    "status": "closed",
+    "pnl": 1008.0,
+    "high_price": 6390.0,
+    "stop_price": 5878.8,
+    "reason": "利確（+8%）"
   }
 ]
