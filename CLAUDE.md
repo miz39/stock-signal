@@ -5,11 +5,11 @@
 
 ## 運用スケジュール（cron）
 ```
-8:50  寄り前  — main.py --profile all 実行
-12:35 昼      — main.py --profile all 実行
-15:10 引け後  — main.py --profile all 実行
+8:50  寄り前  — main.py 実行
+12:35 昼      — main.py 実行
+15:10 引け後  — main.py 実行
 ```
-平日のみ（月〜金）。全プロファイル（default/conservative/aggressive）を順次実行。通知はDiscord Webhook + Slack Webhook（並行送信）。
+平日のみ（月〜金）。cron は default プロファイルのみ実行。通知は Slack Webhook。
 
 ## 戦略プロファイル
 `--profile` でプロファイルを切り替え可能。各プロファイルは `config.yaml` の `profiles:` で定義し、トップレベルの `strategy:` を継承して差分だけ上書きする。`account:` は全プロファイル共通。
