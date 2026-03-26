@@ -4,6 +4,8 @@ trades.json を読んで docs/index.html を生成するダッシュボードジ
 GitHub Pages で公開し、スマホ/PCからペーパートレードの状況を確認できる。
 """
 
+import argparse
+import copy
 import json
 import os
 import yaml
@@ -21,7 +23,7 @@ REVIEW_OUTPUT = os.path.join(DOCS_DIR, "weekly-review.html")
 
 # 銘柄名マッピング
 from nikkei225 import NIKKEI_225
-from portfolio import get_cash_balance
+from portfolio import get_cash_balance, set_profile
 
 
 def load_config() -> dict:
@@ -630,7 +632,7 @@ def generate_policy_section(config: dict = None) -> str:
 """
 
 
-def generate_html(data: dict, config: dict = None) -> str:
+def generate_html(data: dict, config: dict = None, profile_label: str = "") -> str:
     """ダッシュボードHTMLを生成する。"""
     now = datetime.now(JST).strftime("%Y-%m-%d %H:%M JST")
 
@@ -696,7 +698,7 @@ def generate_html(data: dict, config: dict = None) -> str:
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Paper Trade Dashboard</title>
+<title>Paper Trade Dashboard{profile_label}</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
 <style>
 * {{ margin:0; padding:0; box-sizing:border-box; }}
@@ -747,7 +749,7 @@ a.stock-link:hover {{ text-decoration:underline; }}
 </style>
 </head>
 <body>
-<h1>Paper Trade Dashboard</h1>
+<h1>Paper Trade Dashboard{profile_label}</h1>
 <div class="updated">最終更新: {now} &nbsp;|&nbsp; <a href="history.html" style="color:#64B5F6;text-decoration:none">実行履歴 &rarr;</a> &nbsp;|&nbsp; <a href="weekly-review.html" style="color:#64B5F6;text-decoration:none">週次レビュー &rarr;</a></div>
 
 <div class="hero-card">
@@ -1521,13 +1523,42 @@ if (!H.length) {{
     return html
 
 
-def main():
-    config = load_config()
+def _setup_profile_paths(profile_name: str) -> None:
+    """Switch global file paths based on profile name."""
+    global TRADES_FILE, HISTORY_FILE, DOCS_DIR, OUTPUT_FILE, HISTORY_OUTPUT, REVIEW_OUTPUT
+    set_profile(profile_name)
+    if profile_name == "default":
+        TRADES_FILE = os.path.join(BASE_DIR, "trades.json")
+        HISTORY_FILE = os.path.join(BASE_DIR, "execution_history.json")
+        DOCS_DIR = os.path.join(BASE_DIR, "docs")
+    else:
+        TRADES_FILE = os.path.join(BASE_DIR, f"trades_{profile_name}.json")
+        HISTORY_FILE = os.path.join(BASE_DIR, f"execution_history_{profile_name}.json")
+        DOCS_DIR = os.path.join(BASE_DIR, "docs", profile_name)
+    OUTPUT_FILE = os.path.join(DOCS_DIR, "index.html")
+    HISTORY_OUTPUT = os.path.join(DOCS_DIR, "history.html")
+    REVIEW_OUTPUT = os.path.join(DOCS_DIR, "weekly-review.html")
+
+
+def generate_for_profile(profile_name: str, config: dict) -> None:
+    """Generate all dashboard pages for a single profile."""
+    _setup_profile_paths(profile_name)
+
+    # Merge profile-specific strategy overrides
+    if profile_name != "default":
+        profile_overrides = config.get("profiles", {}).get(profile_name, {})
+        if profile_overrides:
+            merged = {**config.get("strategy", {}), **profile_overrides.get("strategy", {})}
+            config = {**config, "strategy": merged}
+
+    profile_label = f" [{profile_name}]" if profile_name != "default" else ""
+    print(f"\n=== Profile: {profile_name} ===")
+
     balance = config.get("account", {}).get("balance", 300000)
     trades = load_trades()
     data = build_dashboard_data(trades, initial_balance=balance)
     os.makedirs(DOCS_DIR, exist_ok=True)
-    html = generate_html(data, config)
+    html = generate_html(data, config, profile_label=profile_label)
     with open(OUTPUT_FILE, "w", encoding="utf-8") as f:
         f.write(html)
     print(f"Dashboard generated: {OUTPUT_FILE}")
@@ -1571,6 +1602,27 @@ def main():
                 f.write(stock_html)
             print("done")
         print(f"  {len(open_trades)} stock pages generated in {stock_dir}/")
+
+
+def main():
+    parser = argparse.ArgumentParser(description="Generate dashboard HTML")
+    parser.add_argument(
+        "--profile",
+        default="default",
+        help='Profile name (default/conservative/aggressive). "all" to generate all profiles.',
+    )
+    args = parser.parse_args()
+
+    config = load_config()
+
+    if args.profile == "all":
+        profiles = ["default"] + list(config.get("profiles", {}).keys())
+    else:
+        profiles = [args.profile]
+
+    for profile_name in profiles:
+        profile_config = copy.deepcopy(config)
+        generate_for_profile(profile_name, profile_config)
 
 
 if __name__ == "__main__":

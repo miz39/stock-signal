@@ -22,6 +22,7 @@ from portfolio import (
     get_performance_summary,
     record_entry,
     record_exit,
+    set_profile,
 )
 from agents.coordinator import analyze_ticker, analyze_all
 from backtest import run_backtest
@@ -30,11 +31,15 @@ from backtest_multi import run_multi_backtest
 CONFIG_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "config.yaml")
 
 
-def load_config() -> dict:
+def load_config(profile_name: str = "default") -> dict:
     with open(CONFIG_PATH, "r") as f:
         config = yaml.safe_load(f)
     if config.get("watchlist") == "nikkei225":
         config["watchlist"] = list(NIKKEI_225.keys())
+    if profile_name != "default":
+        profile_overrides = config.get("profiles", {}).get(profile_name, {})
+        if profile_overrides:
+            config["strategy"] = {**config.get("strategy", {}), **profile_overrides.get("strategy", {})}
     return config
 
 
@@ -48,7 +53,7 @@ def _error(msg):
 
 
 def cmd_analyze(args):
-    config = load_config()
+    config = load_config(args.profile)
     if args.ticker:
         t = args.ticker if args.ticker.endswith(".T") else args.ticker + ".T"
         result = analyze_ticker(t, config)
@@ -60,13 +65,13 @@ def cmd_analyze(args):
 
 def cmd_backtest(args):
     t = args.ticker if args.ticker.endswith(".T") else args.ticker + ".T"
-    config = load_config()
+    config = load_config(args.profile)
     result = run_backtest(t, config, period=args.period)
     _output(result)
 
 
 def cmd_simulate(args):
-    config = load_config()
+    config = load_config(args.profile)
     tickers = list(NIKKEI_225.keys())
     result = run_multi_backtest(tickers, config, period=args.period)
     _output(result)
@@ -77,7 +82,7 @@ def cmd_buy(args):
     price = float(args.price)
     shares = int(args.shares)
 
-    config = load_config()
+    config = load_config(args.profile)
     open_pos = get_open_positions()
     max_pos = config["account"]["max_positions"]
     if len(open_pos) >= max_pos:
@@ -119,7 +124,7 @@ def cmd_sell(args):
 
 
 def cmd_weekly(args):
-    config = load_config()
+    config = load_config(args.profile)
     balance = config["account"]["balance"]
     weekly = get_weekly_report()
     weekly["balance"] = balance
@@ -127,7 +132,7 @@ def cmd_weekly(args):
 
 
 def cmd_watchlist(args):
-    config = load_config()
+    config = load_config(args.profile)
     items = []
     for ticker in config["watchlist"]:
         name = NIKKEI_225.get(ticker, ticker)
@@ -136,7 +141,7 @@ def cmd_watchlist(args):
 
 
 def cmd_rule(args):
-    config = load_config()
+    config = load_config(args.profile)
     strat = config["strategy"]
     acct = config["account"]
     mode = config.get("mode", "paper")
@@ -167,9 +172,10 @@ def cmd_rule(args):
 
 
 def cmd_status(args):
-    config = load_config()
+    config = load_config(args.profile)
     balance = config["account"]["balance"]
     _output({
+        "profile": args.profile,
         "positions": get_open_positions(),
         "cash": get_cash_balance(balance),
         "performance": get_performance_summary(),
@@ -178,6 +184,11 @@ def cmd_status(args):
 
 def main():
     parser = argparse.ArgumentParser(description="stock-signal CLI")
+    parser.add_argument(
+        "--profile",
+        default="default",
+        help="Profile name (default/conservative/aggressive)",
+    )
     sub = parser.add_subparsers(dest="command")
 
     p_analyze = sub.add_parser("analyze")
@@ -208,6 +219,8 @@ def main():
     if not args.command:
         parser.print_help()
         sys.exit(1)
+
+    set_profile(args.profile)
 
     dispatch = {
         "analyze": cmd_analyze,
