@@ -5,11 +5,11 @@
 
 ## 運用スケジュール（cron）
 ```
-8:50  寄り前  — main.py 実行
-12:35 昼      — main.py 実行
-15:10 引け後  — main.py 実行
+8:50  寄り前  — main.py --profile all 実行
+12:35 昼      — main.py --profile all 実行
+15:10 引け後  — main.py --profile all 実行
 ```
-平日のみ（月〜金）。通知はDiscord Webhook + Slack Webhook（並行送信）。
+平日のみ（月〜金）。全プロファイル（default/conservative/aggressive）を順次実行。通知はDiscord Webhook + Slack Webhook（並行送信）。
 
 ## 戦略プロファイル
 `--profile` でプロファイルを切り替え可能。各プロファイルは `config.yaml` の `profiles:` で定義し、トップレベルの `strategy:` を継承して差分だけ上書きする。`account:` は全プロファイル共通。
@@ -60,10 +60,11 @@
 | `execution_history_{profile}.json` | 各プロファイルの実行ログ |
 
 ## HTML出力（`docs/`）
-- `docs/index.html` — メインダッシュボード
-- `docs/weekly-review.html` — 週次振り返りレポート
-- `docs/history.html` — 実行履歴
-- `docs/stock/*.html` — 個別銘柄チャート
+- `docs/index.html` — メインダッシュボード（default）
+- `docs/weekly-review.html` — 週次振り返りレポート（default）
+- `docs/history.html` — 実行履歴（default）
+- `docs/stock/*.html` — 個別銘柄チャート（default）
+- `docs/{profile}/` — 各プロファイルのダッシュボード（conservative, aggressive）
 
 ## レビューワークフロー
 5つのペルソナで多視点レビューを実施する（詳細は `docs/agents/` 参照）:
@@ -97,6 +98,8 @@ python3 main.py --profile all
 
 # ダッシュボード再生成
 python3 generate_dashboard.py
+python3 generate_dashboard.py --profile conservative
+python3 generate_dashboard.py --profile all
 
 # バックテスト（旧 vs 新戦略 + インデックス比較）
 python3 backtest_improved.py
@@ -111,4 +114,8 @@ python3 cli.py backtest ticker [period]
 python3 cli.py simulate [period]
 python3 cli.py buy ticker price shares
 python3 cli.py sell ticker price
+
+# CLI プロファイル指定（--profile はサブコマンドの前に置く）
+python3 cli.py --profile conservative status
+python3 cli.py --profile aggressive rule
 ```
