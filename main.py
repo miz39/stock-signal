@@ -106,9 +106,9 @@ def get_session_name() -> str:
     minute = now.minute
     current = hour * 60 + minute
 
-    if current < 10 * 60:       # 10:00 より前
+    if current < 11 * 60:       # 11:00 より前
         return "8:50 寄り前"
-    elif current < 14 * 60:     # 14:00 より前
+    elif current < 15 * 60:     # 15:00 より前（Macスリープ遅延を考慮）
         return "12:35 昼"
     else:
         return "15:10 引け後"
@@ -463,8 +463,8 @@ def run(profile_name: str = "default"):
     # 1回のWebhookで送信（最大10 embeds）
     send_discord(webhook_url, embeds[:10], content=content)
 
-    # Slack通知（Discord embedsをmrkdwnに変換）
-    if slack_webhook_url:
+    # Slack通知（defaultプロファイルのみ）
+    if slack_webhook_url and profile_name == "default":
         slack_text = format_signal_mrkdwn(content, embeds[:10])
         if is_friday_close():
             weekly = get_weekly_report()
