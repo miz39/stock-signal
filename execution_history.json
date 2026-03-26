@@ -1585,7 +1585,7 @@
     }
   },
   {
-    "timestamp": "2026-03-26T14:05:53.793056+09:00",
+    "timestamp": "2026-03-26T15:10:38.173507+09:00",
     "date": "2026-03-26",
     "session": "15:10 引け後",
     "profile": "default",
@@ -1598,67 +1598,85 @@
     },
     "buy_signals": [
       {
-        "ticker": "4005.T",
-        "name": "住友化学",
-        "price": 504.1000061035156,
-        "rsi": 50.2,
-        "reason": "ゴールデンクロス（SMA25 > SMA75）+ RSI適正（50.2）+ 上昇トレンド",
-        "stop_loss": 463.8,
+        "ticker": "6976.T",
+        "name": "太陽誘電",
+        "price": 4139.0,
+        "rsi": 50.0,
+        "reason": "ゴールデンクロス（SMA25 > SMA75）+ RSI適正（50.0）+ 上昇トレンド",
+        "stop_loss": 3807.9,
         "shares": 1
       },
       {
-        "ticker": "6952.T",
-        "name": "カシオ計算機",
-        "price": 1461.0,
-        "rsi": 50.4,
-        "reason": "ゴールデンクロス（SMA25 > SMA75）+ RSI適正（50.4）+ 上昇トレンド",
-        "stop_loss": 1344.1,
-        "shares": 1
+        "ticker": "4005.T",
+        "name": "住友化学",
+        "price": 503.5,
+        "rsi": 50.1,
+        "reason": "ゴールデンクロス（SMA25 > SMA75）+ RSI適正（50.1）+ 上昇トレンド",
+        "stop_loss": 463.2,
+        "shares": 6
       },
       {
         "ticker": "5214.T",
         "name": "日本電気硝子",
-        "price": 6386.0,
-        "rsi": 50.5,
-        "reason": "ゴールデンクロス（SMA25 > SMA75）+ RSI適正（50.5）+ 上昇トレンド",
-        "stop_loss": 5875.1,
+        "price": 6365.0,
+        "rsi": 50.1,
+        "reason": "ゴールデンクロス（SMA25 > SMA75）+ RSI適正（50.1）+ 上昇トレンド",
+        "stop_loss": 5855.8,
         "shares": 1
       },
       {
         "ticker": "4911.T",
         "name": "資生堂",
-        "price": 3011.0,
-        "rsi": 50.6,
-        "reason": "ゴールデンクロス（SMA25 > SMA75）+ RSI適正（50.6）+ 上昇トレンド",
-        "stop_loss": 2770.1,
+        "price": 3005.0,
+        "rsi": 50.2,
+        "reason": "ゴールデンクロス（SMA25 > SMA75）+ RSI適正（50.2）+ 上昇トレンド",
+        "stop_loss": 2764.6,
         "shares": 1
       },
       {
-        "ticker": "6976.T",
-        "name": "太陽誘電",
-        "price": 4163.0,
-        "rsi": 50.7,
-        "reason": "ゴールデンクロス（SMA25 > SMA75）+ RSI適正（50.7）+ 上昇トレンド",
-        "stop_loss": 3830.0,
+        "ticker": "8308.T",
+        "name": "りそなホールディングス",
+        "price": 1808.5,
+        "rsi": 50.3,
+        "reason": "ゴールデンクロス（SMA25 > SMA75）+ RSI適正（50.3）+ 上昇トレンド",
+        "stop_loss": 1663.8,
         "shares": 1
       },
       {
         "ticker": "2768.T",
         "name": "双日",
-        "price": 6319.0,
-        "rsi": 50.7,
-        "reason": "ゴールデンクロス（SMA25 > SMA75）+ RSI適正（50.7）+ 上昇トレンド",
-        "stop_loss": 5813.5,
+        "price": 6306.0,
+        "rsi": 50.4,
+        "reason": "ゴールデンクロス（SMA25 > SMA75）+ RSI適正（50.4）+ 上昇トレンド",
+        "stop_loss": 5801.5,
         "shares": 1
       },
       {
         "ticker": "5711.T",
         "name": "三菱マテリアル",
-        "price": 5133.0,
+        "price": 5114.0,
+        "rsi": 50.5,
+        "reason": "ゴールデンクロス（SMA25 > SMA75）+ RSI適正（50.5）+ 上昇トレンド",
+        "stop_loss": 4704.9,
+        "shares": 1
+      },
+      {
+        "ticker": "8697.T",
+        "name": "日本取引所グループ",
+        "price": 1893.0,
+        "rsi": 50.7,
+        "reason": "ゴールデンクロス（SMA25 > SMA75）+ RSI適正（50.7）+ 上昇トレンド",
+        "stop_loss": 1741.6,
+        "shares": 1
+      },
+      {
+        "ticker": "3401.T",
+        "name": "帝人",
+        "price": 1595.0,
         "rsi": 50.8,
         "reason": "ゴールデンクロス（SMA25 > SMA75）+ RSI適正（50.8）+ 上昇トレンド",
-        "stop_loss": 4722.4,
-        "shares": 1
+        "stop_loss": 1467.4,
+        "shares": 2
       },
       {
         "ticker": "2269.T",
@@ -1668,88 +1686,42 @@
         "reason": "ゴールデンクロス（SMA25 > SMA75）+ RSI適正（50.8）+ 上昇トレンド",
         "stop_loss": 3590.8,
         "shares": 1
-      },
-      {
-        "ticker": "9503.T",
-        "name": "関西電力",
-        "price": 2603.5,
-        "rsi": 50.9,
-        "reason": "ゴールデンクロス（SMA25 > SMA75）+ RSI適正（50.9）+ 上昇トレンド",
-        "stop_loss": 2395.2,
-        "shares": 1
-      },
-      {
-        "ticker": "4004.T",
-        "name": "レゾナック・ホールディングス",
-        "price": 10955.0,
-        "rsi": 51.3,
-        "reason": "ゴールデンクロス（SMA25 > SMA75）+ RSI適正（51.3）+ 上昇トレンド",
-        "stop_loss": 10078.6,
-        "shares": 1
       }
     ],
     "sell_signals": [],
     "executions": {
-      "entries": [
-        {
-          "ticker": "5214.T",
-          "name": "日本電気硝子",
-          "price": 6386.0,
-          "shares": 1,
-          "stop_loss": 5875.1,
-          "rsi": 50.5,
-          "reason": "ゴールデンクロス（SMA25 > SMA75）+ RSI適正（50.5）+ 上昇トレンド"
-        }
-      ],
-      "exits": [
-        {
-          "ticker": "5801.T",
-          "name": "古河電気工業",
-          "price": 33220.0,
-          "reason": "全部利確（+20.0%）",
-          "entry_price": 27680.0,
-          "shares": 1,
-          "pnl": 5540.0,
-          "pnl_pct": 20.0
-        }
-      ],
+      "entries": [],
+      "exits": [],
       "partial_exits": [],
       "trailing_stop_updates": [
         {
           "ticker": "6952.T",
           "name": "カシオ計算機",
           "new_stop": 1404.5,
-          "current_price": 1461.0,
-          "gain_pct": 7.7
+          "current_price": 1456.0,
+          "gain_pct": 7.4
         },
         {
           "ticker": "8031.T",
           "name": "三井物産",
           "new_stop": 6132.5,
-          "current_price": 6303.0,
-          "gain_pct": 7.1
+          "current_price": 6341.0,
+          "gain_pct": 7.7
         },
         {
           "ticker": "6752.T",
           "name": "パナソニック ホールディングス",
           "new_stop": 2594.4,
-          "current_price": 2688.5,
-          "gain_pct": 7.3
-        },
-        {
-          "ticker": "5801.T",
-          "name": "古河電気工業",
-          "new_stop": 32054.4,
-          "current_price": 33220.0,
-          "gain_pct": 20.0
+          "current_price": 2680.0,
+          "gain_pct": 7.0
         }
       ]
     },
     "portfolio_snapshot": {
       "open_count": 10,
-      "stock_value": 270955.0,
+      "stock_value": 270580.0,
       "cash": 34286.8,
-      "total_assets": 305242.0
+      "total_assets": 304867.0
     }
   }
 ]
