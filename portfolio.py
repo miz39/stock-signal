@@ -30,7 +30,7 @@ def _save_trades(trades: list) -> None:
 def record_entry(ticker: str, price: float, shares: int, entry_date: str = None) -> dict:
     """仮想エントリーを記録する。"""
     trades = _load_trades()
-    stop_price = round(price * 0.95, 1)  # 初期ストップ: -5%
+    stop_price = round(price * 0.92, 1)  # 初期ストップ: -8%
     trade = {
         "ticker": ticker,
         "entry_price": price,
@@ -48,7 +48,7 @@ def record_entry(ticker: str, price: float, shares: int, entry_date: str = None)
     return trade
 
 
-def update_trailing_stop(ticker: str, current_price: float, trail_pct: float = 0.05) -> Optional[dict]:
+def update_trailing_stop(ticker: str, current_price: float, trail_pct: float = 0.08) -> Optional[dict]:
     """トレーリングストップを更新する。高値更新時にストップも引き上げ。"""
     trades = _load_trades()
     for trade in trades:
@@ -57,6 +57,19 @@ def update_trailing_stop(ticker: str, current_price: float, trail_pct: float = 0
             if current_price > high:
                 trade["high_price"] = current_price
                 trade["stop_price"] = round(current_price * (1 - trail_pct), 1)
+                _save_trades(trades)
+            return trade
+    return None
+
+
+def move_stop_to_breakeven(ticker: str) -> Optional[dict]:
+    """ストップを建値（取得価格）に移動する。"""
+    trades = _load_trades()
+    for trade in trades:
+        if trade["ticker"] == ticker and trade["status"] == "open":
+            entry = trade["entry_price"]
+            if trade["stop_price"] < entry:
+                trade["stop_price"] = round(entry, 1)
                 _save_trades(trades)
             return trade
     return None
@@ -83,7 +96,7 @@ def record_partial_exit(ticker: str, exit_shares: int, price: float, exit_date: 
                 "pnl": round((price - trade["entry_price"]) * exit_shares, 1),
                 "high_price": trade.get("high_price", trade["entry_price"]),
                 "stop_price": trade["stop_price"],
-                "reason": "利確（+7%）",
+                "reason": "利確（+8%）",
             }
             trades.append(closed_trade)
 

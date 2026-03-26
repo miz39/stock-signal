@@ -1,7 +1,7 @@
 import math
 
 
-def calculate_stop_loss(entry_price: float, pct: float = 0.05) -> float:
+def calculate_stop_loss(entry_price: float, pct: float = 0.08) -> float:
     """損切り価格を計算する。"""
     return round(entry_price * (1 - pct), 1)
 
