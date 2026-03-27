@@ -1723,5 +1723,284 @@
       "cash": 34286.8,
       "total_assets": 304867.0
     }
+  },
+  {
+    "timestamp": "2026-03-27T14:25:43.668621+09:00",
+    "date": "2026-03-27",
+    "session": "12:35 昼",
+    "profile": "default",
+    "mode": "paper",
+    "scan": {
+      "total": 225,
+      "buy_count": 60,
+      "sell_count": 7,
+      "error_count": 1
+    },
+    "buy_signals": [
+      {
+        "ticker": "8331.T",
+        "name": "千葉銀行",
+        "price": 2095.0,
+        "rsi": 50.1,
+        "reason": "ゴールデンクロス（SMA25 > SMA75）+ RSI適正（50.1）+ 上昇トレンド",
+        "stop_loss": 1927.4,
+        "shares": 1
+      },
+      {
+        "ticker": "8309.T",
+        "name": "三井住友トラスト・ホールディングス",
+        "price": 5133.0,
+        "rsi": 50.4,
+        "reason": "ゴールデンクロス（SMA25 > SMA75）+ RSI適正（50.4）+ 上昇トレンド",
+        "stop_loss": 4722.4,
+        "shares": 1
+      },
+      {
+        "ticker": "3086.T",
+        "name": "J.フロント リテイリング",
+        "price": 2448.5,
+        "rsi": 50.6,
+        "reason": "ゴールデンクロス（SMA25 > SMA75）+ RSI適正（50.6）+ 上昇トレンド",
+        "stop_loss": 2252.6,
+        "shares": 1
+      },
+      {
+        "ticker": "6178.T",
+        "name": "日本郵政",
+        "price": 1865.0,
+        "rsi": 50.6,
+        "reason": "ゴールデンクロス（SMA25 > SMA75）+ RSI適正（50.6）+ 上昇トレンド",
+        "stop_loss": 1715.8,
+        "shares": 1
+      },
+      {
+        "ticker": "5706.T",
+        "name": "三井金属鉱業",
+        "price": 30570.0,
+        "rsi": 50.7,
+        "reason": "ゴールデンクロス（SMA25 > SMA75）+ RSI適正（50.7）+ 上昇トレンド",
+        "stop_loss": 28124.4,
+        "shares": 1
+      },
+      {
+        "ticker": "8750.T",
+        "name": "第一生命ホールディングス",
+        "price": 1459.5,
+        "rsi": 51.2,
+        "reason": "ゴールデンクロス（SMA25 > SMA75）+ RSI適正（51.2）+ 上昇トレンド",
+        "stop_loss": 1342.7,
+        "shares": 1
+      },
+      {
+        "ticker": "7951.T",
+        "name": "ヤマハ",
+        "price": 1141.0,
+        "rsi": 51.3,
+        "reason": "ゴールデンクロス（SMA25 > SMA75）+ RSI適正（51.3）+ 上昇トレンド",
+        "stop_loss": 1049.7,
+        "shares": 1
+      },
+      {
+        "ticker": "8053.T",
+        "name": "住友商事",
+        "price": 5976.0,
+        "rsi": 51.3,
+        "reason": "ゴールデンクロス（SMA25 > SMA75）+ RSI適正（51.3）+ 上昇トレンド",
+        "stop_loss": 5497.9,
+        "shares": 1
+      },
+      {
+        "ticker": "8697.T",
+        "name": "日本取引所グループ",
+        "price": 1900.0,
+        "rsi": 51.5,
+        "reason": "ゴールデンクロス（SMA25 > SMA75）+ RSI適正（51.5）+ 上昇トレンド",
+        "stop_loss": 1748.0,
+        "shares": 1
+      },
+      {
+        "ticker": "5333.T",
+        "name": "日本ガイシ",
+        "price": 4124.0,
+        "rsi": 51.5,
+        "reason": "ゴールデンクロス（SMA25 > SMA75）+ RSI適正（51.5）+ 上昇トレンド",
+        "stop_loss": 3794.1,
+        "shares": 1
+      }
+    ],
+    "sell_signals": [
+      {
+        "ticker": "5401.T",
+        "name": "日本製鉄",
+        "price": 601.4000244140625,
+        "reason": "デッドクロス（SMA25 < SMA75）"
+      },
+      {
+        "ticker": "5406.T",
+        "name": "神戸製鋼所",
+        "price": 1967.0,
+        "reason": "デッドクロス（SMA25 < SMA75）"
+      },
+      {
+        "ticker": "5411.T",
+        "name": "JFEホールディングス",
+        "price": 1894.5,
+        "reason": "デッドクロス（SMA25 < SMA75）"
+      },
+      {
+        "ticker": "6472.T",
+        "name": "NTN",
+        "price": 341.0,
+        "reason": "デッドクロス（SMA25 < SMA75）"
+      },
+      {
+        "ticker": "6479.T",
+        "name": "ミネベアミツミ",
+        "price": 2710.5,
+        "reason": "デッドクロス（SMA25 < SMA75）"
+      },
+      {
+        "ticker": "7751.T",
+        "name": "キヤノン",
+        "price": 4455.0,
+        "reason": "デッドクロス（SMA25 < SMA75）"
+      },
+      {
+        "ticker": "8604.T",
+        "name": "野村ホールディングス",
+        "price": 1268.5,
+        "reason": "デッドクロス（SMA25 < SMA75）"
+      }
+    ],
+    "executions": {
+      "entries": [
+        {
+          "ticker": "8331.T",
+          "name": "千葉銀行",
+          "price": 2095.0,
+          "shares": 1,
+          "stop_loss": 1927.4,
+          "rsi": 50.1,
+          "reason": "ゴールデンクロス（SMA25 > SMA75）+ RSI適正（50.1）+ 上昇トレンド"
+        },
+        {
+          "ticker": "3086.T",
+          "name": "J.フロント リテイリング",
+          "price": 2448.5,
+          "shares": 1,
+          "stop_loss": 2252.6,
+          "rsi": 50.6,
+          "reason": "ゴールデンクロス（SMA25 > SMA75）+ RSI適正（50.6）+ 上昇トレンド"
+        },
+        {
+          "ticker": "6178.T",
+          "name": "日本郵政",
+          "price": 1865.0,
+          "shares": 1,
+          "stop_loss": 1715.8,
+          "rsi": 50.6,
+          "reason": "ゴールデンクロス（SMA25 > SMA75）+ RSI適正（50.6）+ 上昇トレンド"
+        }
+      ],
+      "exits": [
+        {
+          "ticker": "6479.T",
+          "name": "ミネベアミツミ",
+          "price": 2712.5,
+          "reason": "トレーリングストップ発動",
+          "entry_price": 2920.5,
+          "shares": 10,
+          "pnl": -2080.0,
+          "pnl_pct": -7.1
+        },
+        {
+          "ticker": "5406.T",
+          "name": "神戸製鋼所",
+          "price": 1968.0,
+          "reason": "トレーリングストップ発動",
+          "entry_price": 2054.5,
+          "shares": 14,
+          "pnl": -1211.0,
+          "pnl_pct": -4.2
+        },
+        {
+          "ticker": "6472.T",
+          "name": "NTN",
+          "price": 338.8999938964844,
+          "reason": "トレーリングストップ発動",
+          "entry_price": 366.1000061035156,
+          "shares": 81,
+          "pnl": -2203.2,
+          "pnl_pct": -7.4
+        },
+        {
+          "ticker": "5401.T",
+          "name": "日本製鉄",
+          "price": 601.4000244140625,
+          "reason": "デッドクロス（SMA25 < SMA75）",
+          "entry_price": 605.2000122070312,
+          "shares": 49,
+          "pnl": -186.2,
+          "pnl_pct": -0.6
+        },
+        {
+          "ticker": "5411.T",
+          "name": "JFEホールディングス",
+          "price": 1894.5,
+          "reason": "デッドクロス（SMA25 < SMA75）",
+          "entry_price": 1968.0,
+          "shares": 15,
+          "pnl": -1102.5,
+          "pnl_pct": -3.7
+        },
+        {
+          "ticker": "7751.T",
+          "name": "キヤノン",
+          "price": 4455.0,
+          "reason": "デッドクロス（SMA25 < SMA75）",
+          "entry_price": 4495.0,
+          "shares": 6,
+          "pnl": -240.0,
+          "pnl_pct": -0.9
+        },
+        {
+          "ticker": "8604.T",
+          "name": "野村ホールディングス",
+          "price": 1268.5,
+          "reason": "デッドクロス（SMA25 < SMA75）",
+          "entry_price": 1218.5,
+          "shares": 24,
+          "pnl": 1200.0,
+          "pnl_pct": 4.1
+        }
+      ],
+      "partial_exits": [
+        {
+          "ticker": "4005.T",
+          "name": "住友化学",
+          "shares": 31,
+          "price": 521.5,
+          "entry_price": 475.29998779296875,
+          "gain_pct": 9.7,
+          "total_shares": 63,
+          "pnl": 1432.2
+        }
+      ],
+      "trailing_stop_updates": [
+        {
+          "ticker": "4005.T",
+          "name": "住友化学",
+          "new_stop": 475.7,
+          "current_price": 521.5,
+          "gain_pct": 9.7
+        }
+      ]
+    },
+    "portfolio_snapshot": {
+      "open_count": 6,
+      "stock_value": 82149.0,
+      "cash": 201570.9,
+      "total_assets": 283720.0
+    }
   }
 ]
