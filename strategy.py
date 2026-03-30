@@ -56,16 +56,27 @@ def generate_signal(df: pd.DataFrame, config: dict) -> dict:
         result["reason"] = "データ不足（様子見）"
         return result
 
+    # 出来高（20日平均）
+    avg_volume = None
+    if "Volume" in df.columns:
+        avg_volume = float(df["Volume"].rolling(window=20).mean().iloc[-1])
+    result["avg_volume"] = avg_volume
+
     # 買いシグナル
     rsi_entry_min = strat.get("rsi_entry_min", 50)
     rsi_entry_max = strat.get("rsi_entry_max", 65)
+    min_volume = strat.get("min_volume", 0)
     if (
         latest_sma_short > latest_sma_long
         and rsi_entry_min <= latest_rsi <= rsi_entry_max
         and latest_close > latest_sma_trend
     ):
-        result["signal"] = "BUY"
-        result["reason"] = f"ゴールデンクロス（SMA{strat['sma_short']} > SMA{strat['sma_long']}）+ RSI適正（{latest_rsi:.1f}）+ 上昇トレンド"
+        if min_volume > 0 and avg_volume is not None and avg_volume < min_volume:
+            result["signal"] = "HOLD"
+            result["reason"] = f"出来高不足（20日平均 {avg_volume:,.0f}株 < 基準 {min_volume:,.0f}株）"
+        else:
+            result["signal"] = "BUY"
+            result["reason"] = f"ゴールデンクロス（SMA{strat['sma_short']} > SMA{strat['sma_long']}）+ RSI適正（{latest_rsi:.1f}）+ 上昇トレンド"
 
     # 売りシグナル
     elif latest_sma_short < latest_sma_long or latest_rsi > 75:

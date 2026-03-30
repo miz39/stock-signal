@@ -160,6 +160,7 @@ def cmd_rule(args):
             "profit_tighten_pct": strat.get("profit_tighten_pct", 0.06),
             "profit_take_pct": strat.get("profit_take_pct", 0.08),
             "profit_take_full_pct": strat.get("profit_take_full_pct", 0.15),
+            "min_volume": strat.get("min_volume", 0),
         },
         "account": {
             "risk_per_trade": acct["risk_per_trade"],

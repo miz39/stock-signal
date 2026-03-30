@@ -24,6 +24,7 @@ strategy:
   profit_take_pct: 0.08         # +8%で半分利確
   profit_take_ratio: 0.5        # 利確時の売却比率（50%）
   profit_take_full_pct: 0.15    # +15%で全部利確
+  min_volume: 500000             # 直近20日平均出来高が50万株以上
 
 discord:
   # シークレットは環境変数から読み込み（systemd EnvironmentFile or export）

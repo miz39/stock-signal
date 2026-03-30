@@ -13,6 +13,7 @@ import logging.handlers
 import os
 import sys
 import json
+import tempfile
 import yaml
 from datetime import datetime, date, timezone, timedelta
 
@@ -613,12 +614,17 @@ def save_execution_history(record: dict, profile_name: str = "default"):
     cutoff = (datetime.now(timezone(timedelta(hours=9))) - timedelta(days=30)).strftime("%Y-%m-%d")
     history = [h for h in history if h.get("date", "") >= cutoff]
 
-    with open(history_file, "w", encoding="utf-8") as f:
-        fcntl.flock(f, fcntl.LOCK_EX)
-        try:
+    dir_name = os.path.dirname(history_file)
+    fd, tmp_path = tempfile.mkstemp(dir=dir_name, suffix=".tmp")
+    try:
+        with os.fdopen(fd, "w") as f:
             json.dump(history, f, ensure_ascii=False, indent=2)
-        finally:
-            fcntl.flock(f, fcntl.LOCK_UN)
+            f.flush()
+            os.fsync(f.fileno())
+        os.replace(tmp_path, history_file)
+    except:
+        os.unlink(tmp_path)
+        raise
     logger.info(f"実行履歴を保存: {history_file}（{len(history)}件）")
 
 

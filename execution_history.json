@@ -2002,5 +2002,170 @@
       "cash": 201570.9,
       "total_assets": 283720.0
     }
+  },
+  {
+    "timestamp": "2026-03-31T08:50:41.853435+09:00",
+    "date": "2026-03-31",
+    "session": "8:50 寄り前",
+    "profile": "default",
+    "mode": "paper",
+    "scan": {
+      "total": 225,
+      "buy_count": 45,
+      "sell_count": 0,
+      "error_count": 0
+    },
+    "buy_signals": [
+      {
+        "ticker": "8725.T",
+        "name": "MS&ADインシュアランスグループホールディングス",
+        "price": 4021.0,
+        "rsi": 50.0,
+        "reason": "ゴールデンクロス（SMA25 > SMA75）+ RSI適正（50.0）+ 上昇トレンド",
+        "stop_loss": 3699.3,
+        "shares": 5
+      },
+      {
+        "ticker": "3099.T",
+        "name": "三越伊勢丹ホールディングス",
+        "price": 2862.0,
+        "rsi": 50.1,
+        "reason": "ゴールデンクロス（SMA25 > SMA75）+ RSI適正（50.1）+ 上昇トレンド",
+        "stop_loss": 2633.0,
+        "shares": 7
+      },
+      {
+        "ticker": "6770.T",
+        "name": "アルプスアルパイン",
+        "price": 2138.5,
+        "rsi": 50.6,
+        "reason": "ゴールデンクロス（SMA25 > SMA75）+ RSI適正（50.6）+ 上昇トレンド",
+        "stop_loss": 1967.4,
+        "shares": 9
+      },
+      {
+        "ticker": "2768.T",
+        "name": "双日",
+        "price": 6251.0,
+        "rsi": 50.7,
+        "reason": "ゴールデンクロス（SMA25 > SMA75）+ RSI適正（50.7）+ 上昇トレンド",
+        "stop_loss": 5750.9,
+        "shares": 3
+      },
+      {
+        "ticker": "9005.T",
+        "name": "東急",
+        "price": 1870.5,
+        "rsi": 50.8,
+        "reason": "ゴールデンクロス（SMA25 > SMA75）+ RSI適正（50.8）+ 上昇トレンド",
+        "stop_loss": 1720.9,
+        "shares": 10
+      },
+      {
+        "ticker": "3401.T",
+        "name": "帝人",
+        "price": 1579.0,
+        "rsi": 51.7,
+        "reason": "ゴールデンクロス（SMA25 > SMA75）+ RSI適正（51.7）+ 上昇トレンド",
+        "stop_loss": 1452.7,
+        "shares": 12
+      },
+      {
+        "ticker": "2802.T",
+        "name": "味の素",
+        "price": 4447.0,
+        "rsi": 52.6,
+        "reason": "ゴールデンクロス（SMA25 > SMA75）+ RSI適正（52.6）+ 上昇トレンド",
+        "stop_loss": 4091.2,
+        "shares": 4
+      },
+      {
+        "ticker": "2269.T",
+        "name": "明治ホールディングス",
+        "price": 3878.0,
+        "rsi": 53.0,
+        "reason": "ゴールデンクロス（SMA25 > SMA75）+ RSI適正（53.0）+ 上昇トレンド",
+        "stop_loss": 3567.8,
+        "shares": 5
+      },
+      {
+        "ticker": "6963.T",
+        "name": "ローム",
+        "price": 3125.0,
+        "rsi": 53.0,
+        "reason": "ゴールデンクロス（SMA25 > SMA75）+ RSI適正（53.0）+ 上昇トレンド",
+        "stop_loss": 2875.0,
+        "shares": 6
+      },
+      {
+        "ticker": "8795.T",
+        "name": "T&Dホールディングス",
+        "price": 3880.0,
+        "rsi": 53.3,
+        "reason": "ゴールデンクロス（SMA25 > SMA75）+ RSI適正（53.3）+ 上昇トレンド",
+        "stop_loss": 3569.6,
+        "shares": 5
+      }
+    ],
+    "sell_signals": [],
+    "executions": {
+      "entries": [
+        {
+          "ticker": "3099.T",
+          "name": "三越伊勢丹ホールディングス",
+          "price": 2862.0,
+          "shares": 7,
+          "stop_loss": 2633.0,
+          "rsi": 50.1,
+          "reason": "ゴールデンクロス（SMA25 > SMA75）+ RSI適正（50.1）+ 上昇トレンド"
+        },
+        {
+          "ticker": "6770.T",
+          "name": "アルプスアルパイン",
+          "price": 2138.5,
+          "shares": 9,
+          "stop_loss": 1967.4,
+          "rsi": 50.6,
+          "reason": "ゴールデンクロス（SMA25 > SMA75）+ RSI適正（50.6）+ 上昇トレンド"
+        },
+        {
+          "ticker": "2768.T",
+          "name": "双日",
+          "price": 6251.0,
+          "shares": 3,
+          "stop_loss": 5750.9,
+          "rsi": 50.7,
+          "reason": "ゴールデンクロス（SMA25 > SMA75）+ RSI適正（50.7）+ 上昇トレンド"
+        }
+      ],
+      "exits": [
+        {
+          "ticker": "4042.T",
+          "name": "東ソー",
+          "price": 2317.0,
+          "reason": "トレーリングストップ発動",
+          "entry_price": 2412.5,
+          "shares": 12,
+          "pnl": -1146.0,
+          "pnl_pct": -4.0
+        }
+      ],
+      "partial_exits": [],
+      "trailing_stop_updates": [
+        {
+          "ticker": "4005.T",
+          "name": "住友化学",
+          "new_stop": 479.8,
+          "current_price": 511.79998779296875,
+          "gain_pct": 7.7
+        }
+      ]
+    },
+    "portfolio_snapshot": {
+      "open_count": 8,
+      "stock_value": 110533.0,
+      "cash": 171341.4,
+      "total_assets": 281874.0
+    }
   }
 ]

@@ -1,6 +1,7 @@
 import fcntl
 import json
 import os
+import tempfile
 from datetime import datetime, date
 from typing import Optional
 
@@ -33,12 +34,17 @@ def _load_trades() -> list:
 
 
 def _save_trades(trades: list) -> None:
-    with open(TRADES_FILE, "w") as f:
-        fcntl.flock(f, fcntl.LOCK_EX)
-        try:
+    dir_name = os.path.dirname(TRADES_FILE)
+    fd, tmp_path = tempfile.mkstemp(dir=dir_name, suffix=".tmp")
+    try:
+        with os.fdopen(fd, "w") as f:
             json.dump(trades, f, indent=2, ensure_ascii=False, default=str)
-        finally:
-            fcntl.flock(f, fcntl.LOCK_UN)
+            f.flush()
+            os.fsync(f.fileno())
+        os.replace(tmp_path, TRADES_FILE)
+    except:
+        os.unlink(tmp_path)
+        raise
 
 
 def record_entry(ticker: str, price: float, shares: int, entry_date: str = None) -> dict:
