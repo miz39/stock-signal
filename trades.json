@@ -153,8 +153,8 @@
     "exit_price": null,
     "exit_date": null,
     "status": "open",
-    "high_price": 6049.0,
-    "stop_price": 5565.1
+    "high_price": 6054.0,
+    "stop_price": 5569.7
   },
   {
     "ticker": "4005.T",
@@ -216,8 +216,8 @@
     "exit_price": null,
     "exit_date": null,
     "status": "open",
-    "high_price": 2266.5,
-    "stop_price": 2085.2
+    "high_price": 2287.0,
+    "stop_price": 2104.0
   },
   {
     "ticker": "7951.T",
@@ -241,8 +241,8 @@
     "exit_price": null,
     "exit_date": null,
     "status": "open",
-    "high_price": 1012.0,
-    "stop_price": 931.0
+    "high_price": 1013.0,
+    "stop_price": 932.0
   },
   {
     "ticker": "4502.T",
@@ -265,8 +265,8 @@
     "exit_price": null,
     "exit_date": null,
     "status": "open",
-    "high_price": 3069.0,
-    "stop_price": 2823.5
+    "high_price": 3070.0,
+    "stop_price": 2824.4
   },
   {
     "ticker": "2871.T",
