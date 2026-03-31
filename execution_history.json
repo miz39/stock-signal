@@ -2339,5 +2339,123 @@
       "cash": 152945.4,
       "total_assets": 281551.0
     }
+  },
+  {
+    "timestamp": "2026-04-01T08:50:41.750982+09:00",
+    "date": "2026-04-01",
+    "session": "8:50 寄り前",
+    "profile": "default",
+    "mode": "paper",
+    "scan": {
+      "total": 225,
+      "buy_count": 39,
+      "sell_count": 0,
+      "error_count": 0
+    },
+    "buy_signals": [
+      {
+        "ticker": "8750.T",
+        "name": "第一生命ホールディングス",
+        "price": 1421.0,
+        "rsi": 50.2,
+        "reason": "ゴールデンクロス（SMA25 > SMA75）+ RSI適正（50.2）+ 上昇トレンド",
+        "stop_loss": 1307.3,
+        "shares": 10
+      },
+      {
+        "ticker": "4005.T",
+        "name": "住友化学",
+        "price": 499.5,
+        "rsi": 50.2,
+        "reason": "ゴールデンクロス（SMA25 > SMA75）+ RSI適正（50.2）+ 上昇トレンド",
+        "stop_loss": 459.5,
+        "shares": 30
+      },
+      {
+        "ticker": "2871.T",
+        "name": "ニチレイ",
+        "price": 1969.5,
+        "rsi": 50.4,
+        "reason": "ゴールデンクロス（SMA25 > SMA75）+ RSI適正（50.4）+ 上昇トレンド",
+        "stop_loss": 1811.9,
+        "shares": 7
+      },
+      {
+        "ticker": "2802.T",
+        "name": "味の素",
+        "price": 4397.0,
+        "rsi": 50.4,
+        "reason": "ゴールデンクロス（SMA25 > SMA75）+ RSI適正（50.4）+ 上昇トレンド",
+        "stop_loss": 4045.2,
+        "shares": 3
+      },
+      {
+        "ticker": "8725.T",
+        "name": "MS&ADインシュアランスグループホールディングス",
+        "price": 4032.0,
+        "rsi": 50.6,
+        "reason": "ゴールデンクロス（SMA25 > SMA75）+ RSI適正（50.6）+ 上昇トレンド",
+        "stop_loss": 3709.4,
+        "shares": 3
+      },
+      {
+        "ticker": "8031.T",
+        "name": "三井物産",
+        "price": 5959.0,
+        "rsi": 50.9,
+        "reason": "ゴールデンクロス（SMA25 > SMA75）+ RSI適正（50.9）+ 上昇トレンド",
+        "stop_loss": 5482.3,
+        "shares": 2
+      },
+      {
+        "ticker": "2269.T",
+        "name": "明治ホールディングス",
+        "price": 3859.0,
+        "rsi": 51.0,
+        "reason": "ゴールデンクロス（SMA25 > SMA75）+ RSI適正（51.0）+ 上昇トレンド",
+        "stop_loss": 3550.3,
+        "shares": 3
+      },
+      {
+        "ticker": "9503.T",
+        "name": "関西電力",
+        "price": 2584.5,
+        "rsi": 51.6,
+        "reason": "ゴールデンクロス（SMA25 > SMA75）+ RSI適正（51.6）+ 上昇トレンド",
+        "stop_loss": 2377.7,
+        "shares": 5
+      },
+      {
+        "ticker": "7004.T",
+        "name": "カナデビア",
+        "price": 1007.0,
+        "rsi": 52.4,
+        "reason": "ゴールデンクロス（SMA25 > SMA75）+ RSI適正（52.4）+ 上昇トレンド",
+        "stop_loss": 926.4,
+        "shares": 15
+      },
+      {
+        "ticker": "8002.T",
+        "name": "丸紅",
+        "price": 5618.0,
+        "rsi": 52.6,
+        "reason": "ゴールデンクロス（SMA25 > SMA75）+ RSI適正（52.6）+ 上昇トレンド",
+        "stop_loss": 5168.6,
+        "shares": 2
+      }
+    ],
+    "sell_signals": [],
+    "executions": {
+      "entries": [],
+      "exits": [],
+      "partial_exits": [],
+      "trailing_stop_updates": []
+    },
+    "portfolio_snapshot": {
+      "open_count": 10,
+      "stock_value": 127534.0,
+      "cash": 152945.4,
+      "total_assets": 280479.0
+    }
   }
 ]
