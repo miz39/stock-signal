@@ -4,11 +4,12 @@
     "entry_price": 1796.0,
     "shares": 16,
     "entry_date": "2026-03-04",
-    "exit_price": null,
-    "exit_date": null,
-    "status": "open",
+    "exit_price": 1888.5,
+    "exit_date": "2026-03-31",
+    "status": "closed",
     "high_price": 1900.0,
-    "stop_price": 1748.0
+    "stop_price": 1748.0,
+    "pnl": 1480.0
   },
   {
     "ticker": "8604.T",
@@ -177,8 +178,8 @@
     "exit_price": null,
     "exit_date": null,
     "status": "open",
-    "high_price": 2862.0,
-    "stop_price": 2633.0
+    "high_price": 2876.5,
+    "stop_price": 2646.4
   },
   {
     "ticker": "6770.T",
@@ -203,5 +204,41 @@
     "status": "open",
     "high_price": 6251.0,
     "stop_price": 5750.9
+  },
+  {
+    "ticker": "2503.T",
+    "entry_price": 2536.5,
+    "shares": 6,
+    "original_shares": 6,
+    "entry_date": "2026-03-31",
+    "exit_price": null,
+    "exit_date": null,
+    "status": "open",
+    "high_price": 2536.5,
+    "stop_price": 2333.6
+  },
+  {
+    "ticker": "5803.T",
+    "entry_price": 4134.0,
+    "shares": 4,
+    "original_shares": 4,
+    "entry_date": "2026-03-31",
+    "exit_price": null,
+    "exit_date": null,
+    "status": "open",
+    "high_price": 4134.0,
+    "stop_price": 3803.3
+  },
+  {
+    "ticker": "9005.T",
+    "entry_price": 1873.0,
+    "shares": 9,
+    "original_shares": 9,
+    "entry_date": "2026-03-31",
+    "exit_price": null,
+    "exit_date": null,
+    "status": "open",
+    "high_price": 1873.0,
+    "stop_price": 1723.2
   }
 ]

@@ -2167,5 +2167,177 @@
       "cash": 171341.4,
       "total_assets": 281874.0
     }
+  },
+  {
+    "timestamp": "2026-03-31T15:10:44.628861+09:00",
+    "date": "2026-03-31",
+    "session": "15:10 引け後",
+    "profile": "default",
+    "mode": "paper",
+    "scan": {
+      "total": 225,
+      "buy_count": 44,
+      "sell_count": 1,
+      "error_count": 0
+    },
+    "buy_signals": [
+      {
+        "ticker": "2503.T",
+        "name": "キリンホールディングス",
+        "price": 2536.5,
+        "rsi": 50.1,
+        "reason": "ゴールデンクロス（SMA25 > SMA75）+ RSI適正（50.1）+ 上昇トレンド",
+        "stop_loss": 2333.6,
+        "shares": 6
+      },
+      {
+        "ticker": "5803.T",
+        "name": "フジクラ",
+        "price": 4134.0,
+        "rsi": 50.6,
+        "reason": "ゴールデンクロス（SMA25 > SMA75）+ RSI適正（50.6）+ 上昇トレンド",
+        "stop_loss": 3803.3,
+        "shares": 4
+      },
+      {
+        "ticker": "3099.T",
+        "name": "三越伊勢丹ホールディングス",
+        "price": 2877.5,
+        "rsi": 51.1,
+        "reason": "ゴールデンクロス（SMA25 > SMA75）+ RSI適正（51.1）+ 上昇トレンド",
+        "stop_loss": 2647.3,
+        "shares": 5
+      },
+      {
+        "ticker": "9005.T",
+        "name": "東急",
+        "price": 1873.0,
+        "rsi": 51.3,
+        "reason": "ゴールデンクロス（SMA25 > SMA75）+ RSI適正（51.3）+ 上昇トレンド",
+        "stop_loss": 1723.2,
+        "shares": 9
+      },
+      {
+        "ticker": "4005.T",
+        "name": "住友化学",
+        "price": 504.0,
+        "rsi": 51.4,
+        "reason": "ゴールデンクロス（SMA25 > SMA75）+ RSI適正（51.4）+ 上昇トレンド",
+        "stop_loss": 463.7,
+        "shares": 33
+      },
+      {
+        "ticker": "2871.T",
+        "name": "ニチレイ",
+        "price": 1976.0,
+        "rsi": 51.5,
+        "reason": "ゴールデンクロス（SMA25 > SMA75）+ RSI適正（51.5）+ 上昇トレンド",
+        "stop_loss": 1817.9,
+        "shares": 8
+      },
+      {
+        "ticker": "9531.T",
+        "name": "東京ガス",
+        "price": 7518.0,
+        "rsi": 52.1,
+        "reason": "ゴールデンクロス（SMA25 > SMA75）+ RSI適正（52.1）+ 上昇トレンド",
+        "stop_loss": 6916.6,
+        "shares": 2
+      },
+      {
+        "ticker": "8725.T",
+        "name": "MS&ADインシュアランスグループホールディングス",
+        "price": 4065.0,
+        "rsi": 52.1,
+        "reason": "ゴールデンクロス（SMA25 > SMA75）+ RSI適正（52.1）+ 上昇トレンド",
+        "stop_loss": 3739.8,
+        "shares": 4
+      },
+      {
+        "ticker": "2802.T",
+        "name": "味の素",
+        "price": 4437.0,
+        "rsi": 52.1,
+        "reason": "ゴールデンクロス（SMA25 > SMA75）+ RSI適正（52.1）+ 上昇トレンド",
+        "stop_loss": 4082.0,
+        "shares": 3
+      },
+      {
+        "ticker": "6963.T",
+        "name": "ローム",
+        "price": 3115.0,
+        "rsi": 52.6,
+        "reason": "ゴールデンクロス（SMA25 > SMA75）+ RSI適正（52.6）+ 上昇トレンド",
+        "stop_loss": 2865.8,
+        "shares": 5
+      }
+    ],
+    "sell_signals": [
+      {
+        "ticker": "8233.T",
+        "name": "高島屋",
+        "price": 1888.5,
+        "reason": "デッドクロス（SMA25 < SMA75）"
+      }
+    ],
+    "executions": {
+      "entries": [
+        {
+          "ticker": "2503.T",
+          "name": "キリンホールディングス",
+          "price": 2536.5,
+          "shares": 6,
+          "stop_loss": 2333.6,
+          "rsi": 50.1,
+          "reason": "ゴールデンクロス（SMA25 > SMA75）+ RSI適正（50.1）+ 上昇トレンド"
+        },
+        {
+          "ticker": "5803.T",
+          "name": "フジクラ",
+          "price": 4134.0,
+          "shares": 4,
+          "stop_loss": 3803.3,
+          "rsi": 50.6,
+          "reason": "ゴールデンクロス（SMA25 > SMA75）+ RSI適正（50.6）+ 上昇トレンド"
+        },
+        {
+          "ticker": "9005.T",
+          "name": "東急",
+          "price": 1873.0,
+          "shares": 9,
+          "stop_loss": 1723.2,
+          "rsi": 51.3,
+          "reason": "ゴールデンクロス（SMA25 > SMA75）+ RSI適正（51.3）+ 上昇トレンド"
+        }
+      ],
+      "exits": [
+        {
+          "ticker": "8233.T",
+          "name": "高島屋",
+          "price": 1888.5,
+          "reason": "デッドクロス（SMA25 < SMA75）",
+          "entry_price": 1796.0,
+          "shares": 16,
+          "pnl": 1480.0,
+          "pnl_pct": 5.2
+        }
+      ],
+      "partial_exits": [],
+      "trailing_stop_updates": [
+        {
+          "ticker": "4005.T",
+          "name": "住友化学",
+          "new_stop": 479.8,
+          "current_price": 504.0,
+          "gain_pct": 6.0
+        }
+      ]
+    },
+    "portfolio_snapshot": {
+      "open_count": 10,
+      "stock_value": 128606.0,
+      "cash": 152945.4,
+      "total_assets": 281551.0
+    }
   }
 ]
