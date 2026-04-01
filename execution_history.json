@@ -2727,5 +2727,145 @@
       "cash": 177073.9,
       "total_assets": 309026.0
     }
+  },
+  {
+    "timestamp": "2026-04-02T08:50:39.584713+09:00",
+    "date": "2026-04-02",
+    "session": "8:50 寄り前",
+    "profile": "default",
+    "mode": "paper",
+    "scan": {
+      "total": 225,
+      "buy_count": 77,
+      "sell_count": 0,
+      "error_count": 0
+    },
+    "buy_signals": [
+      {
+        "ticker": "4004.T",
+        "name": "レゾナック・ホールディングス",
+        "price": 10740.0,
+        "rsi": 50.2,
+        "reason": "ゴールデンクロス（SMA25 > SMA75）+ RSI適正（50.2）+ 上昇トレンド",
+        "stop_loss": 9880.8,
+        "shares": 1
+      },
+      {
+        "ticker": "5714.T",
+        "name": "DOWAホールディングス",
+        "price": 9271.0,
+        "rsi": 50.3,
+        "reason": "ゴールデンクロス（SMA25 > SMA75）+ RSI適正（50.3）+ 上昇トレンド",
+        "stop_loss": 8529.3,
+        "shares": 1
+      },
+      {
+        "ticker": "4519.T",
+        "name": "中外製薬",
+        "price": 9000.0,
+        "rsi": 50.5,
+        "reason": "ゴールデンクロス（SMA25 > SMA75）+ RSI適正（50.5）+ 上昇トレンド",
+        "stop_loss": 8280.0,
+        "shares": 1
+      },
+      {
+        "ticker": "9983.T",
+        "name": "ファーストリテイリング",
+        "price": 63670.0,
+        "rsi": 50.5,
+        "reason": "ゴールデンクロス（SMA25 > SMA75）+ RSI適正（50.5）+ 上昇トレンド",
+        "stop_loss": 58576.4,
+        "shares": 1
+      },
+      {
+        "ticker": "7741.T",
+        "name": "HOYA",
+        "price": 27600.0,
+        "rsi": 50.5,
+        "reason": "ゴールデンクロス（SMA25 > SMA75）+ RSI適正（50.5）+ 上昇トレンド",
+        "stop_loss": 25392.0,
+        "shares": 1
+      },
+      {
+        "ticker": "5713.T",
+        "name": "住友金属鉱山",
+        "price": 9593.0,
+        "rsi": 50.8,
+        "reason": "ゴールデンクロス（SMA25 > SMA75）+ RSI適正（50.8）+ 上昇トレンド",
+        "stop_loss": 8825.6,
+        "shares": 1
+      },
+      {
+        "ticker": "6971.T",
+        "name": "京セラ",
+        "price": 2487.5,
+        "rsi": 51.1,
+        "reason": "ゴールデンクロス（SMA25 > SMA75）+ RSI適正（51.1）+ 上昇トレンド",
+        "stop_loss": 2288.5,
+        "shares": 5
+      },
+      {
+        "ticker": "8601.T",
+        "name": "大和証券グループ本社",
+        "price": 1526.5,
+        "rsi": 51.2,
+        "reason": "ゴールデンクロス（SMA25 > SMA75）+ RSI適正（51.2）+ 上昇トレンド",
+        "stop_loss": 1404.4,
+        "shares": 9
+      },
+      {
+        "ticker": "4021.T",
+        "name": "日産化学",
+        "price": 6174.0,
+        "rsi": 51.2,
+        "reason": "ゴールデンクロス（SMA25 > SMA75）+ RSI適正（51.2）+ 上昇トレンド",
+        "stop_loss": 5680.1,
+        "shares": 2
+      },
+      {
+        "ticker": "1928.T",
+        "name": "積水ハウス",
+        "price": 3581.0,
+        "rsi": 51.2,
+        "reason": "ゴールデンクロス（SMA25 > SMA75）+ RSI適正（51.2）+ 上昇トレンド",
+        "stop_loss": 3294.5,
+        "shares": 3
+      }
+    ],
+    "sell_signals": [],
+    "executions": {
+      "entries": [],
+      "exits": [],
+      "partial_exits": [],
+      "trailing_stop_updates": [
+        {
+          "ticker": "9502.T",
+          "name": "中部電力",
+          "new_stop": 2514.5,
+          "current_price": 2719.0,
+          "gain_pct": 8.1
+        },
+        {
+          "ticker": "2282.T",
+          "name": "日本ハム",
+          "new_stop": 6851.0,
+          "current_price": 7290.0,
+          "gain_pct": 6.4
+        },
+        {
+          "ticker": "5803.T",
+          "name": "フジクラ",
+          "new_stop": 4134.0,
+          "current_price": 4446.0,
+          "gain_pct": 7.5
+        }
+      ]
+    },
+    "portfolio_snapshot": {
+      "open_count": 10,
+      "stock_value": 166715.0,
+      "cash": 140580.3,
+      "total_assets": 307295.0
+    }
   }
 ]
