@@ -153,8 +153,8 @@
     "exit_price": null,
     "exit_date": null,
     "status": "open",
-    "high_price": 6054.0,
-    "stop_price": 5569.7
+    "high_price": 6087.0,
+    "stop_price": 5600.0
   },
   {
     "ticker": "4005.T",
@@ -210,14 +210,15 @@
   {
     "ticker": "1963.T",
     "entry_price": 2195.0,
-    "shares": 6,
+    "shares": 3,
     "original_shares": 6,
     "entry_date": "2026-03-27",
     "exit_price": null,
     "exit_date": null,
     "status": "open",
-    "high_price": 2287.0,
-    "stop_price": 2104.0
+    "high_price": 2428.0,
+    "stop_price": 2233.8,
+    "partial_exit_done": true
   },
   {
     "ticker": "7951.T",
@@ -238,11 +239,12 @@
     "shares": 11,
     "original_shares": 11,
     "entry_date": "2026-03-30",
-    "exit_price": null,
-    "exit_date": null,
-    "status": "open",
-    "high_price": 1013.0,
-    "stop_price": 932.0
+    "exit_price": 1051.0,
+    "exit_date": "2026-04-01",
+    "status": "closed",
+    "high_price": 1051.0,
+    "stop_price": 966.9,
+    "pnl": 583.0
   },
   {
     "ticker": "4502.T",
@@ -253,8 +255,8 @@
     "exit_price": null,
     "exit_date": null,
     "status": "open",
-    "high_price": 5742.0,
-    "stop_price": 5282.6
+    "high_price": 5839.0,
+    "stop_price": 5371.9
   },
   {
     "ticker": "6963.T",
@@ -265,8 +267,8 @@
     "exit_price": null,
     "exit_date": null,
     "status": "open",
-    "high_price": 3070.0,
-    "stop_price": 2824.4
+    "high_price": 3287.0,
+    "stop_price": 3024.0
   },
   {
     "ticker": "2871.T",
@@ -277,7 +279,32 @@
     "exit_price": null,
     "exit_date": null,
     "status": "open",
-    "high_price": 1971.0,
-    "stop_price": 1813.3
+    "high_price": 1984.5,
+    "stop_price": 1825.7
+  },
+  {
+    "ticker": "1963.T",
+    "entry_price": 2195.0,
+    "shares": 3,
+    "entry_date": "2026-03-27",
+    "exit_price": 2428.0,
+    "exit_date": "2026-04-01",
+    "status": "closed",
+    "pnl": 699.0,
+    "high_price": 2428.0,
+    "stop_price": 2233.8,
+    "reason": "利確（+8%）"
+  },
+  {
+    "ticker": "1802.T",
+    "entry_price": 3853.0,
+    "shares": 3,
+    "original_shares": 3,
+    "entry_date": "2026-04-01",
+    "exit_price": null,
+    "exit_date": null,
+    "status": "open",
+    "high_price": 3853.0,
+    "stop_price": 3544.8
   }
 ]
