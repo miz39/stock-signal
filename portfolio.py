@@ -154,24 +154,17 @@ def get_open_positions() -> list:
 
 
 def get_cash_balance(initial_balance: float = 300000) -> float:
-    """現金残高を計算する。初期資金 - 全購入額 + 全売却額。
+    """現金残高を計算する。初期資金 + 確定損益 - 保有株エントリーコスト。
 
-    original_sharesを使ってエントリーコストを計算する（partial exit対応）。
-    partial exitされたトレードはsharesが減っているが、エントリー時の購入額は
-    original_shares分なので、それを使う。closedトレード（partial exitの売却分）は
-    エントリーコストを二重計上しない。
+    PnLベースで計算することで、partial exitの二重計上を回避する。
     """
     trades = _load_trades()
     cash = initial_balance
     for t in trades:
-        original = t.get("original_shares", t["shares"])
-        if t["status"] == "open":
-            # openポジション: original_shares分の購入額を引く
-            cash -= t["entry_price"] * original
-        elif t["status"] == "closed" and t.get("exit_price"):
-            # closedトレード: original_shares分の購入額を引き、売却額を足す
-            cash -= t["entry_price"] * original
-            cash += t["exit_price"] * t["shares"]
+        if t["status"] == "closed" and "pnl" in t:
+            cash += t["pnl"]
+        elif t["status"] == "open":
+            cash -= t["entry_price"] * t["shares"]
     return round(cash, 1)
 
 
