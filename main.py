@@ -385,6 +385,9 @@ def run(profile_name: str = "default"):
                         "stop_loss": sig.get("stop_loss"),
                         "rsi": round(sig["rsi"], 1),
                         "reason": sig.get("reason", ""),
+                        "sma_short": round(sig["sma_short"], 1) if not math.isnan(sig.get("sma_short", float("nan"))) else None,
+                        "sma_long": round(sig["sma_long"], 1) if not math.isnan(sig.get("sma_long", float("nan"))) else None,
+                        "sma_trend": round(sig["sma_trend"], 1) if not math.isnan(sig.get("sma_trend", float("nan"))) else None,
                     })
 
         # Top-up: BUYシグナルが出ている保有銘柄で目標サイズ未満のものを買い増し
@@ -672,6 +675,9 @@ def run(profile_name: str = "default"):
                 "reason": s.get("reason", ""),
                 "stop_loss": s.get("stop_loss"),
                 "shares": s.get("recommended_shares"),
+                "sma_short": round(s["sma_short"], 1) if not math.isnan(s.get("sma_short", float("nan"))) else None,
+                "sma_long": round(s["sma_long"], 1) if not math.isnan(s.get("sma_long", float("nan"))) else None,
+                "sma_trend": round(s["sma_trend"], 1) if not math.isnan(s.get("sma_trend", float("nan"))) else None,
             }
             for s in buy_signals[:10]
         ],
@@ -708,12 +714,22 @@ def run(profile_name: str = "default"):
 
 
 def save_execution_history(record: dict, profile_name: str = "default"):
-    """実行履歴をexecution_history.jsonに追記する（30日ローテーション）。"""
+    """実行履歴をexecution_history.jsonに追記する（設定日数でローテーション+アーカイブ）。"""
+    config = load_config()
+    history_cfg = config.get("history", {})
+    retention_days = history_cfg.get("retention_days", 30)
+    archive_enabled = history_cfg.get("archive", True)
+
     if profile_name == "default":
         filename = "execution_history.json"
+        archive_filename = "execution_history_archive.json"
     else:
         filename = f"execution_history_{profile_name}.json"
-    history_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), filename)
+        archive_filename = f"execution_history_{profile_name}_archive.json"
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    history_file = os.path.join(base_dir, filename)
+    archive_file = os.path.join(base_dir, archive_filename)
+
     history = []
     if os.path.exists(history_file):
         try:
@@ -731,22 +747,54 @@ def save_execution_history(record: dict, profile_name: str = "default"):
                if not (h.get("date") == record["date"] and h.get("session") == record["session"])]
     history.append(record)
 
-    # 30日より古いエントリを削除
-    cutoff = (datetime.now(timezone(timedelta(hours=9))) - timedelta(days=30)).strftime("%Y-%m-%d")
-    history = [h for h in history if h.get("date", "") >= cutoff]
+    # retention_days より古いエントリを分離
+    cutoff = (datetime.now(timezone(timedelta(hours=9))) - timedelta(days=retention_days)).strftime("%Y-%m-%d")
+    keep = [h for h in history if h.get("date", "") >= cutoff]
+    expired = [h for h in history if h.get("date", "") < cutoff]
+
+    # expired をアーカイブに追記
+    if expired and archive_enabled:
+        archived = []
+        if os.path.exists(archive_file):
+            try:
+                with open(archive_file, "r") as f:
+                    fcntl.flock(f, fcntl.LOCK_SH)
+                    try:
+                        archived = json.load(f)
+                    finally:
+                        fcntl.flock(f, fcntl.LOCK_UN)
+            except (json.JSONDecodeError, IOError):
+                archived = []
+
+        existing_keys = {(a.get("date"), a.get("session")) for a in archived}
+        new_entries = [e for e in expired if (e.get("date"), e.get("session")) not in existing_keys]
+
+        if new_entries:
+            archived.extend(new_entries)
+            fd, tmp_path = tempfile.mkstemp(dir=base_dir, suffix=".tmp")
+            try:
+                with os.fdopen(fd, "w") as f:
+                    json.dump(archived, f, ensure_ascii=False, indent=2)
+                    f.flush()
+                    os.fsync(f.fileno())
+                os.replace(tmp_path, archive_file)
+            except:
+                os.unlink(tmp_path)
+                raise
+            logger.info(f"アーカイブに{len(new_entries)}件追記: {archive_file}")
 
     dir_name = os.path.dirname(history_file)
     fd, tmp_path = tempfile.mkstemp(dir=dir_name, suffix=".tmp")
     try:
         with os.fdopen(fd, "w") as f:
-            json.dump(history, f, ensure_ascii=False, indent=2)
+            json.dump(keep, f, ensure_ascii=False, indent=2)
             f.flush()
             os.fsync(f.fileno())
         os.replace(tmp_path, history_file)
     except:
         os.unlink(tmp_path)
         raise
-    logger.info(f"実行履歴を保存: {history_file}（{len(history)}件）")
+    logger.info(f"実行履歴を保存: {history_file}（{len(keep)}件）")
 
 
 def main():

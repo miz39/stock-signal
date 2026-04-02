@@ -67,7 +67,80 @@ def fetch_current_prices(tickers: list) -> dict:
         return {}
 
 
-def build_dashboard_data(trades: list, initial_balance: float = 300000) -> dict:
+def _build_signal_accuracy(closed_trades: list) -> list:
+    """Holding period bucket analysis for closed trades."""
+    from datetime import date as dt_date
+    buckets = [
+        ("1-5d", 1, 5),
+        ("6-10d", 6, 10),
+        ("11-20d", 11, 20),
+        ("21-30d", 21, 30),
+        ("31d+", 31, 9999),
+    ]
+    result = []
+    for label, lo, hi in buckets:
+        bucket_trades = []
+        for t in closed_trades:
+            if not (t.get("entry_date") and t.get("exit_date") and "pnl" in t):
+                continue
+            try:
+                ed = dt_date.fromisoformat(t["entry_date"])
+                xd = dt_date.fromisoformat(t["exit_date"])
+                days = (xd - ed).days
+            except Exception:
+                continue
+            if lo <= days <= hi:
+                pnl_pct = round((t.get("exit_price", 0) / t["entry_price"] - 1) * 100, 2) if t["entry_price"] else 0
+                bucket_trades.append({"win": t["pnl"] > 0, "pnl_pct": pnl_pct})
+        count = len(bucket_trades)
+        wins = sum(1 for b in bucket_trades if b["win"])
+        win_rate = round(wins / count * 100, 1) if count else 0
+        avg_pnl_pct = round(sum(b["pnl_pct"] for b in bucket_trades) / count, 2) if count else 0
+        result.append({
+            "bucket": label, "count": count, "wins": wins,
+            "win_rate": win_rate, "avg_pnl_pct": avg_pnl_pct,
+        })
+    return result
+
+
+def _build_rsi_analysis(closed_trades: list, history: list) -> list:
+    """RSI range analysis by linking execution_history RSI with trade results."""
+    # Build (ticker, date) -> rsi lookup from execution_history buy_signals
+    rsi_lookup = {}
+    for h in history:
+        h_date = h.get("date", "")
+        for sig in h.get("buy_signals", []):
+            if sig.get("rsi") is not None:
+                rsi_lookup[(sig["ticker"], h_date)] = sig["rsi"]
+
+    # Match closed trades with RSI values
+    matched = []
+    for t in closed_trades:
+        if not (t.get("entry_date") and "pnl" in t and t.get("entry_price")):
+            continue
+        rsi = rsi_lookup.get((t["ticker"], t["entry_date"]))
+        if rsi is None:
+            continue
+        pnl_pct = round((t.get("exit_price", 0) / t["entry_price"] - 1) * 100, 2) if t["entry_price"] else 0
+        matched.append({"rsi": rsi, "win": t["pnl"] > 0, "pnl_pct": pnl_pct})
+
+    # Bucket by RSI range
+    ranges = [("50-55", 50, 55), ("55-60", 55, 60), ("60-65", 60, 65)]
+    result = []
+    for label, lo, hi in ranges:
+        bucket = [m for m in matched if lo <= m["rsi"] < hi]
+        count = len(bucket)
+        wins = sum(1 for b in bucket if b["win"])
+        win_rate = round(wins / count * 100, 1) if count else 0
+        avg_pnl_pct = round(sum(b["pnl_pct"] for b in bucket) / count, 2) if count else 0
+        result.append({
+            "range": label, "count": count, "wins": wins,
+            "win_rate": win_rate, "avg_pnl_pct": avg_pnl_pct,
+        })
+    return result
+
+
+def build_dashboard_data(trades: list, initial_balance: float = 300000, history: list = None) -> dict:
     """trades.json からダッシュボード用データを構築する。"""
     open_trades = [t for t in trades if t.get("status") == "open"]
     closed_trades = [t for t in trades if t.get("status") == "closed"]
@@ -242,6 +315,12 @@ def build_dashboard_data(trades: list, initial_balance: float = 300000) -> dict:
             except Exception:
                 pass
 
+    # Signal accuracy (holding period buckets)
+    signal_accuracy = _build_signal_accuracy(closed_trades)
+
+    # RSI analysis (requires execution_history)
+    rsi_analysis = _build_rsi_analysis(closed_trades, history or [])
+
     return {
         "initial_balance": initial_balance,
         "total_assets": total_assets,
@@ -268,6 +347,8 @@ def build_dashboard_data(trades: list, initial_balance: float = 300000) -> dict:
         "monthly_wr": monthly_wr,
         "dd_data": dd_data,
         "scatter_data": scatter_data,
+        "signal_accuracy": signal_accuracy,
+        "rsi_analysis": rsi_analysis,
     }
 
 
@@ -811,7 +892,7 @@ a.stock-link:hover {{ text-decoration:underline; }}
 </head>
 <body>
 <h1>Paper Trade Dashboard{profile_label}</h1>
-<div class="updated">最終更新: {now} &nbsp;|&nbsp; <a href="history.html" style="color:#64B5F6;text-decoration:none">実行履歴 &rarr;</a> &nbsp;|&nbsp; <a href="weekly-review.html" style="color:#64B5F6;text-decoration:none">週次レビュー &rarr;</a></div>
+<div class="updated">最終更新: {now} &nbsp;|&nbsp; <a href="history.html" style="color:#64B5F6;text-decoration:none">実行履歴 &rarr;</a> &nbsp;|&nbsp; <a href="weekly-review.html" style="color:#64B5F6;text-decoration:none">週次レビュー &rarr;</a> &nbsp;|&nbsp; <a href="{'../strategy.html' if profile_label else 'strategy.html'}" style="color:#64B5F6;text-decoration:none">戦略分析 &rarr;</a></div>
 
 <div class="hero-card">
   <div class="label">総資産</div>
@@ -865,6 +946,16 @@ a.stock-link:hover {{ text-decoration:underline; }}
 </div>
 <div class="chart-wrap">
   <canvas id="scatterChart" height="200"></canvas>
+</div>
+
+<div class="section">
+  <h2>シグナル精度（保有期間別）</h2>
+  <div class="chart-wrap"><canvas id="sigAccChart" height="220"></canvas></div>
+</div>
+
+<div class="section">
+  <h2>RSI 有効性分析</h2>
+  <div class="chart-wrap"><canvas id="rsiChart" height="220"></canvas></div>
 </div>
 
 <div class="section">
@@ -1080,6 +1171,107 @@ if (scatterData.length > 0) {{
       }}
     }}
   }});
+}}
+
+// Signal Accuracy Chart (holding period buckets)
+const sigAcc = {json.dumps(data.get('signal_accuracy', []))};
+if (sigAcc.some(b => b.count > 0)) {{
+  new Chart(document.getElementById('sigAccChart'), {{
+    type: 'bar',
+    data: {{
+      labels: sigAcc.map(b => b.bucket),
+      datasets: [{{
+        label: '平均損益率 (%)',
+        data: sigAcc.map(b => b.avg_pnl_pct),
+        backgroundColor: sigAcc.map(b => b.avg_pnl_pct >= 0 ? 'rgba(0,200,83,0.7)' : 'rgba(255,23,68,0.7)'),
+        borderRadius: 4,
+        yAxisID: 'y',
+      }}, {{
+        label: '勝率 (%)',
+        data: sigAcc.map(b => b.win_rate),
+        type: 'line',
+        borderColor: '#64B5F6',
+        borderWidth: 2,
+        pointRadius: 4,
+        fill: false,
+        yAxisID: 'y1',
+      }}]
+    }},
+    options: {{
+      responsive: true, maintainAspectRatio: false,
+      plugins: {{
+        title: {{ display:true, text:'保有期間別 勝率 & 平均損益率', color:'#9E9E9E', font:{{ size:12 }} }},
+        legend: {{ labels: {{ color:'#9E9E9E', font:{{ size:10 }} }} }},
+        tooltip: {{ callbacks: {{ label: function(c) {{
+          const b = sigAcc[c.dataIndex];
+          if (c.datasetIndex === 0) return '平均損益: ' + b.avg_pnl_pct + '% (' + b.count + '件)';
+          return '勝率: ' + b.win_rate + '% (' + b.wins + '/' + b.count + ')';
+        }} }} }}
+      }},
+      scales: {{
+        x: {{ ticks: {{ color:'#757575', font:{{ size:9 }} }}, grid: {{ color:'#2A2A2A' }} }},
+        y: {{ position:'left', title: {{ display:true, text:'平均損益率 (%)', color:'#757575', font:{{ size:9 }} }}, ticks: {{ color:'#757575', font:{{ size:9 }}, callback: v => v + '%' }}, grid: {{ color:'#2A2A2A' }} }},
+        y1: {{ position:'right', min:0, max:100, title: {{ display:true, text:'勝率 (%)', color:'#64B5F6', font:{{ size:9 }} }}, ticks: {{ color:'#64B5F6', font:{{ size:9 }}, callback: v => v + '%' }}, grid: {{ display:false }} }}
+      }}
+    }}
+  }});
+}} else {{
+  document.getElementById('sigAccChart').parentElement.innerHTML =
+    '<p style="text-align:center;color:#757575;padding:24px">クローズドトレードのデータがありません</p>';
+}}
+
+// RSI Analysis Chart
+const rsiAna = {json.dumps(data.get('rsi_analysis', []))};
+if (rsiAna.some(b => b.count > 0)) {{
+  new Chart(document.getElementById('rsiChart'), {{
+    type: 'bar',
+    data: {{
+      labels: rsiAna.map(b => 'RSI ' + b.range),
+      datasets: [{{
+        label: '勝率 (%)',
+        data: rsiAna.map(b => b.win_rate),
+        backgroundColor: '#42A5F5',
+        borderRadius: 4,
+      }}]
+    }},
+    options: {{
+      responsive: true, maintainAspectRatio: false,
+      plugins: {{
+        title: {{ display:true, text:'RSI レンジ別勝率', color:'#9E9E9E', font:{{ size:12 }} }},
+        legend: {{ display:false }},
+        tooltip: {{ callbacks: {{ label: function(c) {{
+          const b = rsiAna[c.dataIndex];
+          return '勝率: ' + b.win_rate + '% (' + b.wins + '/' + b.count + '件) 平均損益: ' + b.avg_pnl_pct + '%';
+        }} }} }}
+      }},
+      scales: {{
+        x: {{ ticks: {{ color:'#757575', font:{{ size:9 }} }}, grid: {{ color:'#2A2A2A' }} }},
+        y: {{ min:0, max:100, ticks: {{ color:'#757575', font:{{ size:9 }}, callback: v => v + '%' }}, grid: {{ color:'#2A2A2A' }} }}
+      }},
+      plugins_datalabels: false,
+    }}
+  }});
+  // Add count labels on top of bars
+  const rsiCanvas = document.getElementById('rsiChart');
+  const rsiChartInst = Chart.getChart(rsiCanvas);
+  if (rsiChartInst) {{
+    const origDraw = rsiChartInst.draw.bind(rsiChartInst);
+    rsiChartInst.draw = function() {{
+      origDraw();
+      const ctx = rsiCanvas.getContext('2d');
+      const meta = rsiChartInst.getDatasetMeta(0);
+      ctx.fillStyle = '#9E9E9E';
+      ctx.font = '10px sans-serif';
+      ctx.textAlign = 'center';
+      meta.data.forEach((bar, i) => {{
+        ctx.fillText(rsiAna[i].count + '件', bar.x, bar.y - 6);
+      }});
+    }};
+    rsiChartInst.draw();
+  }}
+}} else {{
+  document.getElementById('rsiChart').parentElement.innerHTML =
+    '<p style="text-align:center;color:#757575;padding:24px">RSIデータがありません（execution_historyとのマッチなし）</p>';
 }}
 </script>
 </body>
@@ -1726,6 +1918,266 @@ if (!H.length) {{
     return html
 
 
+def build_cross_profile_data(config: dict) -> dict:
+    """Load trades + history for all profiles and build cross-profile comparison data."""
+    profile_names = ["default"] + list(config.get("profiles", {}).keys())
+    result = {}
+
+    for pname in profile_names:
+        _setup_profile_paths(pname)
+
+        merged_config = copy.deepcopy(config)
+        if pname != "default":
+            overrides = config.get("profiles", {}).get(pname, {})
+            if overrides:
+                merged_config["strategy"] = {**config.get("strategy", {}), **overrides.get("strategy", {})}
+
+        trades = load_trades()
+        history = load_history()
+        closed = [t for t in trades if t.get("status") == "closed"]
+        open_trades = [t for t in trades if t.get("status") == "open"]
+
+        pnls = [t["pnl"] for t in closed if "pnl" in t]
+        total_pnl = sum(pnls)
+        wins = sum(1 for p in pnls if p > 0)
+        losses = len(pnls) - wins
+        win_rate = round(wins / len(pnls) * 100, 1) if pnls else 0
+        avg_win = round(sum(p for p in pnls if p > 0) / wins, 1) if wins else 0
+        avg_loss = round(sum(p for p in pnls if p <= 0) / losses, 1) if losses else 0
+        pf = round(abs(avg_win * wins) / abs(avg_loss * losses), 2) if losses and avg_loss != 0 else 0
+
+        balance = config.get("account", {}).get("balance", 300000)
+
+        # Equity curve
+        sorted_closed = sorted(
+            [t for t in closed if t.get("exit_date") and "pnl" in t],
+            key=lambda t: t["exit_date"],
+        )
+        daily_realized = {}
+        for t in sorted_closed:
+            d = t["exit_date"]
+            daily_realized[d] = daily_realized.get(d, 0) + t["pnl"]
+
+        all_entry_dates = [t.get("entry_date") for t in trades if t.get("entry_date")]
+        equity_labels = []
+        equity_data = []
+        if all_entry_dates:
+            from datetime import date
+            start_date = date.fromisoformat(min(all_entry_dates))
+            today = date.today()
+            cum_pnl = 0
+            d = start_date
+            while d <= today:
+                ds = d.isoformat()
+                cum_pnl += daily_realized.get(ds, 0)
+                equity_labels.append(ds)
+                equity_data.append(round(balance + cum_pnl, 1))
+                d += timedelta(days=1)
+
+        strat = merged_config.get("strategy", {})
+        result[pname] = {
+            "trades": trades,
+            "closed": closed,
+            "history": history,
+            "strategy": strat,
+            "win_rate": win_rate,
+            "total_pnl": round(total_pnl, 1),
+            "trade_count": len(closed),
+            "open_count": len(open_trades),
+            "wins": wins,
+            "losses": losses,
+            "pf": pf,
+            "equity_labels": equity_labels,
+            "equity_data": equity_data,
+        }
+
+    # Restore to default
+    _setup_profile_paths("default")
+    return result
+
+
+def _build_nday_accuracy(closed_trades: list) -> dict:
+    """Calculate win rate at N-day checkpoints after BUY using actual price data."""
+    from datetime import date as dt_date
+
+    checkpoints = [5, 10, 15, 20, 30]
+
+    # Collect unique tickers and entry dates
+    entries = []
+    for t in closed_trades:
+        if not (t.get("entry_date") and t.get("entry_price")):
+            continue
+        entries.append(t)
+
+    if not entries:
+        return {"checkpoints": checkpoints, "win_rates": [], "avg_returns": [], "sample_counts": []}
+
+    tickers = list({t["ticker"] for t in entries})
+
+    # Download price history
+    try:
+        import yfinance as yf
+        max_days = max(checkpoints) + 10
+        data = yf.download(tickers, period=f"{max_days + 60}d", progress=False)
+        if data.empty:
+            return {"checkpoints": checkpoints, "win_rates": [], "avg_returns": [], "sample_counts": []}
+    except Exception:
+        return {"checkpoints": checkpoints, "win_rates": [], "avg_returns": [], "sample_counts": []}
+
+    win_rates = []
+    avg_returns = []
+    sample_counts = []
+
+    for cp in checkpoints:
+        wins = 0
+        total = 0
+        returns = []
+
+        for t in entries:
+            ticker = t["ticker"]
+            entry_price = t["entry_price"]
+            try:
+                entry_dt = dt_date.fromisoformat(t["entry_date"])
+                target_dt = entry_dt + timedelta(days=cp)
+            except Exception:
+                continue
+
+            try:
+                if len(tickers) == 1:
+                    close_series = data["Close"]
+                else:
+                    close_series = data["Close"][ticker]
+
+                # Find the closest trading day on or before target_dt
+                mask = close_series.index.date <= target_dt
+                if not mask.any():
+                    continue
+                price_at_cp = float(close_series[mask].iloc[-1])
+                if price_at_cp != price_at_cp:  # NaN check
+                    continue
+            except Exception:
+                continue
+
+            ret = (price_at_cp - entry_price) / entry_price * 100
+            returns.append(ret)
+            total += 1
+            if ret > 0:
+                wins += 1
+
+        win_rates.append(round(wins / total * 100, 1) if total else 0)
+        avg_returns.append(round(sum(returns) / len(returns), 2) if returns else 0)
+        sample_counts.append(total)
+
+    return {
+        "checkpoints": checkpoints,
+        "win_rates": win_rates,
+        "avg_returns": avg_returns,
+        "sample_counts": sample_counts,
+    }
+
+
+def _build_rsi_heatmap(closed_trades: list, history: list) -> dict:
+    """Build RSI x holding period 2D heatmap data."""
+    from datetime import date as dt_date
+
+    # RSI lookup from execution_history
+    rsi_lookup = {}
+    for h in history:
+        h_date = h.get("date", "")
+        for sig in h.get("buy_signals", []):
+            if sig.get("rsi") is not None:
+                rsi_lookup[(sig["ticker"], h_date)] = sig["rsi"]
+
+    rsi_ranges = [
+        ("50-52", 50, 52), ("52-54", 52, 54), ("54-56", 54, 56),
+        ("56-58", 56, 58), ("58-60", 58, 60), ("60-62", 60, 62), ("62-65", 62, 65),
+    ]
+    holding_ranges = [
+        ("1-5d", 1, 5), ("6-10d", 6, 10), ("11-20d", 11, 20), ("21-30d", 21, 30),
+    ]
+
+    cells = []
+    for yi, (h_label, h_lo, h_hi) in enumerate(holding_ranges):
+        for xi, (r_label, r_lo, r_hi) in enumerate(rsi_ranges):
+            bucket = []
+            for t in closed_trades:
+                if not (t.get("entry_date") and t.get("exit_date") and "pnl" in t and t.get("entry_price")):
+                    continue
+                rsi = rsi_lookup.get((t["ticker"], t["entry_date"]))
+                if rsi is None:
+                    continue
+                if not (r_lo <= rsi < r_hi):
+                    continue
+                try:
+                    ed = dt_date.fromisoformat(t["entry_date"])
+                    xd = dt_date.fromisoformat(t["exit_date"])
+                    days = (xd - ed).days
+                except Exception:
+                    continue
+                if not (h_lo <= days <= h_hi):
+                    continue
+                bucket.append(t["pnl"] > 0)
+
+            count = len(bucket)
+            win_rate = round(sum(bucket) / count * 100, 1) if count else 0
+            cells.append({"x": xi, "y": yi, "win_rate": win_rate, "count": count})
+
+    return {
+        "rsi_labels": [r[0] for r in rsi_ranges],
+        "holding_labels": [h[0] for h in holding_ranges],
+        "cells": cells,
+    }
+
+
+def _build_sma_analysis(closed_trades: list, history: list):
+    """Analyze SMA25/75 divergence vs win rate. Returns None if no SMA data in history."""
+    # Build (ticker, date) -> (sma_short, sma_long) lookup
+    sma_lookup = {}
+    for h in history:
+        h_date = h.get("date", "")
+        for sig in h.get("buy_signals", []):
+            if sig.get("sma_short") is not None and sig.get("sma_long") is not None:
+                sma_lookup[(sig["ticker"], h_date)] = (sig["sma_short"], sig["sma_long"])
+        for e in h.get("executions", {}).get("entries", []):
+            if e.get("sma_short") is not None and e.get("sma_long") is not None:
+                sma_lookup[(e["ticker"], h_date)] = (e["sma_short"], e["sma_long"])
+
+    if not sma_lookup:
+        return None
+
+    # Calculate divergence for each closed trade
+    matched = []
+    for t in closed_trades:
+        if not (t.get("entry_date") and "pnl" in t):
+            continue
+        sma = sma_lookup.get((t["ticker"], t["entry_date"]))
+        if sma is None:
+            continue
+        sma_short, sma_long = sma
+        if sma_long == 0:
+            continue
+        divergence = (sma_short - sma_long) / sma_long * 100
+        matched.append({"divergence": divergence, "win": t["pnl"] > 0})
+
+    if not matched:
+        return None
+
+    # Bucket by divergence
+    buckets = [
+        ("0-1%", 0, 1), ("1-2%", 1, 2), ("2-3%", 2, 3),
+        ("3-5%", 3, 5), ("5%+", 5, 100),
+    ]
+    result = []
+    for label, lo, hi in buckets:
+        bucket = [m for m in matched if lo <= m["divergence"] < hi]
+        count = len(bucket)
+        wins = sum(1 for b in bucket if b["win"])
+        win_rate = round(wins / count * 100, 1) if count else 0
+        result.append({"label": label, "count": count, "wins": wins, "win_rate": win_rate})
+
+    return {"buckets": result, "total_matched": len(matched)}
+
+
 def _setup_profile_paths(profile_name: str) -> None:
     """Switch global file paths based on profile name."""
     global TRADES_FILE, HISTORY_FILE, DOCS_DIR, OUTPUT_FILE, HISTORY_OUTPUT, REVIEW_OUTPUT
@@ -1741,6 +2193,392 @@ def _setup_profile_paths(profile_name: str) -> None:
     OUTPUT_FILE = os.path.join(DOCS_DIR, "index.html")
     HISTORY_OUTPUT = os.path.join(DOCS_DIR, "history.html")
     REVIEW_OUTPUT = os.path.join(DOCS_DIR, "weekly-review.html")
+
+
+def generate_strategy_html(profiles_data: dict, config: dict) -> str:
+    """Generate cross-profile strategy analysis HTML page."""
+    now = datetime.now(JST).strftime("%Y-%m-%d %H:%M JST")
+
+    def pnl_color(val):
+        if val > 0: return "#00C853"
+        elif val < 0: return "#FF1744"
+        return "#9E9E9E"
+
+    def pnl_sign(val):
+        return f"+{val:,.0f}" if val > 0 else f"{val:,.0f}"
+
+    # Profile colors
+    colors = {"default": "#2196F3", "conservative": "#FF9800", "aggressive": "#9C27B0"}
+    profile_labels = {"default": "Default", "conservative": "Conservative", "aggressive": "Aggressive"}
+
+    # --- Section 1: Profile comparison cards ---
+    profile_cards = ""
+    for pname, pdata in profiles_data.items():
+        color = colors.get(pname, "#757575")
+        label = profile_labels.get(pname, pname)
+        profile_cards += f"""<div class="profile-card" style="border-top:3px solid {color}">
+  <div class="profile-name" style="color:{color}">{label}</div>
+  <div class="profile-stats">
+    <div class="pstat"><span class="pstat-label">勝率</span><span class="pstat-value">{pdata['win_rate']}%</span></div>
+    <div class="pstat"><span class="pstat-label">損益</span><span class="pstat-value" style="color:{pnl_color(pdata['total_pnl'])}">&yen;{pnl_sign(pdata['total_pnl'])}</span></div>
+    <div class="pstat"><span class="pstat-label">トレード</span><span class="pstat-value">{pdata['trade_count']}件</span></div>
+    <div class="pstat"><span class="pstat-label">PF</span><span class="pstat-value">{pdata['pf']}</span></div>
+    <div class="pstat"><span class="pstat-label">保有中</span><span class="pstat-value">{pdata['open_count']}銘柄</span></div>
+  </div>
+</div>"""
+
+    # --- Parameter comparison table ---
+    param_rows = ""
+    param_keys = [
+        ("stop_loss_pct", "ストップロス", lambda v: f"-{v*100:.0f}%"),
+        ("profit_tighten_pct", "建値移動", lambda v: f"+{v*100:.0f}%"),
+        ("profit_take_pct", "半分利確", lambda v: f"+{v*100:.0f}%"),
+        ("profit_take_full_pct", "全部利確", lambda v: f"+{v*100:.0f}%"),
+    ]
+    for key, label, fmt in param_keys:
+        cells = ""
+        for pname in profiles_data:
+            val = profiles_data[pname]["strategy"].get(key, 0)
+            cells += f"<td class='num'>{fmt(val)}</td>"
+        param_rows += f"<tr><td>{label}</td>{cells}</tr>"
+
+    param_header = ""
+    for pname in profiles_data:
+        color = colors.get(pname, "#757575")
+        label = profile_labels.get(pname, pname)
+        param_header += f"<th style='color:{color}'>{label}</th>"
+
+    # --- Equity chart data ---
+    equity_datasets_js = ""
+    for pname, pdata in profiles_data.items():
+        color = colors.get(pname, "#757575")
+        label = profile_labels.get(pname, pname)
+        eq_labels_json = json.dumps(pdata["equity_labels"])
+        eq_data_json = json.dumps(pdata["equity_data"])
+        equity_datasets_js += f"""{{
+      label: '{label}',
+      data: {eq_data_json},
+      _labels: {eq_labels_json},
+      borderColor: '{color}',
+      borderWidth: 2,
+      pointRadius: 0,
+      pointHoverRadius: 3,
+      fill: false,
+      tension: 0.3,
+    }},"""
+
+    # Find the longest label set for the x-axis
+    longest_labels = []
+    for pdata in profiles_data.values():
+        if len(pdata["equity_labels"]) > len(longest_labels):
+            longest_labels = pdata["equity_labels"]
+    longest_labels_json = json.dumps(longest_labels)
+
+    # --- Section 2: N-day accuracy ---
+    default_closed = profiles_data.get("default", {}).get("closed", [])
+    nday_data = _build_nday_accuracy(default_closed)
+    nday_json = json.dumps(nday_data)
+
+    # --- Section 3: RSI heatmap + SMA analysis ---
+    default_history = profiles_data.get("default", {}).get("history", [])
+    rsi_heatmap = _build_rsi_heatmap(default_closed, default_history)
+    sma_analysis = _build_sma_analysis(default_closed, default_history)
+    sma_json = json.dumps(sma_analysis)
+
+    # Build RSI heatmap HTML table
+    rsi_labels = rsi_heatmap["rsi_labels"]
+    holding_labels = rsi_heatmap["holding_labels"]
+    cells = rsi_heatmap["cells"]
+
+    # Create a lookup: (x, y) -> cell
+    cell_lookup = {(c["x"], c["y"]): c for c in cells}
+
+    heatmap_header = "<tr><th></th>"
+    for rl in rsi_labels:
+        heatmap_header += f"<th>RSI {rl}</th>"
+    heatmap_header += "</tr>"
+
+    heatmap_rows = ""
+    for yi, hl in enumerate(holding_labels):
+        row = f"<tr><td class='hm-row-label'>{hl}</td>"
+        for xi in range(len(rsi_labels)):
+            c = cell_lookup.get((xi, yi), {"win_rate": 0, "count": 0})
+            wr = c["win_rate"]
+            cnt = c["count"]
+            if cnt < 5:
+                bg = "#2A2A2A"
+                text_color = "#757575"
+                display = f"{cnt}件" if cnt > 0 else "-"
+            else:
+                # Green (high win rate) to Red (low win rate)
+                if wr >= 60:
+                    r = max(0, int(255 * (1 - (wr - 60) / 40)))
+                    bg = f"rgba(0,{min(200, int(wr * 2))},0,0.3)"
+                    text_color = "#00C853"
+                elif wr >= 40:
+                    bg = "rgba(255,165,0,0.15)"
+                    text_color = "#FF9800"
+                else:
+                    bg = "rgba(255,23,68,0.15)"
+                    text_color = "#FF1744"
+                display = f"{wr:.0f}%<br><span class='hm-count'>{cnt}件</span>"
+            row += f"<td class='hm-cell' style='background:{bg};color:{text_color}'>{display}</td>"
+        row += "</tr>"
+        heatmap_rows += row
+
+    balance = config.get("account", {}).get("balance", 300000)
+
+    html = f"""<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>戦略分析ダッシュボード</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+<style>
+* {{ margin:0; padding:0; box-sizing:border-box; }}
+body {{ background:#121212; color:#E0E0E0; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; padding:16px; max-width:960px; margin:0 auto; }}
+a.back {{ color:#64B5F6; text-decoration:none; font-size:0.85rem; display:inline-block; margin-bottom:12px; }}
+a.back:hover {{ text-decoration:underline; }}
+h1 {{ font-size:1.3rem; margin-bottom:4px; }}
+.updated {{ font-size:0.75rem; color:#757575; margin-bottom:20px; }}
+.section {{ margin-bottom:28px; }}
+.section h2 {{ font-size:1rem; margin-bottom:10px; padding-bottom:4px; border-bottom:1px solid #333; }}
+.chart-wrap {{ background:#1E1E1E; border-radius:10px; padding:12px; margin-bottom:16px; }}
+
+/* Profile cards */
+.profile-grid {{ display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:12px; margin-bottom:16px; }}
+.profile-card {{ background:#1E1E1E; border-radius:10px; padding:16px; }}
+.profile-name {{ font-size:0.85rem; font-weight:700; margin-bottom:10px; text-transform:uppercase; letter-spacing:0.5px; }}
+.profile-stats {{ display:flex; flex-direction:column; gap:6px; }}
+.pstat {{ display:flex; justify-content:space-between; font-size:0.8rem; }}
+.pstat-label {{ color:#9E9E9E; }}
+.pstat-value {{ font-weight:600; }}
+
+/* Parameter table */
+table {{ width:100%; border-collapse:collapse; font-size:0.8rem; }}
+th {{ background:#1E1E1E; color:#9E9E9E; text-align:left; padding:8px 6px; font-weight:500; font-size:0.7rem; text-transform:uppercase; }}
+td {{ padding:8px 6px; border-bottom:1px solid #2A2A2A; }}
+td.num {{ text-align:right; font-variant-numeric:tabular-nums; }}
+
+/* Heatmap */
+.hm-table {{ width:100%; border-collapse:collapse; font-size:0.75rem; }}
+.hm-table th {{ background:#1E1E1E; color:#9E9E9E; padding:6px 4px; font-size:0.65rem; text-align:center; }}
+.hm-cell {{ text-align:center; padding:8px 4px; font-weight:600; font-size:0.8rem; border:1px solid #2A2A2A; }}
+.hm-row-label {{ color:#9E9E9E; font-size:0.72rem; padding:6px 8px; white-space:nowrap; }}
+.hm-count {{ font-size:0.6rem; font-weight:400; color:#757575; }}
+
+/* Data note */
+.data-note {{ background:#1A2332; border:1px solid #1565C0; border-radius:8px; padding:14px; font-size:0.82rem; color:#90CAF9; }}
+
+.green {{ color:#00C853; }}
+.red {{ color:#FF1744; }}
+
+@media(max-width:600px) {{
+  .profile-grid {{ grid-template-columns:1fr; }}
+  table {{ font-size:0.75rem; }}
+  .hm-table {{ font-size:0.65rem; }}
+  .hm-cell {{ padding:4px 2px; font-size:0.7rem; }}
+}}
+</style>
+</head>
+<body>
+<a class="back" href="index.html">&larr; Dashboard</a>
+<h1>戦略分析ダッシュボード</h1>
+<div class="updated">最終更新: {now}</div>
+
+<!-- Section 1: Profile Comparison -->
+<div class="section">
+  <h2>プロファイル比較</h2>
+  <div class="profile-grid">{profile_cards}</div>
+  <div style="overflow-x:auto">
+  <table>
+    <thead><tr><th>パラメータ</th>{param_header}</tr></thead>
+    <tbody>{param_rows}</tbody>
+  </table>
+  </div>
+  <div class="chart-wrap" style="margin-top:16px">
+    <canvas id="equityCompareChart" height="250"></canvas>
+  </div>
+</div>
+
+<!-- Section 2: N-day Signal Accuracy -->
+<div class="section">
+  <h2>シグナル精度（BUY後N日）</h2>
+  <div class="chart-wrap">
+    <canvas id="ndayChart" height="250"></canvas>
+  </div>
+</div>
+
+<!-- Section 3: RSI / SMA Effectiveness -->
+<div class="section">
+  <h2>RSI 有効性ヒートマップ</h2>
+  <p style="font-size:0.75rem;color:#757575;margin-bottom:8px">RSIレンジ × 保有期間の勝率（5件未満はグレーアウト）</p>
+  <div style="overflow-x:auto">
+  <table class="hm-table">
+    <thead>{heatmap_header}</thead>
+    <tbody>{heatmap_rows}</tbody>
+  </table>
+  </div>
+</div>
+
+<div class="section">
+  <h2>SMA 乖離率 vs 勝率</h2>
+  <div id="smaSection"></div>
+</div>
+
+<script>
+// Equity comparison chart
+const eqLabels = {longest_labels_json};
+const eqDatasets = [{equity_datasets_js}];
+const initial = {balance};
+
+if (eqLabels.length > 0) {{
+  // Align datasets to the common label set
+  eqDatasets.forEach(ds => {{
+    const lmap = {{}};
+    ds._labels.forEach((l, i) => {{ lmap[l] = ds.data[i]; }});
+    ds.data = eqLabels.map(l => lmap[l] !== undefined ? lmap[l] : null);
+    delete ds._labels;
+  }});
+
+  new Chart(document.getElementById('equityCompareChart'), {{
+    type: 'line',
+    data: {{
+      labels: eqLabels,
+      datasets: [...eqDatasets, {{
+        label: '初期資金 (¥' + initial.toLocaleString() + ')',
+        data: eqLabels.map(() => initial),
+        borderColor: '#757575',
+        borderWidth: 1,
+        borderDash: [6,3],
+        pointRadius: 0,
+        fill: false,
+      }}]
+    }},
+    options: {{
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {{
+        title: {{ display:true, text:'資産推移比較', color:'#9E9E9E', font:{{ size:12 }} }},
+        legend: {{ labels: {{ color:'#9E9E9E', font:{{ size:10 }}, usePointStyle:true, pointStyle:'line' }} }},
+        tooltip: {{ callbacks: {{ label: c => c.dataset.label + ': ¥' + (c.parsed.y != null ? c.parsed.y.toLocaleString() : '-') }} }}
+      }},
+      scales: {{
+        x: {{ ticks: {{ color:'#757575', maxTicksLimit:8, font:{{ size:9 }} }}, grid: {{ color:'#2A2A2A' }} }},
+        y: {{ ticks: {{ color:'#757575', font:{{ size:9 }}, callback: v => '¥' + v.toLocaleString() }}, grid: {{ color:'#2A2A2A' }} }}
+      }},
+      spanGaps: true,
+    }}
+  }});
+}} else {{
+  document.getElementById('equityCompareChart').parentElement.innerHTML =
+    '<p style="text-align:center;color:#757575;padding:24px">データがありません</p>';
+}}
+
+// N-day accuracy chart
+const nday = {nday_json};
+if (nday.win_rates && nday.win_rates.length > 0) {{
+  new Chart(document.getElementById('ndayChart'), {{
+    type: 'bar',
+    data: {{
+      labels: nday.checkpoints.map(d => d + '日後'),
+      datasets: [{{
+        label: '平均リターン (%)',
+        data: nday.avg_returns,
+        backgroundColor: nday.avg_returns.map(v => v >= 0 ? 'rgba(0,200,83,0.7)' : 'rgba(255,23,68,0.7)'),
+        borderRadius: 4,
+        yAxisID: 'y',
+      }}, {{
+        label: '勝率 (%)',
+        data: nday.win_rates,
+        type: 'line',
+        borderColor: '#64B5F6',
+        borderWidth: 2,
+        pointRadius: 4,
+        fill: false,
+        yAxisID: 'y1',
+      }}]
+    }},
+    options: {{
+      responsive: true, maintainAspectRatio: false,
+      plugins: {{
+        title: {{ display:true, text:'BUY後N日時点の勝率 & 平均リターン', color:'#9E9E9E', font:{{ size:12 }} }},
+        legend: {{ labels: {{ color:'#9E9E9E', font:{{ size:10 }} }} }},
+        tooltip: {{ callbacks: {{ label: function(c) {{
+          const i = c.dataIndex;
+          if (c.datasetIndex === 0) return '平均リターン: ' + nday.avg_returns[i] + '% (n=' + nday.sample_counts[i] + ')';
+          return '勝率: ' + nday.win_rates[i] + '% (n=' + nday.sample_counts[i] + ')';
+        }} }} }}
+      }},
+      scales: {{
+        x: {{ ticks: {{ color:'#757575', font:{{ size:9 }} }}, grid: {{ color:'#2A2A2A' }} }},
+        y: {{ position:'left', title: {{ display:true, text:'平均リターン (%)', color:'#757575', font:{{ size:9 }} }}, ticks: {{ color:'#757575', font:{{ size:9 }}, callback: v => v + '%' }}, grid: {{ color:'#2A2A2A' }} }},
+        y1: {{ position:'right', min:0, max:100, title: {{ display:true, text:'勝率 (%)', color:'#64B5F6', font:{{ size:9 }} }}, ticks: {{ color:'#64B5F6', font:{{ size:9 }}, callback: v => v + '%' }}, grid: {{ display:false }} }}
+      }}
+    }}
+  }});
+}} else {{
+  document.getElementById('ndayChart').parentElement.innerHTML =
+    '<p style="text-align:center;color:#757575;padding:24px">クローズドトレードのデータがありません</p>';
+}}
+
+// SMA analysis
+const sma = {sma_json};
+const smaEl = document.getElementById('smaSection');
+if (sma && sma.buckets) {{
+  const canvas = document.createElement('canvas');
+  canvas.height = 220;
+  const wrap = document.createElement('div');
+  wrap.className = 'chart-wrap';
+  wrap.appendChild(canvas);
+  smaEl.appendChild(wrap);
+
+  new Chart(canvas, {{
+    type: 'bar',
+    data: {{
+      labels: sma.buckets.map(b => b.label),
+      datasets: [{{
+        label: '勝率 (%)',
+        data: sma.buckets.map(b => b.win_rate),
+        backgroundColor: '#42A5F5',
+        borderRadius: 4,
+      }}]
+    }},
+    options: {{
+      responsive: true, maintainAspectRatio: false,
+      plugins: {{
+        title: {{ display:true, text:'SMA25/75 乖離率レンジ別勝率 (n=' + sma.total_matched + ')', color:'#9E9E9E', font:{{ size:12 }} }},
+        legend: {{ display:false }},
+        tooltip: {{ callbacks: {{ label: function(c) {{
+          const b = sma.buckets[c.dataIndex];
+          return '勝率: ' + b.win_rate + '% (' + b.wins + '/' + b.count + '件)';
+        }} }} }}
+      }},
+      scales: {{
+        x: {{ title: {{ display:true, text:'SMA乖離率', color:'#757575', font:{{ size:9 }} }}, ticks: {{ color:'#757575', font:{{ size:9 }} }}, grid: {{ color:'#2A2A2A' }} }},
+        y: {{ min:0, max:100, ticks: {{ color:'#757575', font:{{ size:9 }}, callback: v => v + '%' }}, grid: {{ color:'#2A2A2A' }} }}
+      }}
+    }}
+  }});
+}} else {{
+  smaEl.innerHTML = '<div class="data-note">SMA乖離率データを蓄積中です。新規エントリーが記録された後に表示されます。</div>';
+}}
+</script>
+</body>
+</html>"""
+    return html
+
+
+def generate_strategy_page(config: dict) -> None:
+    """Build cross-profile data and generate docs/strategy.html."""
+    profiles_data = build_cross_profile_data(config)
+    html = generate_strategy_html(profiles_data, config)
+    output_path = os.path.join(BASE_DIR, "docs", "strategy.html")
+    os.makedirs(os.path.dirname(output_path), exist_ok=True)
+    with open(output_path, "w", encoding="utf-8") as f:
+        f.write(html)
+    print(f"\nStrategy page generated: {output_path}")
 
 
 def generate_for_profile(profile_name: str, config: dict) -> None:
@@ -1759,7 +2597,8 @@ def generate_for_profile(profile_name: str, config: dict) -> None:
 
     balance = config.get("account", {}).get("balance", 300000)
     trades = load_trades()
-    data = build_dashboard_data(trades, initial_balance=balance)
+    history = load_history()
+    data = build_dashboard_data(trades, initial_balance=balance, history=history)
     os.makedirs(DOCS_DIR, exist_ok=True)
     html = generate_html(data, config, profile_label=profile_label)
     with open(OUTPUT_FILE, "w", encoding="utf-8") as f:
@@ -1767,9 +2606,6 @@ def generate_for_profile(profile_name: str, config: dict) -> None:
     print(f"Dashboard generated: {OUTPUT_FILE}")
     print(f"  Closed trades: {data['trade_count']} / Open: {data['open_count']}")
     print(f"  Total P&L: ¥{data['total_pnl']:,.0f} / Unrealized: ¥{data['unrealized_pnl']:,.0f}")
-
-    # 実行履歴ページを生成
-    history = load_history()
     if history:
         history_html = generate_history_html(history)
         with open(HISTORY_OUTPUT, "w", encoding="utf-8") as f:
@@ -1826,6 +2662,10 @@ def main():
     for profile_name in profiles:
         profile_config = copy.deepcopy(config)
         generate_for_profile(profile_name, profile_config)
+
+    # Generate strategy page when running all profiles or default
+    if args.profile in ("all", "default"):
+        generate_strategy_page(copy.deepcopy(config))
 
 
 if __name__ == "__main__":

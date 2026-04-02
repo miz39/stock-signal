@@ -44,7 +44,7 @@ td.num { text-align:right; font-variant-numeric:tabular-nums; }
 .policy-val { color:#E0E0E0; font-weight:600; }
 a.stock-link { color:#64B5F6; text-decoration:none; }
 a.stock-link:hover { text-decoration:underline; }
-@media(max-width:480px) {
+@media(max-width:600px) {
   .cards { grid-template-columns:repeat(2,1fr); }
   .card .value { font-size:1.2rem; }
   .policy-grid { grid-template-columns:1fr; }
@@ -55,19 +55,19 @@ a.stock-link:hover { text-decoration:underline; }
 </head>
 <body>
 <h1>Paper Trade Dashboard [conservative]</h1>
-<div class="updated">最終更新: 2026-03-26 15:19 JST &nbsp;|&nbsp; <a href="history.html" style="color:#64B5F6;text-decoration:none">実行履歴 &rarr;</a> &nbsp;|&nbsp; <a href="weekly-review.html" style="color:#64B5F6;text-decoration:none">週次レビュー &rarr;</a></div>
+<div class="updated">最終更新: 2026-04-02 22:46 JST &nbsp;|&nbsp; <a href="history.html" style="color:#64B5F6;text-decoration:none">実行履歴 &rarr;</a> &nbsp;|&nbsp; <a href="weekly-review.html" style="color:#64B5F6;text-decoration:none">週次レビュー &rarr;</a> &nbsp;|&nbsp; <a href="../strategy.html" style="color:#64B5F6;text-decoration:none">戦略分析 &rarr;</a></div>
 
 <div class="hero-card">
   <div class="label">総資産</div>
-  <div class="hero-value">&yen;300,017</div>
-  <div class="hero-change" style="color:#00C853">+17（+0.01%）</div>
+  <div class="hero-value">&yen;301,207</div>
+  <div class="hero-change" style="color:#00C853">+1,207（+0.40%）</div>
   <div class="sub">初期資金 &yen;300,000</div>
 </div>
 
 <div class="cards">
   <div class="card">
     <div class="label">株時価</div>
-    <div class="value">&yen;189,211</div>
+    <div class="value">&yen;190,401</div>
     <div class="sub">9銘柄保有</div>
   </div>
   <div class="card">
@@ -81,7 +81,7 @@ a.stock-link:hover { text-decoration:underline; }
   </div>
   <div class="card">
     <div class="label">含み損益</div>
-    <div class="value" style="color:#00C853">&yen;+17</div>
+    <div class="value" style="color:#00C853">&yen;+1,207</div>
   </div>
   <div class="card">
     <div class="label">勝率</div>
@@ -137,6 +137,27 @@ a.stock-link:hover { text-decoration:underline; }
 </div>
 
 
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px">
+  <div class="chart-wrap"><canvas id="sectorChart" height="220"></canvas></div>
+  <div class="chart-wrap"><canvas id="monthlyChart" height="220"></canvas></div>
+</div>
+<div class="chart-wrap">
+  <canvas id="ddChart" height="120"></canvas>
+</div>
+<div class="chart-wrap">
+  <canvas id="scatterChart" height="200"></canvas>
+</div>
+
+<div class="section">
+  <h2>シグナル精度（保有期間別）</h2>
+  <div class="chart-wrap"><canvas id="sigAccChart" height="220"></canvas></div>
+</div>
+
+<div class="section">
+  <h2>RSI 有効性分析</h2>
+  <div class="chart-wrap"><canvas id="rsiChart" height="220"></canvas></div>
+</div>
+
 <div class="section">
   <h2>保有中ポジション</h2>
   <div style="overflow-x:auto">
@@ -145,66 +166,66 @@ a.stock-link:hover { text-decoration:underline; }
     <tbody><tr>
 <td><a class="stock-link" href="stock/4005.html">住友化学</a><br><span class="ticker">4005</span></td>
 <td class="num">&yen;504</td>
-<td class="num">&yen;504</td>
+<td class="num">&yen;524</td>
 <td class="num">59</td>
-<td class="num" style="color:#FF1744">-30<br><span class="small">(-0.1%)</span></td>
-<td class="num">0日</td>
+<td class="num" style="color:#00C853">+1,156<br><span class="small">(+3.9%)</span></td>
+<td class="num">7日</td>
 </tr><tr>
 <td><a class="stock-link" href="stock/6952.html">カシオ計算機</a><br><span class="ticker">6952</span></td>
 <td class="num">&yen;1,460</td>
-<td class="num">&yen;1,456</td>
+<td class="num">&yen;1,458</td>
 <td class="num">20</td>
-<td class="num" style="color:#FF1744">-90<br><span class="small">(-0.3%)</span></td>
-<td class="num">0日</td>
+<td class="num" style="color:#FF1744">-40<br><span class="small">(-0.1%)</span></td>
+<td class="num">7日</td>
 </tr><tr>
 <td><a class="stock-link" href="stock/5214.html">日本電気硝子</a><br><span class="ticker">5214</span></td>
 <td class="num">&yen;6,381</td>
-<td class="num">&yen;6,377</td>
+<td class="num">&yen;6,350</td>
 <td class="num">4</td>
-<td class="num" style="color:#FF1744">-16<br><span class="small">(-0.1%)</span></td>
-<td class="num">0日</td>
+<td class="num" style="color:#FF1744">-124<br><span class="small">(-0.5%)</span></td>
+<td class="num">7日</td>
 </tr><tr>
 <td><a class="stock-link" href="stock/6976.html">太陽誘電</a><br><span class="ticker">6976</span></td>
 <td class="num">&yen;4,142</td>
-<td class="num">&yen;4,154</td>
+<td class="num">&yen;3,861</td>
 <td class="num">5</td>
-<td class="num" style="color:#00C853">+60<br><span class="small">(+0.3%)</span></td>
-<td class="num">0日</td>
+<td class="num" style="color:#FF1744">-1,405<br><span class="small">(-6.8%)</span></td>
+<td class="num">7日</td>
 </tr><tr>
 <td><a class="stock-link" href="stock/4911.html">資生堂</a><br><span class="ticker">4911</span></td>
 <td class="num">&yen;3,005</td>
-<td class="num">&yen;3,004</td>
+<td class="num">&yen;3,318</td>
 <td class="num">7</td>
-<td class="num" style="color:#FF1744">-7<br><span class="small">(-0.0%)</span></td>
-<td class="num">0日</td>
+<td class="num" style="color:#00C853">+2,191<br><span class="small">(+10.4%)</span></td>
+<td class="num">7日</td>
 </tr><tr>
 <td><a class="stock-link" href="stock/8308.html">りそなホールディングス</a><br><span class="ticker">8308</span></td>
 <td class="num">&yen;1,808</td>
-<td class="num">&yen;1,810</td>
+<td class="num">&yen;1,812</td>
 <td class="num">11</td>
-<td class="num" style="color:#00C853">+16<br><span class="small">(+0.1%)</span></td>
-<td class="num">0日</td>
+<td class="num" style="color:#00C853">+38<br><span class="small">(+0.2%)</span></td>
+<td class="num">7日</td>
 </tr><tr>
 <td><a class="stock-link" href="stock/5711.html">三菱マテリアル</a><br><span class="ticker">5711</span></td>
 <td class="num">&yen;5,111</td>
-<td class="num">&yen;5,124</td>
+<td class="num">&yen;4,995</td>
 <td class="num">3</td>
-<td class="num" style="color:#00C853">+39<br><span class="small">(+0.2%)</span></td>
-<td class="num">0日</td>
+<td class="num" style="color:#FF1744">-348<br><span class="small">(-2.3%)</span></td>
+<td class="num">7日</td>
 </tr><tr>
 <td><a class="stock-link" href="stock/2768.html">双日</a><br><span class="ticker">2768</span></td>
 <td class="num">&yen;6,305</td>
-<td class="num">&yen;6,321</td>
+<td class="num">&yen;6,280</td>
 <td class="num">2</td>
-<td class="num" style="color:#00C853">+32<br><span class="small">(+0.2%)</span></td>
-<td class="num">0日</td>
+<td class="num" style="color:#FF1744">-50<br><span class="small">(-0.4%)</span></td>
+<td class="num">7日</td>
 </tr><tr>
 <td><a class="stock-link" href="stock/8697.html">日本取引所グループ</a><br><span class="ticker">8697</span></td>
 <td class="num">&yen;1,894</td>
-<td class="num">&yen;1,895</td>
+<td class="num">&yen;1,867</td>
 <td class="num">8</td>
-<td class="num" style="color:#00C853">+12<br><span class="small">(+0.1%)</span></td>
-<td class="num">0日</td>
+<td class="num" style="color:#FF1744">-212<br><span class="small">(-1.4%)</span></td>
+<td class="num">7日</td>
 </tr></tbody>
   </table>
   </div>
@@ -221,8 +242,8 @@ a.stock-link:hover { text-decoration:underline; }
 </div>
 
 <script>
-const labels = ["2026-03-26"];
-const data = [300017.0];
+const labels = ["2026-03-26", "2026-03-27", "2026-03-28", "2026-03-29", "2026-03-30", "2026-03-31", "2026-04-01", "2026-04-02"];
+const data = [300000, 300000, 300000, 300000, 300000, 300000, 300000, 301206.9];
 if (labels.length > 0) {
   const ctx = document.getElementById('equityChart').getContext('2d');
   const gradient = ctx.createLinearGradient(0,0,0,200);
@@ -282,6 +303,238 @@ if (labels.length > 0) {
 } else {
   document.getElementById('equityChart').parentElement.innerHTML =
     '<p style="text-align:center;color:#757575;padding:24px">チャートデータがありません</p>';
+}
+
+// Sector Pie Chart
+const sectorLabels = ["\u5316\u5b66\u30fb\u533b\u85ac", "\u6a5f\u68b0\u30fb\u96fb\u6a5f", "\u9244\u92fc\u30fb\u91d1\u5c5e", "\u91d1\u878d\u30fb\u5546\u793e", "\u98df\u54c1", "\u73fe\u91d1"];
+const sectorValues = [54118, 48475, 40385, 34862, 12560, 110806];
+if (sectorLabels.length > 0) {
+  const colors = ['#2196F3','#00C853','#FF9800','#9C27B0','#F44336','#00BCD4','#FF5722','#795548','#607D8B','#E91E63','#8BC34A','#FFC107'];
+  new Chart(document.getElementById('sectorChart'), {
+    type: 'doughnut',
+    data: {
+      labels: sectorLabels,
+      datasets: [{ data: sectorValues, backgroundColor: colors.slice(0, sectorLabels.length), borderWidth: 0 }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { position:'right', labels: { color:'#9E9E9E', font:{ size:10 }, padding:8 } },
+        title: { display:true, text:'セクター配分', color:'#9E9E9E', font:{ size:12 } },
+        tooltip: { callbacks: { label: function(c) { return c.label + ': ¥' + c.parsed.toLocaleString(); } } }
+      }
+    }
+  });
+}
+
+// Monthly Performance Bar Chart
+const mLabels = [];
+const mPnl = [];
+const mWR = [];
+if (mLabels.length > 0) {
+  new Chart(document.getElementById('monthlyChart'), {
+    type: 'bar',
+    data: {
+      labels: mLabels,
+      datasets: [{
+        label: '月次損益',
+        data: mPnl,
+        backgroundColor: mPnl.map(v => v >= 0 ? 'rgba(0,200,83,0.7)' : 'rgba(255,23,68,0.7)'),
+        borderRadius: 4,
+        yAxisID: 'y',
+      }, {
+        label: '勝率',
+        data: mWR,
+        type: 'line',
+        borderColor: '#64B5F6',
+        borderWidth: 2,
+        pointRadius: 3,
+        fill: false,
+        yAxisID: 'y1',
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        title: { display:true, text:'月次パフォーマンス', color:'#9E9E9E', font:{ size:12 } },
+        legend: { labels: { color:'#9E9E9E', font:{ size:10 } } },
+        tooltip: { callbacks: { label: function(c) {
+          if (c.datasetIndex === 0) return '損益: ¥' + c.parsed.y.toLocaleString();
+          return '勝率: ' + c.parsed.y + '%';
+        } } }
+      },
+      scales: {
+        x: { ticks: { color:'#757575', font:{ size:9 } }, grid: { color:'#2A2A2A' } },
+        y: { position:'left', ticks: { color:'#757575', font:{ size:9 }, callback: v => '¥' + v.toLocaleString() }, grid: { color:'#2A2A2A' } },
+        y1: { position:'right', min:0, max:100, ticks: { color:'#64B5F6', font:{ size:9 }, callback: v => v + '%' }, grid: { display:false } }
+      }
+    }
+  });
+}
+
+// Drawdown Chart
+const ddData = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0];
+if (labels.length > 0 && ddData.length > 0) {
+  const ddCtx = document.getElementById('ddChart').getContext('2d');
+  const ddGrad = ddCtx.createLinearGradient(0,0,0,120);
+  ddGrad.addColorStop(0, 'rgba(255,23,68,0)');
+  ddGrad.addColorStop(1, 'rgba(255,23,68,0.3)');
+  new Chart(ddCtx, {
+    type: 'line',
+    data: {
+      labels: labels,
+      datasets: [{ label: 'ドローダウン (%)', data: ddData, borderColor: '#FF1744', backgroundColor: ddGrad, fill: true, tension:0.3, pointRadius:0, borderWidth:1.5 }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        title: { display:true, text:'ドローダウン推移', color:'#9E9E9E', font:{ size:12 } },
+        legend: { display:false },
+        tooltip: { callbacks: { label: c => c.parsed.y.toFixed(2) + '%' } }
+      },
+      scales: {
+        x: { ticks: { color:'#757575', maxTicksLimit:8, font:{ size:9 } }, grid: { color:'#2A2A2A' } },
+        y: { ticks: { color:'#757575', font:{ size:9 }, callback: v => v + '%' }, grid: { color:'#2A2A2A' } }
+      }
+    }
+  });
+}
+
+// Scatter: Holding Period vs PnL%
+const scatterData = [];
+if (scatterData.length > 0) {
+  new Chart(document.getElementById('scatterChart'), {
+    type: 'scatter',
+    data: {
+      datasets: [{
+        label: 'クローズドトレード',
+        data: scatterData,
+        backgroundColor: scatterData.map(d => d.y >= 0 ? 'rgba(0,200,83,0.6)' : 'rgba(255,23,68,0.6)'),
+        pointRadius: 5,
+        pointHoverRadius: 7,
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        title: { display:true, text:'保有期間 vs 損益率', color:'#9E9E9E', font:{ size:12 } },
+        legend: { display:false },
+        tooltip: { callbacks: {
+          label: function(c) {
+            const d = scatterData[c.dataIndex];
+            return d.name + ': ' + d.x + '日 / ' + (d.y >= 0 ? '+' : '') + d.y + '%';
+          }
+        } }
+      },
+      scales: {
+        x: { title: { display:true, text:'保有日数', color:'#757575', font:{ size:10 } }, ticks: { color:'#757575', font:{ size:9 } }, grid: { color:'#2A2A2A' } },
+        y: { title: { display:true, text:'損益率 (%)', color:'#757575', font:{ size:10 } }, ticks: { color:'#757575', font:{ size:9 }, callback: v => v + '%' }, grid: { color:'#2A2A2A' } }
+      }
+    }
+  });
+}
+
+// Signal Accuracy Chart (holding period buckets)
+const sigAcc = [{"bucket": "1-5d", "count": 0, "wins": 0, "win_rate": 0, "avg_pnl_pct": 0}, {"bucket": "6-10d", "count": 0, "wins": 0, "win_rate": 0, "avg_pnl_pct": 0}, {"bucket": "11-20d", "count": 0, "wins": 0, "win_rate": 0, "avg_pnl_pct": 0}, {"bucket": "21-30d", "count": 0, "wins": 0, "win_rate": 0, "avg_pnl_pct": 0}, {"bucket": "31d+", "count": 0, "wins": 0, "win_rate": 0, "avg_pnl_pct": 0}];
+if (sigAcc.some(b => b.count > 0)) {
+  new Chart(document.getElementById('sigAccChart'), {
+    type: 'bar',
+    data: {
+      labels: sigAcc.map(b => b.bucket),
+      datasets: [{
+        label: '平均損益率 (%)',
+        data: sigAcc.map(b => b.avg_pnl_pct),
+        backgroundColor: sigAcc.map(b => b.avg_pnl_pct >= 0 ? 'rgba(0,200,83,0.7)' : 'rgba(255,23,68,0.7)'),
+        borderRadius: 4,
+        yAxisID: 'y',
+      }, {
+        label: '勝率 (%)',
+        data: sigAcc.map(b => b.win_rate),
+        type: 'line',
+        borderColor: '#64B5F6',
+        borderWidth: 2,
+        pointRadius: 4,
+        fill: false,
+        yAxisID: 'y1',
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        title: { display:true, text:'保有期間別 勝率 & 平均損益率', color:'#9E9E9E', font:{ size:12 } },
+        legend: { labels: { color:'#9E9E9E', font:{ size:10 } } },
+        tooltip: { callbacks: { label: function(c) {
+          const b = sigAcc[c.dataIndex];
+          if (c.datasetIndex === 0) return '平均損益: ' + b.avg_pnl_pct + '% (' + b.count + '件)';
+          return '勝率: ' + b.win_rate + '% (' + b.wins + '/' + b.count + ')';
+        } } }
+      },
+      scales: {
+        x: { ticks: { color:'#757575', font:{ size:9 } }, grid: { color:'#2A2A2A' } },
+        y: { position:'left', title: { display:true, text:'平均損益率 (%)', color:'#757575', font:{ size:9 } }, ticks: { color:'#757575', font:{ size:9 }, callback: v => v + '%' }, grid: { color:'#2A2A2A' } },
+        y1: { position:'right', min:0, max:100, title: { display:true, text:'勝率 (%)', color:'#64B5F6', font:{ size:9 } }, ticks: { color:'#64B5F6', font:{ size:9 }, callback: v => v + '%' }, grid: { display:false } }
+      }
+    }
+  });
+} else {
+  document.getElementById('sigAccChart').parentElement.innerHTML =
+    '<p style="text-align:center;color:#757575;padding:24px">クローズドトレードのデータがありません</p>';
+}
+
+// RSI Analysis Chart
+const rsiAna = [{"range": "50-55", "count": 0, "wins": 0, "win_rate": 0, "avg_pnl_pct": 0}, {"range": "55-60", "count": 0, "wins": 0, "win_rate": 0, "avg_pnl_pct": 0}, {"range": "60-65", "count": 0, "wins": 0, "win_rate": 0, "avg_pnl_pct": 0}];
+if (rsiAna.some(b => b.count > 0)) {
+  new Chart(document.getElementById('rsiChart'), {
+    type: 'bar',
+    data: {
+      labels: rsiAna.map(b => 'RSI ' + b.range),
+      datasets: [{
+        label: '勝率 (%)',
+        data: rsiAna.map(b => b.win_rate),
+        backgroundColor: '#42A5F5',
+        borderRadius: 4,
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        title: { display:true, text:'RSI レンジ別勝率', color:'#9E9E9E', font:{ size:12 } },
+        legend: { display:false },
+        tooltip: { callbacks: { label: function(c) {
+          const b = rsiAna[c.dataIndex];
+          return '勝率: ' + b.win_rate + '% (' + b.wins + '/' + b.count + '件) 平均損益: ' + b.avg_pnl_pct + '%';
+        } } }
+      },
+      scales: {
+        x: { ticks: { color:'#757575', font:{ size:9 } }, grid: { color:'#2A2A2A' } },
+        y: { min:0, max:100, ticks: { color:'#757575', font:{ size:9 }, callback: v => v + '%' }, grid: { color:'#2A2A2A' } }
+      },
+      plugins_datalabels: false,
+    }
+  });
+  // Add count labels on top of bars
+  const rsiCanvas = document.getElementById('rsiChart');
+  const rsiChartInst = Chart.getChart(rsiCanvas);
+  if (rsiChartInst) {
+    const origDraw = rsiChartInst.draw.bind(rsiChartInst);
+    rsiChartInst.draw = function() {
+      origDraw();
+      const ctx = rsiCanvas.getContext('2d');
+      const meta = rsiChartInst.getDatasetMeta(0);
+      ctx.fillStyle = '#9E9E9E';
+      ctx.font = '10px sans-serif';
+      ctx.textAlign = 'center';
+      meta.data.forEach((bar, i) => {
+        ctx.fillText(rsiAna[i].count + '件', bar.x, bar.y - 6);
+      });
+    };
+    rsiChartInst.draw();
+  }
+} else {
+  document.getElementById('rsiChart').parentElement.innerHTML =
+    '<p style="text-align:center;color:#757575;padding:24px">RSIデータがありません（execution_historyとのマッチなし）</p>';
 }
 </script>
 </body>
