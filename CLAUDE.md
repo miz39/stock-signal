@@ -116,6 +116,8 @@ python3 cli.py watchlist
 python3 cli.py status
 python3 cli.py risk              # リスク分析（VaR/CVaR/セクター集中度/アノマリー）
 python3 cli.py risk --quick      # 相関分析をスキップ（高速）
+python3 cli.py performance [1w|1m|3m|6m|1y]  # 期間指定パフォーマンスレポート
+python3 cli.py compare           # プロファイル間の比較
 python3 cli.py analyze [ticker]
 python3 cli.py backtest ticker [period]
 python3 cli.py simulate [period]

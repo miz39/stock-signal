@@ -212,6 +212,103 @@ def cmd_risk(args):
     _output(report)
 
 
+def cmd_performance(args):
+    from portfolio import _load_trades
+    from datetime import date, timedelta
+
+    config = load_config(args.profile)
+    trades = _load_trades()
+    closed = [t for t in trades if t.get("status") == "closed"]
+
+    # Filter by period
+    if args.period:
+        period_map = {"1w": 7, "1m": 30, "3m": 90, "6m": 180, "1y": 365}
+        days = period_map.get(args.period)
+        if days:
+            cutoff = (date.today() - timedelta(days=days)).isoformat()
+            closed = [t for t in closed if (t.get("exit_date") or "") >= cutoff]
+
+    if not closed:
+        _output({"error": "該当期間のクローズドトレードがありません", "trades": 0})
+        return
+
+    pnls = [t.get("pnl", 0) for t in closed]
+    wins = [p for p in pnls if p > 0]
+    losses = [p for p in pnls if p <= 0]
+    gross_profit = sum(wins)
+    gross_loss = abs(sum(losses))
+    pf = round(gross_profit / gross_loss, 2) if gross_loss > 0 else float("inf")
+
+    # Monthly breakdown
+    monthly = {}
+    for t in closed:
+        month = (t.get("exit_date") or "")[:7]
+        if month:
+            monthly.setdefault(month, {"pnl": 0, "count": 0, "wins": 0})
+            monthly[month]["pnl"] += t.get("pnl", 0)
+            monthly[month]["count"] += 1
+            if t.get("pnl", 0) > 0:
+                monthly[month]["wins"] += 1
+
+    _output({
+        "period": args.period or "all",
+        "trades": len(closed),
+        "wins": len(wins),
+        "losses": len(losses),
+        "win_rate": round(len(wins) / len(closed) * 100, 1),
+        "total_pnl": round(sum(pnls)),
+        "avg_pnl": round(sum(pnls) / len(pnls)),
+        "gross_profit": round(gross_profit),
+        "gross_loss": round(gross_loss),
+        "profit_factor": pf,
+        "best_trade": round(max(pnls)),
+        "worst_trade": round(min(pnls)),
+        "monthly": {
+            m: {"pnl": round(v["pnl"]), "count": v["count"],
+                "win_rate": round(v["wins"] / v["count"] * 100) if v["count"] else 0}
+            for m, v in sorted(monthly.items())
+        },
+    })
+
+
+def cmd_compare(args):
+    from portfolio import _load_trades
+
+    config_raw = load_config("default")
+    profiles = ["default"] + list(config_raw.get("profiles", {}).keys())
+    results = []
+
+    for p in profiles:
+        set_profile(p)
+        config = load_config(p)
+        balance = config["account"]["balance"]
+        trades = _load_trades()
+        closed = [t for t in trades if t.get("status") == "closed"]
+        open_pos = [t for t in trades if t.get("status") == "open"]
+
+        pnls = [t.get("pnl", 0) for t in closed]
+        wins = sum(1 for p in pnls if p > 0)
+        total_pnl = sum(pnls)
+        gross_profit = sum(p for p in pnls if p > 0)
+        gross_loss = abs(sum(p for p in pnls if p <= 0))
+        pf = round(gross_profit / gross_loss, 2) if gross_loss > 0 else 0
+        cash = get_cash_balance(balance)
+
+        results.append({
+            "profile": p,
+            "trades": len(closed),
+            "open": len(open_pos),
+            "win_rate": round(wins / len(closed) * 100, 1) if closed else 0,
+            "total_pnl": round(total_pnl),
+            "profit_factor": pf,
+            "cash": round(cash),
+        })
+
+    # Restore default profile
+    set_profile(args.profile)
+    _output({"profiles": results})
+
+
 def cmd_status(args):
     config = load_config(args.profile)
     balance = config["account"]["balance"]
@@ -259,6 +356,11 @@ def main():
     p_risk = sub.add_parser("risk")
     p_risk.add_argument("--quick", action="store_true", help="Skip correlation analysis")
 
+    p_perf = sub.add_parser("performance")
+    p_perf.add_argument("period", nargs="?", default=None, help="Period: 1w/1m/3m/6m/1y")
+
+    sub.add_parser("compare")
+
     args = parser.parse_args()
     if not args.command:
         parser.print_help()
@@ -277,6 +379,8 @@ def main():
         "rule": cmd_rule,
         "status": cmd_status,
         "risk": cmd_risk,
+        "performance": cmd_performance,
+        "compare": cmd_compare,
     }
 
     try:

@@ -44,7 +44,7 @@ td.num { text-align:right; font-variant-numeric:tabular-nums; }
 .policy-val { color:#E0E0E0; font-weight:600; }
 a.stock-link { color:#64B5F6; text-decoration:none; }
 a.stock-link:hover { text-decoration:underline; }
-@media(max-width:480px) {
+@media(max-width:600px) {
   .cards { grid-template-columns:repeat(2,1fr); }
   .card .value { font-size:1.2rem; }
   .policy-grid { grid-template-columns:1fr; }
@@ -55,19 +55,19 @@ a.stock-link:hover { text-decoration:underline; }
 </head>
 <body>
 <h1>Paper Trade Dashboard</h1>
-<div class="updated">最終更新: 2026-04-02 15:10 JST &nbsp;|&nbsp; <a href="history.html" style="color:#64B5F6;text-decoration:none">実行履歴 &rarr;</a> &nbsp;|&nbsp; <a href="weekly-review.html" style="color:#64B5F6;text-decoration:none">週次レビュー &rarr;</a></div>
+<div class="updated">最終更新: 2026-04-02 16:45 JST &nbsp;|&nbsp; <a href="history.html" style="color:#64B5F6;text-decoration:none">実行履歴 &rarr;</a> &nbsp;|&nbsp; <a href="weekly-review.html" style="color:#64B5F6;text-decoration:none">週次レビュー &rarr;</a></div>
 
 <div class="hero-card">
   <div class="label">総資産</div>
-  <div class="hero-value">&yen;306,022</div>
-  <div class="hero-change" style="color:#00C853">+6,022（+2.01%）</div>
+  <div class="hero-value">&yen;305,638</div>
+  <div class="hero-change" style="color:#00C853">+5,638（+1.88%）</div>
   <div class="sub">初期資金 &yen;300,000</div>
 </div>
 
 <div class="cards">
   <div class="card">
     <div class="label">株時価</div>
-    <div class="value">&yen;277,230</div>
+    <div class="value">&yen;276,846</div>
     <div class="sub">10銘柄保有</div>
   </div>
   <div class="card">
@@ -81,7 +81,7 @@ a.stock-link:hover { text-decoration:underline; }
   </div>
   <div class="card">
     <div class="label">含み損益</div>
-    <div class="value" style="color:#00C853">&yen;+5,979</div>
+    <div class="value" style="color:#00C853">&yen;+5,595</div>
   </div>
   <div class="card">
     <div class="label">勝率</div>
@@ -137,6 +137,17 @@ a.stock-link:hover { text-decoration:underline; }
 </div>
 
 
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px">
+  <div class="chart-wrap"><canvas id="sectorChart" height="220"></canvas></div>
+  <div class="chart-wrap"><canvas id="monthlyChart" height="220"></canvas></div>
+</div>
+<div class="chart-wrap">
+  <canvas id="ddChart" height="120"></canvas>
+</div>
+<div class="chart-wrap">
+  <canvas id="scatterChart" height="200"></canvas>
+</div>
+
 <div class="section">
   <h2>保有中ポジション</h2>
   <div style="overflow-x:auto">
@@ -145,72 +156,72 @@ a.stock-link:hover { text-decoration:underline; }
     <tbody><tr>
 <td><a class="stock-link" href="stock/9502.html">中部電力</a><br><span class="ticker">9502</span></td>
 <td class="num">&yen;2,600</td>
-<td class="num">&yen;2,702</td>
+<td class="num">&yen;2,700</td>
 <td class="num">11</td>
-<td class="num" style="color:#00C853">+1,122<br><span class="small">(+3.9%)</span></td>
+<td class="num" style="color:#00C853">+1,106<br><span class="small">(+3.9%)</span></td>
 <td class="num">10日</td>
 </tr><tr>
 <td><a class="stock-link" href="stock/9107.html">川崎汽船</a><br><span class="ticker">9107</span></td>
 <td class="num">&yen;2,572</td>
-<td class="num">&yen;2,718</td>
+<td class="num">&yen;2,736</td>
 <td class="num">11</td>
-<td class="num" style="color:#00C853">+1,612<br><span class="small">(+5.7%)</span></td>
+<td class="num" style="color:#00C853">+1,798<br><span class="small">(+6.4%)</span></td>
 <td class="num">10日</td>
 </tr><tr>
 <td><a class="stock-link" href="stock/2282.html">日本ハム</a><br><span class="ticker">2282</span></td>
 <td class="num">&yen;6,851</td>
-<td class="num">&yen;7,347</td>
+<td class="num">&yen;7,376</td>
 <td class="num">2</td>
-<td class="num" style="color:#00C853">+992<br><span class="small">(+7.2%)</span></td>
+<td class="num" style="color:#00C853">+1,050<br><span class="small">(+7.7%)</span></td>
 <td class="num">9日</td>
 </tr><tr>
 <td><a class="stock-link" href="stock/3086.html">J.フロント リテイリング</a><br><span class="ticker">3086</span></td>
 <td class="num">&yen;2,495</td>
-<td class="num">&yen;2,498</td>
+<td class="num">&yen;2,490</td>
 <td class="num">12</td>
-<td class="num" style="color:#00C853">+42<br><span class="small">(+0.1%)</span></td>
+<td class="num" style="color:#FF1744">-60<br><span class="small">(-0.2%)</span></td>
 <td class="num">6日</td>
 </tr><tr>
 <td><a class="stock-link" href="stock/3099.html">三越伊勢丹ホールディングス</a><br><span class="ticker">3099</span></td>
 <td class="num">&yen;2,931</td>
-<td class="num">&yen;2,990</td>
+<td class="num">&yen;2,974</td>
 <td class="num">10</td>
-<td class="num" style="color:#00C853">+582<br><span class="small">(+2.0%)</span></td>
+<td class="num" style="color:#00C853">+432<br><span class="small">(+1.5%)</span></td>
 <td class="num">2日</td>
 </tr><tr>
 <td><a class="stock-link" href="stock/2503.html">キリンホールディングス</a><br><span class="ticker">2503</span></td>
 <td class="num">&yen;2,568</td>
-<td class="num">&yen;2,612</td>
+<td class="num">&yen;2,616</td>
 <td class="num">11</td>
-<td class="num" style="color:#00C853">+475<br><span class="small">(+1.7%)</span></td>
+<td class="num" style="color:#00C853">+530<br><span class="small">(+1.9%)</span></td>
 <td class="num">2日</td>
 </tr><tr>
 <td><a class="stock-link" href="stock/5803.html">フジクラ</a><br><span class="ticker">5803</span></td>
 <td class="num">&yen;4,198</td>
-<td class="num">&yen;4,314</td>
+<td class="num">&yen;4,293</td>
 <td class="num">7</td>
-<td class="num" style="color:#00C853">+810<br><span class="small">(+2.8%)</span></td>
+<td class="num" style="color:#00C853">+663<br><span class="small">(+2.3%)</span></td>
 <td class="num">2日</td>
 </tr><tr>
 <td><a class="stock-link" href="stock/4005.html">住友化学</a><br><span class="ticker">4005</span></td>
 <td class="num">&yen;512</td>
-<td class="num">&yen;523</td>
+<td class="num">&yen;524</td>
 <td class="num">57</td>
-<td class="num" style="color:#00C853">+638<br><span class="small">(+2.2%)</span></td>
+<td class="num" style="color:#00C853">+650<br><span class="small">(+2.2%)</span></td>
 <td class="num">2日</td>
 </tr><tr>
 <td><a class="stock-link" href="stock/5711.html">三菱マテリアル</a><br><span class="ticker">5711</span></td>
 <td class="num">&yen;5,044</td>
-<td class="num">&yen;5,017</td>
+<td class="num">&yen;4,995</td>
 <td class="num">5</td>
-<td class="num" style="color:#FF1744">-134<br><span class="small">(-0.5%)</span></td>
+<td class="num" style="color:#FF1744">-244<br><span class="small">(-1.0%)</span></td>
 <td class="num">1日</td>
 </tr><tr>
 <td><a class="stock-link" href="stock/7186.html">コンコルディア・フィナンシャルグループ</a><br><span class="ticker">7186</span></td>
 <td class="num">&yen;1,468</td>
-<td class="num">&yen;1,460</td>
+<td class="num">&yen;1,451</td>
 <td class="num">20</td>
-<td class="num" style="color:#FF1744">-160<br><span class="small">(-0.6%)</span></td>
+<td class="num" style="color:#FF1744">-330<br><span class="small">(-1.1%)</span></td>
 <td class="num">1日</td>
 </tr></tbody>
   </table>
@@ -369,7 +380,7 @@ a.stock-link:hover { text-decoration:underline; }
 
 <script>
 const labels = ["2026-03-04", "2026-03-05", "2026-03-06", "2026-03-07", "2026-03-08", "2026-03-09", "2026-03-10", "2026-03-11", "2026-03-12", "2026-03-13", "2026-03-14", "2026-03-15", "2026-03-16", "2026-03-17", "2026-03-18", "2026-03-19", "2026-03-20", "2026-03-21", "2026-03-22", "2026-03-23", "2026-03-24", "2026-03-25", "2026-03-26", "2026-03-27", "2026-03-28", "2026-03-29", "2026-03-30", "2026-03-31", "2026-04-01", "2026-04-02"];
-const data = [300000, 300000, 300000, 300000, 300000, 293542.0, 293542.0, 293542.0, 294766.0, 293630.8, 293630.8, 293630.8, 292423.3, 292423.3, 292423.3, 292423.3, 292423.3, 292423.3, 292423.3, 289696.0, 288174.1, 288174.1, 294722.1, 294778.1, 294778.1, 294778.1, 294778.1, 297920.3, 298942.8, 306021.8];
+const data = [300000, 300000, 300000, 300000, 300000, 293542.0, 293542.0, 293542.0, 294766.0, 293630.8, 293630.8, 293630.8, 292423.3, 292423.3, 292423.3, 292423.3, 292423.3, 292423.3, 292423.3, 289696.0, 288174.1, 288174.1, 294722.1, 294778.1, 294778.1, 294778.1, 294778.1, 297920.3, 298942.8, 305637.7];
 if (labels.length > 0) {
   const ctx = document.getElementById('equityChart').getContext('2d');
   const gradient = ctx.createLinearGradient(0,0,0,200);
@@ -429,6 +440,137 @@ if (labels.length > 0) {
 } else {
   document.getElementById('equityChart').parentElement.innerHTML =
     '<p style="text-align:center;color:#757575;padding:24px">チャートデータがありません</p>';
+}
+
+// Sector Pie Chart
+const sectorLabels = ["\u904b\u8f38\u30fb\u901a\u4fe1\u30fb\u30b5\u30fc\u30d3\u30b9", "\u98df\u54c1", "\u4e0d\u52d5\u7523\u30fb\u5009\u5eab", "\u9244\u92fc\u30fb\u91d1\u5c5e", "\u5316\u5b66\u30fb\u533b\u85ac", "\u81ea\u52d5\u8eca\u30fb\u7cbe\u5bc6", "\u73fe\u91d1"];
+const sectorValues = [59796, 43534, 59625, 55026, 29845, 29020, 28792];
+if (sectorLabels.length > 0) {
+  const colors = ['#2196F3','#00C853','#FF9800','#9C27B0','#F44336','#00BCD4','#FF5722','#795548','#607D8B','#E91E63','#8BC34A','#FFC107'];
+  new Chart(document.getElementById('sectorChart'), {
+    type: 'doughnut',
+    data: {
+      labels: sectorLabels,
+      datasets: [{ data: sectorValues, backgroundColor: colors.slice(0, sectorLabels.length), borderWidth: 0 }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { position:'right', labels: { color:'#9E9E9E', font:{ size:10 }, padding:8 } },
+        title: { display:true, text:'セクター配分', color:'#9E9E9E', font:{ size:12 } },
+        tooltip: { callbacks: { label: function(c) { return c.label + ': ¥' + c.parsed.toLocaleString(); } } }
+      }
+    }
+  });
+}
+
+// Monthly Performance Bar Chart
+const mLabels = ["2026-03", "2026-04"];
+const mPnl = [-2080, 2122];
+const mWR = [40, 100];
+if (mLabels.length > 0) {
+  new Chart(document.getElementById('monthlyChart'), {
+    type: 'bar',
+    data: {
+      labels: mLabels,
+      datasets: [{
+        label: '月次損益',
+        data: mPnl,
+        backgroundColor: mPnl.map(v => v >= 0 ? 'rgba(0,200,83,0.7)' : 'rgba(255,23,68,0.7)'),
+        borderRadius: 4,
+        yAxisID: 'y',
+      }, {
+        label: '勝率',
+        data: mWR,
+        type: 'line',
+        borderColor: '#64B5F6',
+        borderWidth: 2,
+        pointRadius: 3,
+        fill: false,
+        yAxisID: 'y1',
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        title: { display:true, text:'月次パフォーマンス', color:'#9E9E9E', font:{ size:12 } },
+        legend: { labels: { color:'#9E9E9E', font:{ size:10 } } },
+        tooltip: { callbacks: { label: function(c) {
+          if (c.datasetIndex === 0) return '損益: ¥' + c.parsed.y.toLocaleString();
+          return '勝率: ' + c.parsed.y + '%';
+        } } }
+      },
+      scales: {
+        x: { ticks: { color:'#757575', font:{ size:9 } }, grid: { color:'#2A2A2A' } },
+        y: { position:'left', ticks: { color:'#757575', font:{ size:9 }, callback: v => '¥' + v.toLocaleString() }, grid: { color:'#2A2A2A' } },
+        y1: { position:'right', min:0, max:100, ticks: { color:'#64B5F6', font:{ size:9 }, callback: v => v + '%' }, grid: { display:false } }
+      }
+    }
+  });
+}
+
+// Drawdown Chart
+const ddData = [0.0, 0.0, 0.0, 0.0, 0.0, -2.15, -2.15, -2.15, -1.74, -2.12, -2.12, -2.12, -2.53, -2.53, -2.53, -2.53, -2.53, -2.53, -2.53, -3.43, -3.94, -3.94, -1.76, -1.74, -1.74, -1.74, -1.74, -0.69, -0.35, 0.0];
+if (labels.length > 0 && ddData.length > 0) {
+  const ddCtx = document.getElementById('ddChart').getContext('2d');
+  const ddGrad = ddCtx.createLinearGradient(0,0,0,120);
+  ddGrad.addColorStop(0, 'rgba(255,23,68,0)');
+  ddGrad.addColorStop(1, 'rgba(255,23,68,0.3)');
+  new Chart(ddCtx, {
+    type: 'line',
+    data: {
+      labels: labels,
+      datasets: [{ label: 'ドローダウン (%)', data: ddData, borderColor: '#FF1744', backgroundColor: ddGrad, fill: true, tension:0.3, pointRadius:0, borderWidth:1.5 }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        title: { display:true, text:'ドローダウン推移', color:'#9E9E9E', font:{ size:12 } },
+        legend: { display:false },
+        tooltip: { callbacks: { label: c => c.parsed.y.toFixed(2) + '%' } }
+      },
+      scales: {
+        x: { ticks: { color:'#757575', maxTicksLimit:8, font:{ size:9 } }, grid: { color:'#2A2A2A' } },
+        y: { ticks: { color:'#757575', font:{ size:9 }, callback: v => v + '%' }, grid: { color:'#2A2A2A' } }
+      }
+    }
+  });
+}
+
+// Scatter: Holding Period vs PnL%
+const scatterData = [{"x": 27, "y": 5.15, "name": "\u9ad8\u5cf6\u5c4b"}, {"x": 5, "y": -3.86, "name": "\u91ce\u6751\u30db\u30fc\u30eb\u30c7\u30a3\u30f3\u30b0\u30b9"}, {"x": 5, "y": -7.07, "name": "\u30df\u30cd\u30d9\u30a2\u30df\u30c4\u30df"}, {"x": 12, "y": -4.09, "name": "JFE\u30db\u30fc\u30eb\u30c7\u30a3\u30f3\u30b0\u30b9"}, {"x": 19, "y": -4.78, "name": "\u30ad\u30e4\u30ce\u30f3"}, {"x": 5, "y": -3.24, "name": "\u795e\u6238\u88fd\u92fc\u6240"}, {"x": 19, "y": -3.75, "name": "\u65e5\u672c\u88fd\u9244"}, {"x": 5, "y": -1.47, "name": "\u6771\u30bd\u30fc"}, {"x": 5, "y": -5.24, "name": "NTN"}, {"x": 5, "y": -1.18, "name": "\u4f4f\u53cb\u5316\u5b66"}, {"x": 14, "y": 3.59, "name": "\u91ce\u6751\u30db\u30fc\u30eb\u30c7\u30a3\u30f3\u30b0\u30b9"}, {"x": 22, "y": 3.32, "name": "\u30ab\u30b7\u30aa\u8a08\u7b97\u6a5f"}, {"x": 14, "y": -1.63, "name": "\u6771\u6d77\u65c5\u5ba2\u9244\u9053"}, {"x": 4, "y": -3.81, "name": "NTN"}, {"x": 14, "y": -1.31, "name": "\u5b89\u5ddd\u96fb\u6a5f"}, {"x": 14, "y": -2.26, "name": "\u795e\u6238\u88fd\u92fc\u6240"}, {"x": 3, "y": 9.56, "name": "\u5b89\u5ddd\u96fb\u6a5f"}, {"x": 11, "y": -5.12, "name": "NTN"}, {"x": 15, "y": 0.15, "name": "\u4e09\u83f1\u30b1\u30df\u30ab\u30eb\u30b0\u30eb\u30fc\u30d7"}, {"x": 8, "y": 1.24, "name": "\u4e09\u4e95\u7269\u7523"}, {"x": 3, "y": 0.23, "name": "\u4fe1\u8d8a\u5316\u5b66\u5de5\u696d"}, {"x": 7, "y": 3.19, "name": "\u30d1\u30ca\u30bd\u30cb\u30c3\u30af \u30db\u30fc\u30eb\u30c7\u30a3\u30f3\u30b0\u30b9"}, {"x": 2, "y": 20.01, "name": "\u53e4\u6cb3\u96fb\u6c17\u5de5\u696d"}, {"x": 5, "y": -7.41, "name": "\u65e5\u672c\u96fb\u6c17\u785d\u5b50"}, {"x": 3, "y": 8.56, "name": "\u4e09\u4e95\u7269\u7523"}, {"x": 9, "y": 8.13, "name": "\u4e2d\u90e8\u96fb\u529b"}, {"x": 9, "y": 8.03, "name": "\u65e5\u672c\u30cf\u30e0"}];
+if (scatterData.length > 0) {
+  new Chart(document.getElementById('scatterChart'), {
+    type: 'scatter',
+    data: {
+      datasets: [{
+        label: 'クローズドトレード',
+        data: scatterData,
+        backgroundColor: scatterData.map(d => d.y >= 0 ? 'rgba(0,200,83,0.6)' : 'rgba(255,23,68,0.6)'),
+        pointRadius: 5,
+        pointHoverRadius: 7,
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        title: { display:true, text:'保有期間 vs 損益率', color:'#9E9E9E', font:{ size:12 } },
+        legend: { display:false },
+        tooltip: { callbacks: {
+          label: function(c) {
+            const d = scatterData[c.dataIndex];
+            return d.name + ': ' + d.x + '日 / ' + (d.y >= 0 ? '+' : '') + d.y + '%';
+          }
+        } }
+      },
+      scales: {
+        x: { title: { display:true, text:'保有日数', color:'#757575', font:{ size:10 } }, ticks: { color:'#757575', font:{ size:9 } }, grid: { color:'#2A2A2A' } },
+        y: { title: { display:true, text:'損益率 (%)', color:'#757575', font:{ size:10 } }, ticks: { color:'#757575', font:{ size:9 }, callback: v => v + '%' }, grid: { color:'#2A2A2A' } }
+      }
+    }
+  });
 }
 </script>
 </body>

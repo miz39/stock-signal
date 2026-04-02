@@ -22,7 +22,7 @@ HISTORY_OUTPUT = os.path.join(DOCS_DIR, "history.html")
 REVIEW_OUTPUT = os.path.join(DOCS_DIR, "weekly-review.html")
 
 # 銘柄名マッピング
-from nikkei225 import NIKKEI_225
+from nikkei225 import NIKKEI_225, get_sector
 from portfolio import get_cash_balance, set_profile
 
 
@@ -189,6 +189,59 @@ def build_dashboard_data(trades: list, initial_balance: float = 300000) -> dict:
     total_assets = round(cash + stock_value, 1)
     total_return_pct = round((total_assets - initial_balance) / initial_balance * 100, 2) if initial_balance else 0
 
+    # Sector allocation (open positions by value)
+    sector_alloc = {}
+    for p in open_positions:
+        sec = get_sector(p["ticker"])
+        value = p["current_price"] * p["shares"]
+        sector_alloc[sec] = sector_alloc.get(sec, 0) + value
+    sector_alloc["現金"] = cash
+    sector_labels = list(sector_alloc.keys())
+    sector_values = [round(v) for v in sector_alloc.values()]
+
+    # Monthly performance (closed trades by exit month)
+    monthly_perf = {}
+    for t in closed_trades:
+        month = (t.get("exit_date") or "")[:7]
+        if month:
+            if month not in monthly_perf:
+                monthly_perf[month] = {"pnl": 0, "count": 0, "wins": 0}
+            monthly_perf[month]["pnl"] += t.get("pnl", 0)
+            monthly_perf[month]["count"] += 1
+            if t.get("pnl", 0) > 0:
+                monthly_perf[month]["wins"] += 1
+    monthly_labels = sorted(monthly_perf.keys())
+    monthly_pnl = [round(monthly_perf[m]["pnl"]) for m in monthly_labels]
+    monthly_counts = [monthly_perf[m]["count"] for m in monthly_labels]
+    monthly_wr = [
+        round(monthly_perf[m]["wins"] / monthly_perf[m]["count"] * 100)
+        if monthly_perf[m]["count"] else 0
+        for m in monthly_labels
+    ]
+
+    # Drawdown curve (from equity data)
+    dd_data = []
+    eq_peak = equity_data[0] if equity_data else initial_balance
+    for eq in equity_data:
+        if eq > eq_peak:
+            eq_peak = eq
+        dd_pct = round((eq / eq_peak - 1) * 100, 2) if eq_peak > 0 else 0
+        dd_data.append(dd_pct)
+
+    # Scatter: holding period vs PnL% (closed trades)
+    scatter_data = []
+    for t in closed_trades:
+        if t.get("entry_date") and t.get("exit_date") and "pnl" in t:
+            try:
+                from datetime import date as dt_date
+                ed = dt_date.fromisoformat(t["entry_date"])
+                xd = dt_date.fromisoformat(t["exit_date"])
+                days = (xd - ed).days
+                pnl_pct = round((t.get("exit_price", 0) / t["entry_price"] - 1) * 100, 2) if t["entry_price"] else 0
+                scatter_data.append({"x": days, "y": pnl_pct, "name": NIKKEI_225.get(t["ticker"], t["ticker"])})
+            except Exception:
+                pass
+
     return {
         "initial_balance": initial_balance,
         "total_assets": total_assets,
@@ -207,6 +260,14 @@ def build_dashboard_data(trades: list, initial_balance: float = 300000) -> dict:
         "equity_data": equity_data,
         "open_positions": open_positions,
         "recent_closed": recent_closed,
+        "sector_labels": sector_labels,
+        "sector_values": sector_values,
+        "monthly_labels": monthly_labels,
+        "monthly_pnl": monthly_pnl,
+        "monthly_counts": monthly_counts,
+        "monthly_wr": monthly_wr,
+        "dd_data": dd_data,
+        "scatter_data": scatter_data,
     }
 
 
@@ -739,7 +800,7 @@ td.num {{ text-align:right; font-variant-numeric:tabular-nums; }}
 .policy-val {{ color:#E0E0E0; font-weight:600; }}
 a.stock-link {{ color:#64B5F6; text-decoration:none; }}
 a.stock-link:hover {{ text-decoration:underline; }}
-@media(max-width:480px) {{
+@media(max-width:600px) {{
   .cards {{ grid-template-columns:repeat(2,1fr); }}
   .card .value {{ font-size:1.2rem; }}
   .policy-grid {{ grid-template-columns:1fr; }}
@@ -794,6 +855,17 @@ a.stock-link:hover {{ text-decoration:underline; }}
 </div>
 
 {generate_policy_section(config)}
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px">
+  <div class="chart-wrap"><canvas id="sectorChart" height="220"></canvas></div>
+  <div class="chart-wrap"><canvas id="monthlyChart" height="220"></canvas></div>
+</div>
+<div class="chart-wrap">
+  <canvas id="ddChart" height="120"></canvas>
+</div>
+<div class="chart-wrap">
+  <canvas id="scatterChart" height="200"></canvas>
+</div>
 
 <div class="section">
   <h2>保有中ポジション</h2>
@@ -877,6 +949,137 @@ if (labels.length > 0) {{
 }} else {{
   document.getElementById('equityChart').parentElement.innerHTML =
     '<p style="text-align:center;color:#757575;padding:24px">チャートデータがありません</p>';
+}}
+
+// Sector Pie Chart
+const sectorLabels = {json.dumps(data.get('sector_labels', []))};
+const sectorValues = {json.dumps(data.get('sector_values', []))};
+if (sectorLabels.length > 0) {{
+  const colors = ['#2196F3','#00C853','#FF9800','#9C27B0','#F44336','#00BCD4','#FF5722','#795548','#607D8B','#E91E63','#8BC34A','#FFC107'];
+  new Chart(document.getElementById('sectorChart'), {{
+    type: 'doughnut',
+    data: {{
+      labels: sectorLabels,
+      datasets: [{{ data: sectorValues, backgroundColor: colors.slice(0, sectorLabels.length), borderWidth: 0 }}]
+    }},
+    options: {{
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {{
+        legend: {{ position:'right', labels: {{ color:'#9E9E9E', font:{{ size:10 }}, padding:8 }} }},
+        title: {{ display:true, text:'セクター配分', color:'#9E9E9E', font:{{ size:12 }} }},
+        tooltip: {{ callbacks: {{ label: function(c) {{ return c.label + ': ¥' + c.parsed.toLocaleString(); }} }} }}
+      }}
+    }}
+  }});
+}}
+
+// Monthly Performance Bar Chart
+const mLabels = {json.dumps(data.get('monthly_labels', []))};
+const mPnl = {json.dumps(data.get('monthly_pnl', []))};
+const mWR = {json.dumps(data.get('monthly_wr', []))};
+if (mLabels.length > 0) {{
+  new Chart(document.getElementById('monthlyChart'), {{
+    type: 'bar',
+    data: {{
+      labels: mLabels,
+      datasets: [{{
+        label: '月次損益',
+        data: mPnl,
+        backgroundColor: mPnl.map(v => v >= 0 ? 'rgba(0,200,83,0.7)' : 'rgba(255,23,68,0.7)'),
+        borderRadius: 4,
+        yAxisID: 'y',
+      }}, {{
+        label: '勝率',
+        data: mWR,
+        type: 'line',
+        borderColor: '#64B5F6',
+        borderWidth: 2,
+        pointRadius: 3,
+        fill: false,
+        yAxisID: 'y1',
+      }}]
+    }},
+    options: {{
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {{
+        title: {{ display:true, text:'月次パフォーマンス', color:'#9E9E9E', font:{{ size:12 }} }},
+        legend: {{ labels: {{ color:'#9E9E9E', font:{{ size:10 }} }} }},
+        tooltip: {{ callbacks: {{ label: function(c) {{
+          if (c.datasetIndex === 0) return '損益: ¥' + c.parsed.y.toLocaleString();
+          return '勝率: ' + c.parsed.y + '%';
+        }} }} }}
+      }},
+      scales: {{
+        x: {{ ticks: {{ color:'#757575', font:{{ size:9 }} }}, grid: {{ color:'#2A2A2A' }} }},
+        y: {{ position:'left', ticks: {{ color:'#757575', font:{{ size:9 }}, callback: v => '¥' + v.toLocaleString() }}, grid: {{ color:'#2A2A2A' }} }},
+        y1: {{ position:'right', min:0, max:100, ticks: {{ color:'#64B5F6', font:{{ size:9 }}, callback: v => v + '%' }}, grid: {{ display:false }} }}
+      }}
+    }}
+  }});
+}}
+
+// Drawdown Chart
+const ddData = {json.dumps(data.get('dd_data', []))};
+if (labels.length > 0 && ddData.length > 0) {{
+  const ddCtx = document.getElementById('ddChart').getContext('2d');
+  const ddGrad = ddCtx.createLinearGradient(0,0,0,120);
+  ddGrad.addColorStop(0, 'rgba(255,23,68,0)');
+  ddGrad.addColorStop(1, 'rgba(255,23,68,0.3)');
+  new Chart(ddCtx, {{
+    type: 'line',
+    data: {{
+      labels: labels,
+      datasets: [{{ label: 'ドローダウン (%)', data: ddData, borderColor: '#FF1744', backgroundColor: ddGrad, fill: true, tension:0.3, pointRadius:0, borderWidth:1.5 }}]
+    }},
+    options: {{
+      responsive: true, maintainAspectRatio: false,
+      plugins: {{
+        title: {{ display:true, text:'ドローダウン推移', color:'#9E9E9E', font:{{ size:12 }} }},
+        legend: {{ display:false }},
+        tooltip: {{ callbacks: {{ label: c => c.parsed.y.toFixed(2) + '%' }} }}
+      }},
+      scales: {{
+        x: {{ ticks: {{ color:'#757575', maxTicksLimit:8, font:{{ size:9 }} }}, grid: {{ color:'#2A2A2A' }} }},
+        y: {{ ticks: {{ color:'#757575', font:{{ size:9 }}, callback: v => v + '%' }}, grid: {{ color:'#2A2A2A' }} }}
+      }}
+    }}
+  }});
+}}
+
+// Scatter: Holding Period vs PnL%
+const scatterData = {json.dumps(data.get('scatter_data', []))};
+if (scatterData.length > 0) {{
+  new Chart(document.getElementById('scatterChart'), {{
+    type: 'scatter',
+    data: {{
+      datasets: [{{
+        label: 'クローズドトレード',
+        data: scatterData,
+        backgroundColor: scatterData.map(d => d.y >= 0 ? 'rgba(0,200,83,0.6)' : 'rgba(255,23,68,0.6)'),
+        pointRadius: 5,
+        pointHoverRadius: 7,
+      }}]
+    }},
+    options: {{
+      responsive: true, maintainAspectRatio: false,
+      plugins: {{
+        title: {{ display:true, text:'保有期間 vs 損益率', color:'#9E9E9E', font:{{ size:12 }} }},
+        legend: {{ display:false }},
+        tooltip: {{ callbacks: {{
+          label: function(c) {{
+            const d = scatterData[c.dataIndex];
+            return d.name + ': ' + d.x + '日 / ' + (d.y >= 0 ? '+' : '') + d.y + '%';
+          }}
+        }} }}
+      }},
+      scales: {{
+        x: {{ title: {{ display:true, text:'保有日数', color:'#757575', font:{{ size:10 }} }}, ticks: {{ color:'#757575', font:{{ size:9 }} }}, grid: {{ color:'#2A2A2A' }} }},
+        y: {{ title: {{ display:true, text:'損益率 (%)', color:'#757575', font:{{ size:10 }} }}, ticks: {{ color:'#757575', font:{{ size:9 }}, callback: v => v + '%' }}, grid: {{ color:'#2A2A2A' }} }}
+      }}
+    }}
+  }});
 }}
 </script>
 </body>
