@@ -6,6 +6,8 @@ Modes:
   python3 backtest_improved.py                  # Profile comparison (default)
   python3 backtest_improved.py --mode compare   # Same as above
   python3 backtest_improved.py --mode sensitivity  # Parameter grid search
+  python3 backtest_improved.py --mode stats     # Statistical analysis
+  python3 backtest_improved.py --mode walkforward  # Walk-forward validation
 
 Compares strategy profiles with Nikkei 225 index benchmark.
 """
@@ -560,9 +562,248 @@ def run_sensitivity(all_data, config, sim_start="2026-01-01"):
     print(f"{'=' * 80}")
 
 
+def run_stats(all_data, config, sim_start="2025-03-26", n_bootstrap=1000):
+    """Statistical analysis: bootstrap CI, rolling PF, expected value trend, monthly breakdown."""
+    sp = build_profile_strategy(config, "default")
+    result = run_strategy_backtest(all_data, config, sp, sim_start=sim_start, slippage=SLIPPAGE)
+    trades = result["trade_details"]
+
+    w = 80
+    print(f"\n{'=' * w}")
+    print(f"  統計分析: {sp['label']}（{sim_start} 〜 今日）  [{len(trades)}トレード]")
+    print(f"{'=' * w}")
+
+    if len(trades) < 10:
+        print("  トレード数が少なすぎます（最低10件必要）")
+        print(f"{'=' * w}")
+        return
+
+    # --- Bootstrap confidence interval for win rate ---
+    pnls = np.array([t["pnl"] for t in trades])
+    wins_arr = (pnls > 0).astype(int)
+    observed_wr = wins_arr.mean() * 100
+
+    np.random.seed(42)
+    boot_wrs = []
+    boot_evs = []
+    for _ in range(n_bootstrap):
+        sample = np.random.choice(pnls, size=len(pnls), replace=True)
+        boot_wrs.append((sample > 0).mean() * 100)
+        boot_evs.append(sample.mean())
+
+    wr_lo, wr_hi = np.percentile(boot_wrs, [2.5, 97.5])
+    ev_lo, ev_hi = np.percentile(boot_evs, [2.5, 97.5])
+    observed_ev = pnls.mean()
+
+    print(f"\n  【ブートストラップ分析】（{n_bootstrap}回リサンプリング）")
+    print(f"  {'─' * (w - 4)}")
+    print(f"  勝率:            {observed_wr:.1f}%   95%CI [{wr_lo:.1f}% — {wr_hi:.1f}%]")
+    print(f"  期待値/トレード:  ¥{observed_ev:+,.0f}   95%CI [¥{ev_lo:+,.0f} — ¥{ev_hi:+,.0f}]")
+
+    # --- Rolling Profit Factor (20-trade window) ---
+    window = 20
+    if len(trades) >= window:
+        print(f"\n  【ローリングPF】（{window}トレード窓）")
+        print(f"  {'─' * (w - 4)}")
+        rolling_pfs = []
+        for i in range(window, len(trades) + 1):
+            chunk = trades[i - window:i]
+            gp = sum(t["pnl"] for t in chunk if t["pnl"] > 0)
+            gl = abs(sum(t["pnl"] for t in chunk if t["pnl"] <= 0))
+            rpf = gp / gl if gl > 0 else float("inf")
+            rolling_pfs.append((i, rpf))
+
+        pf_values = [pf for _, pf in rolling_pfs]
+        pf_min = min(pf_values)
+        pf_max = max(pf_values)
+        pf_mean = np.mean(pf_values)
+        pf_below_1 = sum(1 for pf in pf_values if pf < 1.0)
+        print(f"  平均PF:  {pf_mean:.2f}   最小: {pf_min:.2f}   最大: {pf_max:.2f}")
+        print(f"  PF < 1.0 の区間: {pf_below_1}/{len(pf_values)} ({pf_below_1/len(pf_values)*100:.0f}%)")
+
+        # Show PF trend as simple sparkline
+        n_bins = min(10, len(rolling_pfs))
+        bin_size = len(rolling_pfs) // n_bins
+        sparkline = "  推移: "
+        for b in range(n_bins):
+            start = b * bin_size
+            end = start + bin_size if b < n_bins - 1 else len(rolling_pfs)
+            avg = np.mean([pf for _, pf in rolling_pfs[start:end]])
+            if avg >= 1.5:
+                sparkline += "▆"
+            elif avg >= 1.0:
+                sparkline += "▃"
+            else:
+                sparkline += "▁"
+        sparkline += f"  (左=古い  右=新しい  ▆≥1.5  ▃≥1.0  ▁<1.0)"
+        print(sparkline)
+
+    # --- Monthly breakdown ---
+    print(f"\n  【月次パフォーマンス】")
+    print(f"  {'─' * (w - 4)}")
+    monthly = defaultdict(lambda: {"trades": 0, "wins": 0, "pnl": 0})
+    for t in trades:
+        month = t["exit_date"][:7]  # YYYY-MM
+        monthly[month]["trades"] += 1
+        if t["pnl"] > 0:
+            monthly[month]["wins"] += 1
+        monthly[month]["pnl"] += t["pnl"]
+
+    print(f"  {'月':>8}  {'件数':>6}  {'勝率':>6}  {'損益':>10}  {'PF':>6}")
+    for month in sorted(monthly.keys()):
+        m = monthly[month]
+        wr = m["wins"] / m["trades"] * 100 if m["trades"] else 0
+        gp = sum(t["pnl"] for t in trades if t["exit_date"][:7] == month and t["pnl"] > 0)
+        gl = abs(sum(t["pnl"] for t in trades if t["exit_date"][:7] == month and t["pnl"] <= 0))
+        mpf = gp / gl if gl > 0 else float("inf")
+        print(f"  {month:>8}  {m['trades']:>5}件  {wr:>5.1f}%  ¥{m['pnl']:>+9,.0f}  {mpf:>5.2f}")
+
+    # --- Expected value trend (cumulative average) ---
+    print(f"\n  【累積期待値の推移】")
+    print(f"  {'─' * (w - 4)}")
+    cum_pnl = np.cumsum(pnls)
+    milestones = [10, 25, 50, 75, 100, 150, 200]
+    for m in milestones:
+        if m <= len(pnls):
+            ev = cum_pnl[m - 1] / m
+            print(f"  {m:>4}トレード時点: ¥{ev:>+8,.0f}/trade  (累計: ¥{cum_pnl[m-1]:>+10,.0f})")
+
+    print(f"\n{'=' * w}")
+
+
+def run_walkforward(all_data, config, initial_balance=300000):
+    """Walk-forward validation: in-sample optimization → out-of-sample test."""
+    # 4 quarters of out-of-sample, each preceded by training on all prior data
+    periods = [
+        ("Q2 2025", "2025-04-01", "2025-07-01"),
+        ("Q3 2025", "2025-07-01", "2025-10-01"),
+        ("Q4 2025", "2025-10-01", "2026-01-01"),
+        ("Q1 2026", "2026-01-01", "2026-04-01"),
+    ]
+
+    stop_range = [0.05, 0.08, 0.10, 0.12]
+    profit_range = [0.06, 0.08, 0.10, 0.12]
+
+    w = 80
+    print(f"\n{'=' * w}")
+    print(f"  ウォークフォワード検証  [スリッページ {SLIPPAGE*100:.1f}%]")
+    print(f"  In-sample: グリッドサーチで最適パラメータ選定")
+    print(f"  Out-of-sample: 最適パラメータで3ヶ月間テスト")
+    print(f"{'=' * w}")
+
+    oos_results = []
+
+    for period_label, oos_start, oos_end in periods:
+        # In-sample: everything before oos_start (minimum 3 months prior)
+        is_start_dt = pd.Timestamp(oos_start) - pd.DateOffset(months=6)
+        is_start = is_start_dt.strftime("%Y-%m-%d")
+
+        # Grid search in-sample
+        best_pf = 0
+        best_params = None
+        for sl in stop_range:
+            for pt in profit_range:
+                sp = {
+                    "label": f"s{int(sl*100)}_p{int(pt*100)}",
+                    "stop_loss_pct": sl,
+                    "trailing_mode": "breakeven",
+                    "profit_tighten_pct": pt * 0.75,
+                    "default_trail": sl,
+                    "profit_take_pct": pt,
+                    "profit_take_ratio": 0.5,
+                    "profit_take_full_pct": pt * 1.875,
+                }
+                r = run_strategy_backtest(
+                    all_data, config, sp,
+                    sim_start=is_start, initial_balance=initial_balance,
+                    slippage=SLIPPAGE,
+                )
+                # Filter: only consider combos with enough trades AND before oos_start
+                is_trades = [t for t in r["trade_details"]
+                             if t["exit_date"] < oos_start]
+                is_gp = sum(t["pnl"] for t in is_trades if t["pnl"] > 0)
+                is_gl = abs(sum(t["pnl"] for t in is_trades if t["pnl"] <= 0))
+                is_pf = is_gp / is_gl if is_gl > 0 else 0
+                if is_pf > best_pf and len(is_trades) >= 5:
+                    best_pf = is_pf
+                    best_params = (sl, pt)
+
+        if not best_params:
+            best_params = (0.08, 0.08)  # fallback to default
+
+        sl, pt = best_params
+        oos_sp = {
+            "label": f"{period_label}",
+            "stop_loss_pct": sl,
+            "trailing_mode": "breakeven",
+            "profit_tighten_pct": pt * 0.75,
+            "default_trail": sl,
+            "profit_take_pct": pt,
+            "profit_take_ratio": 0.5,
+            "profit_take_full_pct": pt * 1.875,
+        }
+
+        # Run out-of-sample
+        oos_r = run_strategy_backtest(
+            all_data, config, oos_sp,
+            sim_start=oos_start, initial_balance=initial_balance,
+            slippage=SLIPPAGE,
+        )
+        # Filter to only trades within the OOS window
+        oos_trades = [t for t in oos_r["trade_details"]
+                      if oos_start <= t["exit_date"] < oos_end]
+        oos_gp = sum(t["pnl"] for t in oos_trades if t["pnl"] > 0)
+        oos_gl = abs(sum(t["pnl"] for t in oos_trades if t["pnl"] <= 0))
+        oos_pnl = sum(t["pnl"] for t in oos_trades)
+        oos_pf = oos_gp / oos_gl if oos_gl > 0 else float("inf")
+        oos_wins = sum(1 for t in oos_trades if t["pnl"] > 0)
+        oos_wr = oos_wins / len(oos_trades) * 100 if oos_trades else 0
+
+        nk225 = fetch_benchmark("^N225", oos_start, oos_end)
+        nk_str = f"{nk225:+.2f}%" if nk225 is not None else "N/A"
+
+        oos_results.append({
+            "period": period_label,
+            "is_pf": best_pf,
+            "best_stop": sl,
+            "best_profit": pt,
+            "trades": len(oos_trades),
+            "wins": oos_wins,
+            "wr": oos_wr,
+            "pnl": oos_pnl,
+            "pf": oos_pf,
+            "nk225": nk225,
+        })
+
+        print(f"\n  {period_label} ({oos_start} 〜 {oos_end})")
+        print(f"  {'─' * (w - 4)}")
+        print(f"  IS最適: ストップ-{int(sl*100)}% / 利確+{int(pt*100)}%  (IS PF: {best_pf:.2f})")
+        print(f"  OOS結果: {len(oos_trades)}件  勝率{oos_wr:.1f}%  PF {oos_pf:.2f}  損益 ¥{oos_pnl:+,.0f}  日経 {nk_str}")
+
+    # Aggregate
+    print(f"\n  {'─' * (w - 4)}")
+    print(f"  【集計】")
+    total_trades = sum(r["trades"] for r in oos_results)
+    total_wins = sum(r["wins"] for r in oos_results)
+    total_pnl = sum(r["pnl"] for r in oos_results)
+    total_wr = total_wins / total_trades * 100 if total_trades else 0
+    profitable_quarters = sum(1 for r in oos_results if r["pnl"] > 0)
+    print(f"  全期間: {total_trades}トレード  勝率{total_wr:.1f}%  損益 ¥{total_pnl:+,.0f}")
+    print(f"  プラス四半期: {profitable_quarters}/{len(oos_results)}")
+
+    # Check if IS→OOS degradation is severe
+    for r in oos_results:
+        degradation = r["is_pf"] - r["pf"] if r["pf"] != float("inf") else 0
+        if degradation > 0.5:
+            print(f"  ⚠ {r['period']}: IS PF {r['is_pf']:.2f} → OOS PF {r['pf']:.2f}  (過学習の可能性)")
+
+    print(f"\n{'=' * w}")
+
+
 def main():
     parser = argparse.ArgumentParser(description="Strategy backtest comparison tool")
-    parser.add_argument("--mode", choices=["compare", "sensitivity"], default="compare")
+    parser.add_argument("--mode", choices=["compare", "sensitivity", "stats", "walkforward"],
+                        default="compare")
     args = parser.parse_args()
 
     config = load_config()
@@ -571,6 +812,14 @@ def main():
 
     if args.mode == "sensitivity":
         run_sensitivity(all_data, config, sim_start="2025-10-01")
+        return
+
+    if args.mode == "stats":
+        run_stats(all_data, config, sim_start="2025-03-26")
+        return
+
+    if args.mode == "walkforward":
+        run_walkforward(all_data, config)
         return
 
     # Profile comparison mode
