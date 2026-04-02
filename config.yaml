@@ -26,6 +26,11 @@ strategy:
   profit_take_full_pct: 0.15    # +15%で全部利確
   min_volume: 500000             # 直近20日平均出来高が50万株以上
 
+risk:
+  max_sector_pct: 0.30           # セクター集中度上限（金額ベース）
+  max_portfolio_dd: 0.10         # ポートフォリオ最大DD閾値
+  correlation_threshold: 0.70    # 銘柄間相関の警告閾値
+
 discord:
   # シークレットは環境変数から読み込み（systemd EnvironmentFile or export）
   # DISCORD_WEBHOOK_URL, DISCORD_BOT_TOKEN, DISCORD_POLICY_WEBHOOK_URL

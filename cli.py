@@ -27,6 +27,13 @@ from portfolio import (
 from agents.coordinator import analyze_ticker, analyze_all
 from backtest import run_backtest
 from backtest_multi import run_multi_backtest
+from data import fetch_stock_data
+from portfolio_risk import (
+    check_correlation,
+    calculate_portfolio_var,
+    calculate_portfolio_volatility,
+    format_risk_report,
+)
 
 CONFIG_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "config.yaml")
 
@@ -174,6 +181,37 @@ def cmd_rule(args):
     })
 
 
+def cmd_risk(args):
+    config = load_config(args.profile)
+    balance = config["account"]["balance"]
+    positions = get_open_positions()
+
+    # Attach current prices
+    for pos in positions:
+        try:
+            df = fetch_stock_data(pos["ticker"], period="5d")
+            pos["current_price"] = float(df["Close"].iloc[-1])
+        except Exception:
+            pos["current_price"] = pos["entry_price"]
+
+    cash = get_cash_balance(balance)
+    stock_value = sum(pos["current_price"] * pos["shares"] for pos in positions)
+    total_assets = cash + stock_value
+
+    report = format_risk_report(positions, total_assets, config)
+    report["cash"] = round(cash)
+    report["stock_value"] = round(stock_value)
+
+    # VaR/CVaR and volatility (heavier computation)
+    if positions:
+        report["var"] = calculate_portfolio_var(positions, total_assets)
+        report["volatility"] = calculate_portfolio_volatility(positions)
+        if not args.quick:
+            report["correlations"] = check_correlation(positions)
+
+    _output(report)
+
+
 def cmd_status(args):
     config = load_config(args.profile)
     balance = config["account"]["balance"]
@@ -218,6 +256,9 @@ def main():
     sub.add_parser("rule")
     sub.add_parser("status")
 
+    p_risk = sub.add_parser("risk")
+    p_risk.add_argument("--quick", action="store_true", help="Skip correlation analysis")
+
     args = parser.parse_args()
     if not args.command:
         parser.print_help()
@@ -235,6 +276,7 @@ def main():
         "watchlist": cmd_watchlist,
         "rule": cmd_rule,
         "status": cmd_status,
+        "risk": cmd_risk,
     }
 
     try:

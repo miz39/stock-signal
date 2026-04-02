@@ -49,6 +49,7 @@ from notifier import (
 )
 from nikkei225 import NIKKEI_225, get_sector
 from holidays import is_market_open
+from portfolio_risk import check_sector_concentration, check_portfolio_drawdown, check_anomalies
 
 
 _BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -539,6 +540,40 @@ def run(profile_name: str = "default"):
             "title": "📈 仮想保有中" if mode == "paper" else "📈 保有中",
             "description": "\n".join(lines),
             "color": 0x2196F3,
+        })
+
+    # リスクアラート
+    risk_alerts = []
+    if open_positions:
+        total_value = sum(p.get("current_price", p["entry_price"]) * p["shares"] for p in open_positions)
+        current_total = total_value + get_cash_balance(balance)
+
+        # Sector concentration check
+        risk_cfg = config.get("risk", {})
+        max_sector_pct = risk_cfg.get("max_sector_pct", 0.30)
+        sector_alerts = check_sector_concentration(open_positions, current_total, max_pct=max_sector_pct)
+        for sa in sector_alerts:
+            risk_alerts.append(f"セクター集中: **{sa['sector']}** {sa['pct']}%（¥{sa['value']:,}）")
+
+        # Portfolio drawdown check
+        max_dd = risk_cfg.get("max_portfolio_dd", 0.10)
+        dd_alert = check_portfolio_drawdown(current_total, balance, max_dd_pct=max_dd)
+        if dd_alert:
+            risk_alerts.append(
+                f"ポートフォリオDD: **{dd_alert['drawdown_pct']}%**"
+                f"（ピーク ¥{dd_alert['peak']:,} → 現在 ¥{dd_alert['current']:,}）"
+            )
+
+    # Anomaly checks
+    anomalies = check_anomalies(config)
+    for a in anomalies:
+        risk_alerts.append(f"{a['message']}")
+
+    if risk_alerts:
+        embeds.append({
+            "title": "⚠️ リスクアラート",
+            "description": "\n".join(risk_alerts),
+            "color": 0xFF6D00,
         })
 
     # 金曜引け後は週次レポートを追加

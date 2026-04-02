@@ -40,6 +40,7 @@
 | `nikkei225.py` | 日経225銘柄名マッピング + セクター分類 |
 | `data.py` | yfinance経由の株価データ取得（3回リトライ付き） |
 | `notifier.py` | Discord/Slack通知フォーマット（3回リトライ付き） |
+| `portfolio_risk.py` | ポートフォリオリスク分析（相関・VaR・セクター集中度・異常検知） |
 | `cli.py` | CLI ラッパー（Slack Bot から subprocess 経由で呼び出し用、JSON出力） |
 | `holidays.py` | 東証休場日判定（年1回JPXカレンダーを参照して更新） |
 | `generate_dashboard.py` | HTML ダッシュボード + 週次レビュー生成 |
@@ -102,14 +103,19 @@ python3 generate_dashboard.py
 python3 generate_dashboard.py --profile conservative
 python3 generate_dashboard.py --profile all
 
-# バックテスト（旧 vs 新戦略 + インデックス比較）
-python3 backtest_improved.py
+# バックテスト
+python3 backtest_improved.py                     # プロファイル比較（default）
+python3 backtest_improved.py --mode sensitivity  # パラメータ感度分析
+python3 backtest_improved.py --mode stats        # 統計分析（ブートストラップCI等）
+python3 backtest_improved.py --mode walkforward  # ウォークフォワード検証
 
 # CLI（Slack Bot から利用、JSON出力）
 python3 cli.py rule
 python3 cli.py weekly
 python3 cli.py watchlist
 python3 cli.py status
+python3 cli.py risk              # リスク分析（VaR/CVaR/セクター集中度/アノマリー）
+python3 cli.py risk --quick      # 相関分析をスキップ（高速）
 python3 cli.py analyze [ticker]
 python3 cli.py backtest ticker [period]
 python3 cli.py simulate [period]
