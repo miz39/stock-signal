@@ -88,7 +88,9 @@ def cmd_buy(args):
     if len(open_pos) >= max_pos:
         _error(f"同時保有上限（{max_pos}銘柄）に達しています")
 
-    trade = record_entry(t, price, shares)
+    strat = config.get("strategy", {})
+    stop_pct = strat.get("stop_loss_pct", 0.08)
+    trade = record_entry(t, price, shares, stop_pct=stop_pct)
     name = NIKKEI_225.get(t, t.replace(".T", ""))
     _output({
         "ticker": t,

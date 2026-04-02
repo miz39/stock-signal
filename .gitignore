@@ -10,6 +10,9 @@ signal.log*
 
 # Data — trades.json, my_portfolio.json は GitHub Actions で状態保持のため追跡対象
 
+# Backups
+backups/
+
 # Python
 __pycache__/
 *.pyc

@@ -47,10 +47,10 @@ def _save_trades(trades: list) -> None:
         raise
 
 
-def record_entry(ticker: str, price: float, shares: int, entry_date: str = None) -> dict:
+def record_entry(ticker: str, price: float, shares: int, entry_date: str = None, stop_pct: float = 0.08) -> dict:
     """仮想エントリーを記録する。"""
     trades = _load_trades()
-    stop_price = round(price * 0.92, 1)  # 初期ストップ: -8%
+    stop_price = round(price * (1 - stop_pct), 1)
     trade = {
         "ticker": ticker,
         "entry_price": price,
