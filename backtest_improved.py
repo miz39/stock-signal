@@ -2,9 +2,14 @@
 """
 Standalone strategy comparison tool — run directly: python3 backtest_improved.py
 
-Compares old strategy (stop -5%, trail tighten) vs new strategy (stop -8%,
-breakeven + full profit) with Nikkei 225 index benchmark.
+Modes:
+  python3 backtest_improved.py                  # Profile comparison (default)
+  python3 backtest_improved.py --mode compare   # Same as above
+  python3 backtest_improved.py --mode sensitivity  # Parameter grid search
+
+Compares strategy profiles with Nikkei 225 index benchmark.
 """
+import argparse
 import numpy as np
 import pandas as pd
 import yfinance as yf
@@ -16,6 +21,27 @@ from nikkei225 import NIKKEI_225, get_sector
 
 
 CONFIG_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "config.yaml")
+
+SLIPPAGE = 0.005  # S-stock spread: 0.5%
+
+
+def build_profile_strategy(config, profile_name="default"):
+    """Build strategy_params dict from config.yaml profile."""
+    strat = dict(config.get("strategy", {}))
+    if profile_name != "default":
+        overrides = config.get("profiles", {}).get(profile_name, {}).get("strategy", {})
+        strat.update(overrides)
+    return {
+        "label": f"{profile_name}（-{int(strat['stop_loss_pct']*100)}%ストップ）",
+        "stop_loss_pct": strat["stop_loss_pct"],
+        "trailing_mode": "breakeven",
+        "profit_tighten_pct": strat.get("profit_tighten_pct", 0.06),
+        "default_trail": strat["stop_loss_pct"],
+        "profit_take_pct": strat.get("profit_take_pct", 0.08),
+        "profit_take_ratio": strat.get("profit_take_ratio", 0.5),
+        "profit_take_full_pct": strat.get("profit_take_full_pct", 0.15),
+    }
+
 
 # Strategy parameter presets
 OLD_STRATEGY = {
@@ -76,7 +102,8 @@ def download_data(tickers, start="2024-03-01"):
 def run_strategy_backtest(all_data, config, strategy_params,
                           rsi_min=50, rsi_max=65,
                           max_daily=3, max_sector=2, cooldown_days=7,
-                          sim_start="2026-01-01", initial_balance=300000):
+                          sim_start="2026-01-01", initial_balance=300000,
+                          slippage=0.0):
     """Run backtest with given strategy parameters."""
     strat = config["strategy"]
     account = config["account"]
@@ -127,9 +154,11 @@ def run_strategy_backtest(all_data, config, strategy_params,
             if idx >= len(ind["close"]):
                 continue
             pos = positions[ticker]
-            price = float(ind["close"].iloc[idx])
+            market_price = float(ind["close"].iloc[idx])
+            sell_price = market_price * (1 - slippage)  # Sell at bid
             entry_price = pos["price"]
-            gain_pct = (price - entry_price) / entry_price
+            price = market_price  # Use market price for stop/trail logic
+            gain_pct = (sell_price - entry_price) / entry_price
 
             # --- Stop / trail logic ---
             if sp["trailing_mode"] == "percentage":
@@ -153,10 +182,9 @@ def run_strategy_backtest(all_data, config, strategy_params,
 
             # --- Full profit exit ---
             if sp.get("profit_take_full_pct") and gain_pct >= sp["profit_take_full_pct"]:
-                pnl = (price - entry_price) * pos["shares"]
-                balance += price * pos["shares"]
+                balance += sell_price * pos["shares"]
                 trades.append(_make_trade(
-                    ticker, pos, cur_date, price, gain_pct, pos["shares"],
+                    ticker, pos, cur_date, sell_price, gain_pct, pos["shares"],
                     f"全利確（+{int(sp['profit_take_full_pct'] * 100)}%）",
                 ))
                 del positions[ticker]
@@ -165,10 +193,9 @@ def run_strategy_backtest(all_data, config, strategy_params,
             # --- Partial profit exit ---
             if gain_pct >= sp["profit_take_pct"] and not pos.get("partial_exit_done"):
                 if pos["shares"] == 1:
-                    pnl = price - entry_price
-                    balance += price
+                    balance += sell_price
                     trades.append(_make_trade(
-                        ticker, pos, cur_date, price, gain_pct, 1,
+                        ticker, pos, cur_date, sell_price, gain_pct, 1,
                         f"利確（+{int(sp['profit_take_pct'] * 100)}%・1株）",
                     ))
                     del positions[ticker]
@@ -176,9 +203,9 @@ def run_strategy_backtest(all_data, config, strategy_params,
                 else:
                     exit_shares = max(1, int(pos["shares"] * sp["profit_take_ratio"]))
                     if 0 < exit_shares < pos["shares"]:
-                        balance += price * exit_shares
+                        balance += sell_price * exit_shares
                         trades.append(_make_trade(
-                            ticker, pos, cur_date, price, gain_pct, exit_shares,
+                            ticker, pos, cur_date, sell_price, gain_pct, exit_shares,
                             f"利確（+{int(sp['profit_take_pct'] * 100)}%）",
                         ))
                         pos["shares"] -= exit_shares
@@ -187,11 +214,11 @@ def run_strategy_backtest(all_data, config, strategy_params,
             # --- Stop loss ---
             if ticker not in positions:
                 continue
-            if price <= pos["stop_price"]:
-                balance += price * pos["shares"]
+            if market_price <= pos["stop_price"]:
+                balance += sell_price * pos["shares"]
                 reason = "損切り" if gain_pct < 0 else "トレーリングストップ"
                 trades.append(_make_trade(
-                    ticker, pos, cur_date, price, gain_pct, pos["shares"], reason,
+                    ticker, pos, cur_date, sell_price, gain_pct, pos["shares"], reason,
                 ))
                 cooldown_map[ticker] = cur_date
                 del positions[ticker]
@@ -202,10 +229,10 @@ def run_strategy_backtest(all_data, config, strategy_params,
             sma_l = float(ind["sma_long"].iloc[idx])
             rsi_val = float(ind["rsi"].iloc[idx])
             if sma_s < sma_l or rsi_val > 75:
-                balance += price * pos["shares"]
+                balance += sell_price * pos["shares"]
                 reason = "デッドクロス" if sma_s < sma_l else "RSI過熱"
                 trades.append(_make_trade(
-                    ticker, pos, cur_date, price, gain_pct, pos["shares"], reason,
+                    ticker, pos, cur_date, sell_price, gain_pct, pos["shares"], reason,
                 ))
                 del positions[ticker]
 
@@ -248,7 +275,7 @@ def run_strategy_backtest(all_data, config, strategy_params,
             if sector_counts[sec] >= max_sector:
                 continue
 
-            price = cand["price"]
+            price = cand["price"] * (1 + slippage)  # Buy at ask
             stop_price = round(price * (1 - sp["stop_loss_pct"]), 1)
             risk_amount = balance * account["risk_per_trade"]
             loss_per_share = price - stop_price
@@ -315,7 +342,9 @@ def _empty_result(label, initial_balance):
         "label": label, "initial": initial_balance, "final": initial_balance,
         "return_pct": 0, "trades": 0, "wins": 0, "losses": 0,
         "win_rate": 0, "avg_win": 0, "avg_loss": 0, "max_dd": 0,
-        "pf": 0, "total_pnl": 0, "trade_details": [], "equity_curve": [],
+        "pf": 0, "sharpe": 0, "sortino": 0, "calmar": 0,
+        "max_consec_win": 0, "max_consec_loss": 0,
+        "total_pnl": 0, "trade_details": [], "equity_curve": [],
     }
 
 
@@ -341,6 +370,40 @@ def _summarize(label, initial_balance, final_balance, trades, equity_curve):
         if dd < max_dd:
             max_dd = dd
 
+    # Sharpe / Sortino / Calmar from daily equity
+    sharpe = 0.0
+    sortino = 0.0
+    calmar = 0.0
+    if len(equities) > 2:
+        eq_arr = np.array(equities)
+        daily_returns = np.diff(eq_arr) / eq_arr[:-1]
+        mean_r = np.mean(daily_returns)
+        std_r = np.std(daily_returns, ddof=1)
+        if std_r > 0:
+            sharpe = round(mean_r / std_r * np.sqrt(252), 2)
+        downside = daily_returns[daily_returns < 0]
+        down_std = np.std(downside, ddof=1) if len(downside) > 1 else 0
+        if down_std > 0:
+            sortino = round(mean_r / down_std * np.sqrt(252), 2)
+        if max_dd < 0:
+            annual_return = total_return * 252 / len(equities)
+            calmar = round(annual_return / abs(max_dd), 2)
+
+    # Consecutive wins/losses
+    max_consec_win = 0
+    max_consec_loss = 0
+    cur_win = 0
+    cur_loss = 0
+    for t in trades:
+        if t["pnl"] > 0:
+            cur_win += 1
+            cur_loss = 0
+            max_consec_win = max(max_consec_win, cur_win)
+        else:
+            cur_loss += 1
+            cur_win = 0
+            max_consec_loss = max(max_consec_loss, cur_loss)
+
     return {
         "label": label,
         "initial": initial_balance,
@@ -354,6 +417,11 @@ def _summarize(label, initial_balance, final_balance, trades, equity_curve):
         "avg_loss": round(avg_loss, 2),
         "max_dd": round(max_dd, 2),
         "pf": round(pf, 2),
+        "sharpe": sharpe,
+        "sortino": sortino,
+        "calmar": calmar,
+        "max_consec_win": max_consec_win,
+        "max_consec_loss": max_consec_loss,
         "total_pnl": round(sum(t["pnl"] for t in trades), 0),
         "trade_details": trades,
         "equity_curve": equity_curve,
@@ -374,46 +442,65 @@ def fetch_benchmark(ticker, start, end=None):
         return None
 
 
-def print_comparison(period_label, sim_start, old_result, new_result, nk225_return):
-    """Print side-by-side comparison table."""
-    w = 72
+def print_multi_comparison(period_label, sim_start, results, nk225_return):
+    """Print comparison table for multiple strategies."""
+    w = 90
+    n = len(results)
+    col_w = max(16, 72 // n)
+
     print(f"\n{'=' * w}")
-    print(f"  バックテスト比較: {period_label}（{sim_start} 〜 今日）")
+    print(f"  バックテスト比較: {period_label}（{sim_start} 〜 今日）  [スリッページ {SLIPPAGE*100:.1f}%]")
     print(f"{'=' * w}")
 
     nk = f"{nk225_return:+.2f}%" if nk225_return is not None else "N/A"
 
-    rows = [
-        ("リターン", f"{old_result['return_pct']:+.2f}%", f"{new_result['return_pct']:+.2f}%", nk),
-        ("最終資産", f"¥{old_result['final']:,.0f}", f"¥{new_result['final']:,.0f}", "—"),
-        ("損益合計", f"¥{old_result['total_pnl']:+,.0f}", f"¥{new_result['total_pnl']:+,.0f}", "—"),
-        ("トレード数", f"{old_result['trades']}件", f"{new_result['trades']}件", "—"),
-        ("勝敗", f"{old_result['wins']}勝{old_result['losses']}敗", f"{new_result['wins']}勝{new_result['losses']}敗", "—"),
-        ("勝率", f"{old_result['win_rate']}%", f"{new_result['win_rate']}%", "—"),
-        ("平均利益", f"{old_result['avg_win']:+.2f}%", f"{new_result['avg_win']:+.2f}%", "—"),
-        ("平均損失", f"{old_result['avg_loss']:+.2f}%", f"{new_result['avg_loss']:+.2f}%", "—"),
-        ("最大DD", f"{old_result['max_dd']:.2f}%", f"{new_result['max_dd']:.2f}%", "—"),
-        ("PF", f"{old_result['pf']:.2f}", f"{new_result['pf']:.2f}", "—"),
+    metric_keys = [
+        ("リターン", lambda r: f"{r['return_pct']:+.2f}%"),
+        ("最終資産", lambda r: f"¥{r['final']:,.0f}"),
+        ("損益合計", lambda r: f"¥{r['total_pnl']:+,.0f}"),
+        ("トレード数", lambda r: f"{r['trades']}件"),
+        ("勝敗", lambda r: f"{r['wins']}W/{r['losses']}L"),
+        ("勝率", lambda r: f"{r['win_rate']}%"),
+        ("平均利益", lambda r: f"{r['avg_win']:+.2f}%"),
+        ("平均損失", lambda r: f"{r['avg_loss']:+.2f}%"),
+        ("最大DD", lambda r: f"{r['max_dd']:.2f}%"),
+        ("PF", lambda r: f"{r['pf']:.2f}"),
+        ("Sharpe", lambda r: f"{r['sharpe']:.2f}"),
+        ("Sortino", lambda r: f"{r['sortino']:.2f}"),
+        ("最大連勝", lambda r: f"{r['max_consec_win']}"),
+        ("最大連敗", lambda r: f"{r['max_consec_loss']}"),
     ]
 
     # Header
-    print(f"  {'項目':<12}  {'旧(-5%ストップ)':>16}  {'新(-8%+建値)':>16}  {'日経225':>10}")
+    header = f"  {'項目':<12}"
+    for r in results:
+        header += f"  {r['label']:>{col_w}}"
+    header += f"  {'日経225':>10}"
+    print(header)
     print(f"  {'─' * (w - 4)}")
 
-    for label, old_val, new_val, bench_val in rows:
-        print(f"  {label:<12}  {old_val:>16}  {new_val:>16}  {bench_val:>10}")
+    for label, fmt in metric_keys:
+        line = f"  {label:<12}"
+        for r in results:
+            line += f"  {fmt(r):>{col_w}}"
+        bench = nk if label == "リターン" else "—"
+        line += f"  {bench:>10}"
+        print(line)
 
     # Alpha
     if nk225_return is not None:
-        old_alpha = round(old_result["return_pct"] - nk225_return, 2)
-        new_alpha = round(new_result["return_pct"] - nk225_return, 2)
         print(f"  {'─' * (w - 4)}")
-        print(f"  {'α(vs日経)':12}  {old_alpha:>+16.2f}%  {new_alpha:>+16.2f}%  {'—':>10}")
+        line = f"  {'α(vs日経)':<12}"
+        for r in results:
+            alpha = round(r["return_pct"] - nk225_return, 2)
+            line += f"  {alpha:>+{col_w}.2f}%"
+        line += f"  {'—':>10}"
+        print(line)
 
     print(f"{'=' * w}")
 
     # Exit reason breakdown
-    for result in [old_result, new_result]:
+    for result in results:
         if not result["trade_details"]:
             continue
         print(f"\n  【{result['label']}】イグジット内訳:")
@@ -425,9 +512,70 @@ def print_comparison(period_label, sim_start, old_result, new_result, nk225_retu
             print(f"    {reason}: {info['count']}件 (損益: ¥{info['pnl']:+,.0f})")
 
 
+def run_sensitivity(all_data, config, sim_start="2026-01-01"):
+    """Grid search over stop_loss_pct and profit_take_pct."""
+    stop_range = [0.05, 0.08, 0.10, 0.12]
+    profit_range = [0.06, 0.08, 0.10, 0.12]
+
+    print(f"\n{'=' * 80}")
+    print(f"  パラメータ感度分析（{sim_start} 〜 今日）  [スリッページ {SLIPPAGE*100:.1f}%]")
+    print(f"{'=' * 80}")
+
+    # Header
+    col_header = "stop / profit"
+    header = f"  {col_header:>14}"
+    for pt in profit_range:
+        header += f"  {f'+{int(pt*100)}%利確':>14}"
+    print(header)
+    print(f"  {'─' * 76}")
+
+    best = {"pf": 0, "stop": 0, "profit": 0, "result": None}
+
+    for sl in stop_range:
+        line = f"  {f'-{int(sl*100)}%ストップ':>14}"
+        for pt in profit_range:
+            sp = {
+                "label": f"s{int(sl*100)}_p{int(pt*100)}",
+                "stop_loss_pct": sl,
+                "trailing_mode": "breakeven",
+                "profit_tighten_pct": pt * 0.75,  # Breakeven at 75% of profit target
+                "default_trail": sl,
+                "profit_take_pct": pt,
+                "profit_take_ratio": 0.5,
+                "profit_take_full_pct": pt * 1.875,  # Full exit at ~1.9x partial
+            }
+            r = run_strategy_backtest(all_data, config, sp, sim_start=sim_start, slippage=SLIPPAGE)
+            cell = f"PF{r['pf']:.1f} {r['return_pct']:+.1f}%"
+            line += f"  {cell:>14}"
+            if r["pf"] > best["pf"] and r["trades"] >= 10:
+                best = {"pf": r["pf"], "stop": sl, "profit": pt, "result": r}
+        print(line)
+
+    print(f"  {'─' * 76}")
+    if best["result"]:
+        b = best["result"]
+        print(f"  ベスト: ストップ-{int(best['stop']*100)}% / 利確+{int(best['profit']*100)}%"
+              f"  →  PF {b['pf']:.2f} / リターン {b['return_pct']:+.2f}%"
+              f" / Sharpe {b['sharpe']:.2f} / {b['trades']}トレード")
+    print(f"{'=' * 80}")
+
+
 def main():
+    parser = argparse.ArgumentParser(description="Strategy backtest comparison tool")
+    parser.add_argument("--mode", choices=["compare", "sensitivity"], default="compare")
+    args = parser.parse_args()
+
     config = load_config()
     tickers = list(NIKKEI_225.keys())
+    all_data = download_data(tickers, start="2024-03-01")
+
+    if args.mode == "sensitivity":
+        run_sensitivity(all_data, config, sim_start="2025-10-01")
+        return
+
+    # Profile comparison mode
+    profiles = ["default"] + list(config.get("profiles", {}).keys())
+    profile_strategies = [build_profile_strategy(config, p) for p in profiles]
 
     periods = [
         ("3ヶ月", "2026-01-01"),
@@ -435,27 +583,22 @@ def main():
         ("1年", "2025-03-26"),
     ]
 
-    print("=" * 72)
-    print("  旧戦略 vs 新戦略 vs 日経225 バックテスト比較")
-    print("  旧: ストップ-5% / +3%でトレイル-4%に引締め / +7%で半分利確")
-    print("  新: ストップ-8% / +6%で建値移動 / +8%で半分利確 / +15%で全利確")
-    print("=" * 72)
-
-    # Download once with enough warmup for SMA200
-    all_data = download_data(tickers, start="2024-03-01")
+    print("=" * 90)
+    print("  プロファイル比較バックテスト（スリッページ込み）")
+    for ps in profile_strategies:
+        print(f"    {ps['label']}")
+    print("=" * 90)
 
     for period_label, sim_start in periods:
         print(f"\n  {period_label}バックテスト実行中...")
 
-        old = run_strategy_backtest(
-            all_data, config, OLD_STRATEGY, sim_start=sim_start,
-        )
-        new = run_strategy_backtest(
-            all_data, config, NEW_STRATEGY, sim_start=sim_start,
-        )
-        nk225 = fetch_benchmark("^N225", sim_start)
+        results = []
+        for sp in profile_strategies:
+            r = run_strategy_backtest(all_data, config, sp, sim_start=sim_start, slippage=SLIPPAGE)
+            results.append(r)
 
-        print_comparison(period_label, sim_start, old, new, nk225)
+        nk225 = fetch_benchmark("^N225", sim_start)
+        print_multi_comparison(period_label, sim_start, results, nk225)
 
 
 if __name__ == "__main__":
