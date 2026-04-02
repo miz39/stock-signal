@@ -2867,5 +2867,142 @@
       "cash": 140580.3,
       "total_assets": 307295.0
     }
+  },
+  {
+    "timestamp": "2026-04-02T12:35:42.959141+09:00",
+    "date": "2026-04-02",
+    "session": "12:35 昼",
+    "profile": "default",
+    "mode": "paper",
+    "scan": {
+      "total": 225,
+      "buy_count": 67,
+      "sell_count": 0,
+      "error_count": 0
+    },
+    "buy_signals": [
+      {
+        "ticker": "3436.T",
+        "name": "SUMCO",
+        "price": 1687.5,
+        "rsi": 50.0,
+        "reason": "ゴールデンクロス（SMA25 > SMA75）+ RSI適正（50.0）+ 上昇トレンド",
+        "stop_loss": 1552.5,
+        "shares": 17
+      },
+      {
+        "ticker": "8001.T",
+        "name": "伊藤忠商事",
+        "price": 2049.0,
+        "rsi": 50.0,
+        "reason": "ゴールデンクロス（SMA25 > SMA75）+ RSI適正（50.0）+ 上昇トレンド",
+        "stop_loss": 1885.1,
+        "shares": 14
+      },
+      {
+        "ticker": "1332.T",
+        "name": "ニッスイ",
+        "price": 1374.0,
+        "rsi": 50.1,
+        "reason": "ゴールデンクロス（SMA25 > SMA75）+ RSI適正（50.1）+ 上昇トレンド",
+        "stop_loss": 1264.1,
+        "shares": 21
+      },
+      {
+        "ticker": "7741.T",
+        "name": "HOYA",
+        "price": 27570.0,
+        "rsi": 50.3,
+        "reason": "ゴールデンクロス（SMA25 > SMA75）+ RSI適正（50.3）+ 上昇トレンド",
+        "stop_loss": 25364.4,
+        "shares": 1
+      },
+      {
+        "ticker": "6952.T",
+        "name": "カシオ計算機",
+        "price": 1460.0,
+        "rsi": 50.9,
+        "reason": "ゴールデンクロス（SMA25 > SMA75）+ RSI適正（50.9）+ 上昇トレンド",
+        "stop_loss": 1343.2,
+        "shares": 20
+      },
+      {
+        "ticker": "7012.T",
+        "name": "川崎重工業",
+        "price": 3159.0,
+        "rsi": 51.0,
+        "reason": "ゴールデンクロス（SMA25 > SMA75）+ RSI適正（51.0）+ 上昇トレンド",
+        "stop_loss": 2906.3,
+        "shares": 9
+      },
+      {
+        "ticker": "6178.T",
+        "name": "日本郵政",
+        "price": 1844.0,
+        "rsi": 51.3,
+        "reason": "ゴールデンクロス（SMA25 > SMA75）+ RSI適正（51.3）+ 上昇トレンド",
+        "stop_loss": 1696.5,
+        "shares": 16
+      },
+      {
+        "ticker": "2768.T",
+        "name": "双日",
+        "price": 6291.0,
+        "rsi": 51.3,
+        "reason": "ゴールデンクロス（SMA25 > SMA75）+ RSI適正（51.3）+ 上昇トレンド",
+        "stop_loss": 5787.7,
+        "shares": 4
+      },
+      {
+        "ticker": "5803.T",
+        "name": "フジクラ",
+        "price": 4270.0,
+        "rsi": 51.3,
+        "reason": "ゴールデンクロス（SMA25 > SMA75）+ RSI適正（51.3）+ 上昇トレンド",
+        "stop_loss": 3928.4,
+        "shares": 7
+      },
+      {
+        "ticker": "5333.T",
+        "name": "日本ガイシ",
+        "price": 4097.0,
+        "rsi": 51.6,
+        "reason": "ゴールデンクロス（SMA25 > SMA75）+ RSI適正（51.6）+ 上昇トレンド",
+        "stop_loss": 3769.2,
+        "shares": 7
+      }
+    ],
+    "sell_signals": [],
+    "executions": {
+      "entries": [],
+      "exits": [],
+      "partial_exits": [],
+      "topups": [
+        {
+          "ticker": "5803.T",
+          "name": "フジクラ",
+          "price": 4270.0,
+          "additional_shares": 1,
+          "total_shares": 7,
+          "old_shares": 6,
+          "rsi": 51.3
+        }
+      ],
+      "trailing_stop_updates": [
+        {
+          "ticker": "2282.T",
+          "name": "日本ハム",
+          "new_stop": 6851.0,
+          "current_price": 7406.0,
+          "gain_pct": 8.1
+        }
+      ]
+    },
+    "portfolio_snapshot": {
+      "open_count": 10,
+      "stock_value": 274090.0,
+      "cash": 31281.5,
+      "total_assets": 305372.0
+    }
   }
 ]

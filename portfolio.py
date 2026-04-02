@@ -68,6 +68,27 @@ def record_entry(ticker: str, price: float, shares: int, entry_date: str = None)
     return trade
 
 
+def record_topup(ticker: str, price: float, additional_shares: int, stop_pct: float = 0.08) -> Optional[dict]:
+    """既存ポジションに買い増しする。平均取得単価とストップを再計算する。"""
+    trades = _load_trades()
+    for trade in trades:
+        if trade["ticker"] == ticker and trade["status"] == "open":
+            old_shares = trade["shares"]
+            old_price = trade["entry_price"]
+            new_total = old_shares + additional_shares
+            new_avg = round((old_price * old_shares + price * additional_shares) / new_total, 1)
+            trade["entry_price"] = new_avg
+            trade["shares"] = new_total
+            if not trade.get("partial_exit_done"):
+                trade["original_shares"] = new_total
+            new_stop = round(new_avg * (1 - stop_pct), 1)
+            if new_stop > trade.get("stop_price", 0):
+                trade["stop_price"] = new_stop
+            _save_trades(trades)
+            return trade
+    return None
+
+
 def update_trailing_stop(ticker: str, current_price: float, trail_pct: float = 0.08) -> Optional[dict]:
     """トレーリングストップを更新する。高値更新時にストップも引き上げ。"""
     trades = _load_trades()
