@@ -18,7 +18,7 @@ import yfinance as yf
 import yaml
 import os
 from collections import defaultdict
-from strategy import calculate_sma, calculate_rsi
+from strategy import calculate_sma, calculate_rsi, compute_composite_score
 from nikkei225 import NIKKEI_225, get_sector
 
 
@@ -105,26 +105,48 @@ def run_strategy_backtest(all_data, config, strategy_params,
                           rsi_min=50, rsi_max=65,
                           max_daily=3, max_sector=2, cooldown_days=7,
                           sim_start="2026-01-01", initial_balance=300000,
-                          slippage=0.0):
+                          slippage=0.0,
+                          use_regime=False, use_composite_score=False,
+                          score_weights=None, score_threshold=0.0,
+                          bull_max_daily=None):
     """Run backtest with given strategy parameters."""
     strat = config["strategy"]
     account = config["account"]
     max_positions = account["max_positions"]
     sp = strategy_params
 
-    # Pre-compute indicators
+    # Pre-compute indicators (skip ^N225 — it's not a tradeable stock)
     indicators = {}
     for ticker, df in all_data.items():
+        if ticker == "^N225":
+            continue
         close = df["Close"].squeeze() if isinstance(df["Close"], pd.DataFrame) else df["Close"]
         if len(close) < strat["sma_trend"] + 50:
             continue
+        vol = None
+        if "Volume" in df.columns:
+            vol_s = df["Volume"].squeeze() if isinstance(df["Volume"], pd.DataFrame) else df["Volume"]
+            vol = vol_s
         indicators[ticker] = {
             "close": close,
             "sma_short": calculate_sma(close, strat["sma_short"]),
             "sma_long": calculate_sma(close, strat["sma_long"]),
             "sma_trend": calculate_sma(close, strat["sma_trend"]),
             "rsi": calculate_rsi(close, strat["rsi_period"]),
+            "volume": vol,
         }
+
+    # Pre-compute Nikkei 225 regime indicators
+    nk_regime = None
+    if use_regime and "^N225" in all_data:
+        nk_df = all_data["^N225"]
+        nk_close = nk_df["Close"].squeeze() if isinstance(nk_df["Close"], pd.DataFrame) else nk_df["Close"]
+        if len(nk_close) >= 200:
+            nk_regime = {
+                "close": nk_close,
+                "sma50": calculate_sma(nk_close, 50),
+                "sma200": calculate_sma(nk_close, 200),
+            }
 
     if not indicators:
         return _empty_result(sp["label"], initial_balance)
@@ -238,6 +260,27 @@ def run_strategy_backtest(all_data, config, strategy_params,
                 ))
                 del positions[ticker]
 
+        # === Market regime check ===
+        regime_max_daily = bull_max_daily if bull_max_daily is not None else max_daily
+        cur_regime = "bull"
+        if use_regime and nk_regime is not None:
+            # Look up by date (nearest available)
+            nk_idx = nk_regime["close"].index.get_indexer([cur_date], method="ffill")
+            if nk_idx[0] >= 0:
+                ni = nk_idx[0]
+                nk_price = float(nk_regime["close"].iloc[ni])
+                nk_sma50 = float(nk_regime["sma50"].iloc[ni])
+                nk_sma200 = float(nk_regime["sma200"].iloc[ni])
+                if not (np.isnan(nk_sma50) or np.isnan(nk_sma200)):
+                    if nk_price > nk_sma50 > nk_sma200:
+                        cur_regime = "bull"
+                    elif nk_price < nk_sma50 < nk_sma200:
+                        cur_regime = "bear"
+                        regime_max_daily = min(regime_max_daily, 1)
+                    else:
+                        cur_regime = "neutral"
+                        regime_max_daily = min(regime_max_daily, 1)
+
         # === Buy signal scan ===
         buy_candidates = []
         for ticker, ind in indicators.items():
@@ -254,18 +297,50 @@ def run_strategy_backtest(all_data, config, strategy_params,
                 if np.isnan(sma_t) or np.isnan(rsi_val):
                     continue
                 if sma_s > sma_l and rsi_min <= rsi_val <= rsi_max and price > sma_t:
-                    buy_candidates.append({"ticker": ticker, "price": price, "rsi": rsi_val})
+                    cand = {"ticker": ticker, "price": price, "rsi": rsi_val,
+                            "sma_short": sma_s, "sma_long": sma_l, "sma_trend": sma_t}
+                    # Compute composite score if enabled
+                    if use_composite_score and ind.get("volume") is not None:
+                        vol_avg = float(ind["volume"].rolling(window=20).mean().iloc[idx]) if idx >= 19 else 0
+                        vol_cur = float(ind["volume"].iloc[idx])
+                        vol_ratio = vol_cur / vol_avg if vol_avg > 0 else 0
+                        vol_score = min(vol_ratio / 3.0, 1.0)
+                        rsi_score = max(1.0 - abs(rsi_val - 55) / 25.0, 0.0)
+                        momentum = (sma_s - sma_l) / sma_l if sma_l > 0 else 0
+                        sma_score = min(max(momentum / 0.10, 0.0), 1.0)
+                        deviation = (price - sma_t) / sma_t if sma_t > 0 else 0
+                        if deviation < 0:
+                            price_score = 0.0
+                        elif deviation <= 0.05:
+                            price_score = 1.0
+                        elif deviation <= 0.15:
+                            price_score = 1.0 - (deviation - 0.05) / 0.10
+                        else:
+                            price_score = 0.0
+                        w = score_weights or {"volume_surge": 0.25, "rsi_sweet_spot": 0.25,
+                                              "sma_momentum": 0.30, "price_vs_sma200": 0.20}
+                        cand["composite_score"] = (
+                            w["volume_surge"] * vol_score + w["rsi_sweet_spot"] * rsi_score
+                            + w["sma_momentum"] * sma_score + w["price_vs_sma200"] * price_score
+                        )
+                    buy_candidates.append(cand)
             except Exception:
                 continue
 
-        buy_candidates.sort(key=lambda x: x["rsi"])
+        if use_composite_score:
+            if score_threshold > 0:
+                buy_candidates = [c for c in buy_candidates if c.get("composite_score", 0) >= score_threshold]
+            buy_candidates.sort(key=lambda x: x.get("composite_score", 0), reverse=True)
+        else:
+            buy_candidates.sort(key=lambda x: x["rsi"])
 
         sector_counts = defaultdict(int)
         for t in positions:
             sector_counts[get_sector(t)] += 1
 
+        effective_max_daily = regime_max_daily if use_regime else max_daily
         for cand in buy_candidates:
-            if daily_entries >= max_daily:
+            if daily_entries >= effective_max_daily:
                 break
             if len(positions) >= max_positions:
                 break
@@ -826,28 +901,108 @@ def main():
     profiles = ["default"] + list(config.get("profiles", {}).keys())
     profile_strategies = [build_profile_strategy(config, p) for p in profiles]
 
+    # Download ^N225 for regime detection
+    print("日経225指数ダウンロード中...")
+    try:
+        nk225_df = yf.download("^N225", start="2024-03-01", progress=False)
+        if nk225_df is not None and not nk225_df.empty:
+            # Flatten MultiIndex columns if present
+            if isinstance(nk225_df.columns, pd.MultiIndex):
+                nk225_df.columns = nk225_df.columns.get_level_values(0)
+            all_data["^N225"] = nk225_df
+            print(f"  日経225: {len(nk225_df)}日分")
+    except Exception as e:
+        print(f"  日経225ダウンロード失敗: {e}")
+
+    sp = profile_strategies[0]
+
+    # === Phase 1: Grid search for best new-strategy params (6-month period) ===
+    sim_start_tune = "2025-10-01"
+    print("=" * 90)
+    print("  Phase 1: 新戦略パラメータ感度分析（6ヶ月）")
+    print("=" * 90)
+
+    threshold_range = [0.0, 0.25, 0.35, 0.45]
+    bull_daily_range = [2, 3]
+    weight_variants = {
+        "デフォルト": {"volume_surge": 0.25, "rsi_sweet_spot": 0.25, "sma_momentum": 0.30, "price_vs_sma200": 0.20},
+        "安全重視": {"volume_surge": 0.15, "rsi_sweet_spot": 0.30, "sma_momentum": 0.20, "price_vs_sma200": 0.35},
+        "モメンタム": {"volume_surge": 0.30, "rsi_sweet_spot": 0.20, "sma_momentum": 0.35, "price_vs_sma200": 0.15},
+    }
+
+    # Baseline
+    r_base = run_strategy_backtest(
+        all_data, config, sp, sim_start=sim_start_tune, slippage=SLIPPAGE,
+        use_regime=False, use_composite_score=False,
+    )
+    print(f"\n  ベースライン（旧戦略）: リターン={r_base['return_pct']:+.2f}%  PF={r_base['pf']:.2f}  "
+          f"Sharpe={r_base['sharpe']:.2f}  DD={r_base['max_dd']:.2f}%  {r_base['trades']}件\n")
+
+    print(f"  {'重み':<12} {'閾値':>4} {'Bull日':>5} {'リターン':>8} {'PF':>6} {'Sharpe':>7} {'DD':>7} "
+          f"{'件数':>5} {'勝率':>5} {'損切':>4}")
+    print(f"  {'─' * 80}")
+
+    best = {"sharpe": -999, "params": None, "result": None}
+    for wname, w in weight_variants.items():
+        for thr in threshold_range:
+            for bd in bull_daily_range:
+                r = run_strategy_backtest(
+                    all_data, config, sp, sim_start=sim_start_tune, slippage=SLIPPAGE,
+                    use_regime=True, use_composite_score=True, score_weights=w,
+                    score_threshold=thr, bull_max_daily=bd,
+                )
+                losses = r["losses"]
+                mark = " ◀" if r["sharpe"] > r_base["sharpe"] and r["max_dd"] > r_base["max_dd"] else ""
+                print(f"  {wname:<12} {thr:>4.2f} {bd:>5} {r['return_pct']:>+7.2f}% {r['pf']:>5.2f} "
+                      f"{r['sharpe']:>6.2f} {r['max_dd']:>6.2f}% {r['trades']:>5} {r['win_rate']:>4.1f}% {losses:>4}{mark}")
+                # Best by Sharpe among those that beat baseline DD
+                if r["sharpe"] > best["sharpe"] and r["trades"] >= 20:
+                    best = {"sharpe": r["sharpe"], "params": (wname, w, thr, bd), "result": r}
+
+    print(f"  {'─' * 80}")
+    if best["params"]:
+        wname, bw, bthr, bbd = best["params"]
+        br = best["result"]
+        print(f"  ベスト: {wname}  閾値={bthr}  Bull日={bbd}")
+        print(f"    リターン={br['return_pct']:+.2f}%  PF={br['pf']:.2f}  Sharpe={br['sharpe']:.2f}  "
+              f"DD={br['max_dd']:.2f}%  {br['trades']}件  勝率={br['win_rate']:.1f}%")
+    print("=" * 90)
+
+    # === Phase 2: Compare baseline vs best across all periods ===
+    best_w = best["params"][1] if best["params"] else weight_variants["デフォルト"]
+    best_thr = best["params"][2] if best["params"] else 0.35
+    best_bd = best["params"][3] if best["params"] else 2
+
     periods = [
         ("3ヶ月", "2026-01-01"),
         ("6ヶ月", "2025-10-01"),
         ("1年", "2025-03-26"),
     ]
 
-    print("=" * 90)
-    print("  プロファイル比較バックテスト（スリッページ込み）")
-    for ps in profile_strategies:
-        print(f"    {ps['label']}")
-    print("=" * 90)
+    print(f"\n{'=' * 90}")
+    print(f"  Phase 2: 旧戦略 vs 最適新戦略 比較")
+    print(f"  最適パラメータ: 重み={best['params'][0] if best['params'] else 'default'}  "
+          f"閾値={best_thr}  Bull日上限={best_bd}")
+    print(f"{'=' * 90}")
 
     for period_label, sim_start in periods:
         print(f"\n  {period_label}バックテスト実行中...")
 
-        results = []
-        for sp in profile_strategies:
-            r = run_strategy_backtest(all_data, config, sp, sim_start=sim_start, slippage=SLIPPAGE)
-            results.append(r)
+        r_old = run_strategy_backtest(
+            all_data, config, sp, sim_start=sim_start, slippage=SLIPPAGE,
+            use_regime=False, use_composite_score=False,
+        )
+        r_old["label"] = "旧戦略（RSIソート）"
+
+        r_new = run_strategy_backtest(
+            all_data, config, sp, sim_start=sim_start, slippage=SLIPPAGE,
+            use_regime=True, use_composite_score=True, score_weights=best_w,
+            score_threshold=best_thr, bull_max_daily=best_bd,
+        )
+        r_new["label"] = "新戦略（最適化済み）"
 
         nk225 = fetch_benchmark("^N225", sim_start)
-        print_multi_comparison(period_label, sim_start, results, nk225)
+        print_multi_comparison(period_label, sim_start, [r_old, r_new], nk225)
 
 
 if __name__ == "__main__":

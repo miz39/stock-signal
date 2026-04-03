@@ -1,7 +1,7 @@
 import pytest
 import pandas as pd
 import numpy as np
-from strategy import calculate_sma, calculate_rsi, generate_signal
+from strategy import calculate_sma, calculate_rsi, generate_signal, detect_market_regime, compute_composite_score
 
 
 def _make_config(overrides=None):
@@ -120,3 +120,81 @@ class TestGenerateSignal:
         config = _make_config()
         result = generate_signal(df, config)
         assert "avg_volume" in result
+
+
+class TestDetectMarketRegime:
+    def test_bull_regime(self):
+        """Strong uptrend: price > SMA50 > SMA200 → bull."""
+        n = 250
+        prices = 30000 + np.arange(n) * 50.0  # steady uptrend
+        df = _make_df(prices.tolist())
+        result = detect_market_regime(df)
+        assert result["regime"] == "bull"
+        assert result["sma50"] is not None
+        assert result["sma200"] is not None
+        assert result["price"] > 0
+
+    def test_bear_regime(self):
+        """Strong downtrend: price < SMA50 < SMA200 → bear."""
+        n = 250
+        prices = 40000 - np.arange(n) * 50.0  # steady downtrend
+        df = _make_df(prices.tolist())
+        result = detect_market_regime(df)
+        assert result["regime"] == "bear"
+
+    def test_insufficient_data_neutral(self):
+        """Less than 200 data points → neutral."""
+        df = _make_df([30000.0] * 100)
+        result = detect_market_regime(df)
+        assert result["regime"] == "neutral"
+        assert result["sma50"] is None
+        assert result["sma200"] is None
+
+
+class TestComputeCompositeScore:
+    def _make_signal_and_df(self, rsi=55, sma_short=1050, sma_long=1000, price=1060, sma_trend=1020, volume_ratio=1.5):
+        """Helper to create a signal result and matching DataFrame."""
+        n = 30
+        prices = [price] * n
+        volumes = [100000.0] * (n - 1) + [100000.0 * volume_ratio]
+        df = _make_df(prices, volumes)
+
+        sig = {
+            "rsi": rsi,
+            "sma_short": sma_short,
+            "sma_long": sma_long,
+            "sma_trend": sma_trend,
+            "price": price,
+        }
+        return sig, df
+
+    def test_score_in_range(self):
+        sig, df = self._make_signal_and_df()
+        score = compute_composite_score(sig, df)
+        assert 0.0 <= score <= 1.0
+
+    def test_rsi_55_better_than_65(self):
+        sig_55, df_55 = self._make_signal_and_df(rsi=55)
+        sig_65, df_65 = self._make_signal_and_df(rsi=65)
+        score_55 = compute_composite_score(sig_55, df_55)
+        score_65 = compute_composite_score(sig_65, df_65)
+        assert score_55 > score_65
+
+    def test_custom_weights(self):
+        sig, df = self._make_signal_and_df()
+        default_score = compute_composite_score(sig, df)
+        custom_weights = {
+            "volume_surge": 0.0,
+            "rsi_sweet_spot": 1.0,
+            "sma_momentum": 0.0,
+            "price_vs_sma200": 0.0,
+        }
+        custom_score = compute_composite_score(sig, df, weights=custom_weights)
+        assert custom_score != default_score
+
+    def test_high_volume_surge_boosts_score(self):
+        sig_low, df_low = self._make_signal_and_df(volume_ratio=0.5)
+        sig_high, df_high = self._make_signal_and_df(volume_ratio=2.5)
+        score_low = compute_composite_score(sig_low, df_low)
+        score_high = compute_composite_score(sig_high, df_high)
+        assert score_high > score_low

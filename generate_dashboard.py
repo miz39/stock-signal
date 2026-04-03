@@ -2275,7 +2275,17 @@ def generate_strategy_html(profiles_data: dict, config: dict) -> str:
     longest_labels_json = json.dumps(longest_labels)
 
     # --- Section 1.5: Expected Value Simulation ---
-    # Calculate EV metrics
+    # Use default profile data for EV calculation
+    default_data = profiles_data.get("default", list(profiles_data.values())[0] if profiles_data else {})
+    closed = default_data.get("closed", [])
+    wins = default_data.get("wins", 0)
+    losses = default_data.get("losses", 0)
+    win_rate = default_data.get("win_rate", 0)
+    _pnls = [t["pnl"] for t in closed if "pnl" in t]
+    avg_win = round(sum(p for p in _pnls if p > 0) / wins, 1) if wins else 0
+    avg_loss = round(sum(p for p in _pnls if p <= 0) / losses, 1) if losses else 0
+    strat = default_data.get("strategy", config.get("strategy", {}))
+
     ev_per_trade = 0
     monthly_ev = 0
     breakeven_wr = 0

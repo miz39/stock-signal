@@ -20,7 +20,7 @@ import yaml
 from datetime import datetime, date, timezone, timedelta
 
 from data import fetch_stock_data
-from strategy import generate_signal
+from strategy import generate_signal, detect_market_regime, compute_composite_score
 from risk import calculate_stop_loss, calculate_position_size
 from portfolio import (
     get_open_positions,
@@ -176,6 +176,17 @@ def run(profile_name: str = "default"):
 
     strat = config.get("strategy", {})
 
+    # 市場レジーム判定
+    market_regime = {"regime": "neutral", "sma50": None, "sma200": None, "price": 0}
+    if strat.get("market_regime_enabled", True):
+        try:
+            nikkei_df = fetch_stock_data("^N225")
+            market_regime = detect_market_regime(nikkei_df)
+            logger.info(f"市場レジーム: {market_regime['regime'].upper()} "
+                        f"（日経={market_regime['price']:,.1f} / SMA50={market_regime['sma50']} / SMA200={market_regime['sma200']}）")
+        except Exception as e:
+            logger.warning(f"日経225データ取得失敗（レジーム=neutral扱い）: {e}")
+
     # 現金残高とポジションサイジング用の総資産を計算
     available_cash = max(get_cash_balance(balance), 0)
     open_positions = get_open_positions()
@@ -214,6 +225,7 @@ def run(profile_name: str = "default"):
                 sig["stop_loss"] = stop
                 sig["recommended_shares"] = shares
                 sig["risk_amount"] = round((sig["price"] - stop) * shares, 0)
+                sig["_df"] = df
                 buy_signals.append(sig)
 
             elif sig["signal"] == "SELL" and ticker in open_tickers:
@@ -231,8 +243,16 @@ def run(profile_name: str = "default"):
 
     logger.info(f"スキャン完了: {total}銘柄 / 買い{len(buy_signals)} / 売り{len(sell_signals)} / エラー{error_count}")
 
-    # 買いシグナルをRSIの低い順（まだ過熱していない順）でソート
-    buy_signals.sort(key=lambda s: s["rsi"])
+    # 複合スコアを計算してソート（dfキャッシュを利用、追加API呼び出しゼロ）
+    score_weights = strat.get("score_weights")
+    for sig in buy_signals:
+        cached_df = sig.pop("_df", None)
+        if cached_df is not None:
+            sig["composite_score"] = compute_composite_score(sig, cached_df, score_weights)
+        else:
+            sig["composite_score"] = 0.0
+
+    buy_signals.sort(key=lambda s: s.get("composite_score", 0), reverse=True)
 
     # 通知用シグナル（買い上位10 + 保有銘柄の売り）
     notify_signals = sell_signals + buy_signals[:10]
@@ -346,8 +366,14 @@ def run(profile_name: str = "default"):
         open_positions = get_open_positions()
         open_tickers = {p["ticker"] for p in open_positions}
 
-        # エントリー制限パラメータ
+        # エントリー制限パラメータ（レジームに応じて調整）
         max_daily = account.get("max_daily_entries", 3)
+        if market_regime["regime"] == "bear":
+            max_daily = min(max_daily, 1)
+            logger.info(f"  Bear市場: 新規エントリー上限={max_daily}")
+        elif market_regime["regime"] == "neutral":
+            max_daily = min(max_daily, 1)
+            logger.info(f"  Neutral市場: 新規エントリー上限={max_daily}")
         max_sector = account.get("max_sector_positions", 2)
         cooldown_days = account.get("cooldown_days", 7)
         max_consecutive_losses = account.get("max_consecutive_losses", 2)
@@ -462,9 +488,13 @@ def run(profile_name: str = "default"):
     embeds = []
 
     # スキャンサマリー
+    regime_label = {"bull": "🟢 Bull", "bear": "🔴 Bear", "neutral": "🟡 Neutral"}.get(market_regime["regime"], "❓")
+    regime_info = f"\n市場レジーム: {regime_label}"
+    if market_regime.get("sma50") is not None:
+        regime_info += f"（日経={market_regime['price']:,.1f} / SMA50={market_regime['sma50']:,.1f} / SMA200={market_regime['sma200']:,.1f}）"
     embeds.append({
         "title": "🔍 日経225スキャン結果",
-        "description": f"スキャン: {total}銘柄 → 買い: {len(buy_signals)}銘柄 / 売り: {len(sell_signals)}銘柄",
+        "description": f"スキャン: {total}銘柄 → 買い: {len(buy_signals)}銘柄 / 売り: {len(sell_signals)}銘柄{regime_info}",
         "color": 0x607D8B,
     })
 
@@ -476,9 +506,10 @@ def run(profile_name: str = "default"):
             name = TICKER_NAMES.get(sig["ticker"], sig["ticker"])
             code = sig["ticker"].replace(".T", "")
             stop_pct = (sig.get("stop_loss", 0) / sig["price"] - 1) * 100 if sig.get("stop_loss") else -5
+            score_str = f" | Score {sig.get('composite_score', 0):.2f}" if sig.get("composite_score") else ""
             lines.append(
                 f"**{name}**（{code}）¥{sig['price']:,.0f} | RSI {sig['rsi']:.1f} | "
-                f"{sig.get('recommended_shares', '-')}株推奨"
+                f"{sig.get('recommended_shares', '-')}株推奨{score_str}"
             )
         embeds.append({
             "title": f"🟢 買い候補 TOP5",
@@ -668,6 +699,7 @@ def run(profile_name: str = "default"):
         "session": session_name,
         "profile": profile_name,
         "mode": mode,
+        "market_regime": market_regime,
         "scan": {
             "total": total,
             "buy_count": len(buy_signals),
@@ -683,6 +715,7 @@ def run(profile_name: str = "default"):
                 "reason": s.get("reason", ""),
                 "stop_loss": s.get("stop_loss"),
                 "shares": s.get("recommended_shares"),
+                "composite_score": s.get("composite_score"),
                 "sma_short": round(s["sma_short"], 1) if not math.isnan(s.get("sma_short", float("nan"))) else None,
                 "sma_long": round(s["sma_long"], 1) if not math.isnan(s.get("sma_long", float("nan"))) else None,
                 "sma_trend": round(s["sma_trend"], 1) if not math.isnan(s.get("sma_trend", float("nan"))) else None,

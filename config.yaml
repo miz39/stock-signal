@@ -26,6 +26,12 @@ strategy:
   profit_take_ratio: 0.5        # 利確時の売却比率（50%）
   profit_take_full_pct: 0.15    # +15%で全部利確
   min_volume: 500000             # 直近20日平均出来高が50万株以上
+  market_regime_enabled: true     # 日経225 SMA50/SMA200で相場レジーム判定
+  score_weights:                  # 複合スコアの重み（合計1.0）— モメンタム重視
+    volume_surge: 0.30
+    rsi_sweet_spot: 0.20
+    sma_momentum: 0.35
+    price_vs_sma200: 0.15
 
 risk:
   max_sector_pct: 0.30           # セクター集中度上限（金額ベース）
