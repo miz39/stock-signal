@@ -32,6 +32,8 @@ strategy:
     rsi_sweet_spot: 0.20
     sma_momentum: 0.35
     price_vs_sma200: 0.15
+  slope_days: 5                    # SMA25傾き計算の日数（5日前との比較）
+  slope_blend: 0.3                 # sma_momentum内の傾きブレンド率（0=乖離のみ, 1=傾きのみ）
 
 risk:
   max_sector_pct: 0.30           # セクター集中度上限（金額ベース）

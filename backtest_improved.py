@@ -307,7 +307,15 @@ def run_strategy_backtest(all_data, config, strategy_params,
                         vol_score = min(vol_ratio / 3.0, 1.0)
                         rsi_score = max(1.0 - abs(rsi_val - 55) / 25.0, 0.0)
                         momentum = (sma_s - sma_l) / sma_l if sma_l > 0 else 0
-                        sma_score = min(max(momentum / 0.10, 0.0), 1.0)
+                        base_sma_score = min(max(momentum / 0.10, 0.0), 1.0)
+                        slope_score = 0.5
+                        slope_days = 5
+                        if idx >= slope_days:
+                            sma_prev = float(ind["sma_short"].iloc[idx - slope_days])
+                            if sma_prev > 0 and not np.isnan(sma_prev):
+                                slope_pct = (sma_s - sma_prev) / sma_prev
+                                slope_score = min(max(slope_pct / 0.02, 0.0), 1.0)
+                        sma_score = 0.7 * base_sma_score + 0.3 * slope_score
                         deviation = (price - sma_t) / sma_t if sma_t > 0 else 0
                         if deviation < 0:
                             price_score = 0.0

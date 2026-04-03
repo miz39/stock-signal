@@ -126,13 +126,14 @@ def detect_market_regime(nikkei_df: pd.DataFrame) -> dict:
     }
 
 
-def compute_composite_score(signal_result: dict, df: pd.DataFrame, weights: dict = None) -> float:
+def compute_composite_score(signal_result: dict, df: pd.DataFrame, weights: dict = None,
+                            slope_days: int = 5, slope_blend: float = 0.3) -> float:
     """BUY候補の複合スコアを計算する（0.0〜1.0）。
 
     4要素:
     - volume_surge: 直近出来高 / 20日平均出来高（上限3.0で正規化）
     - rsi_sweet_spot: RSI 55からの距離（近いほど高スコア）
-    - sma_momentum: (SMA25 - SMA75) / SMA75（上限10%で正規化）
+    - sma_momentum: SMA乖離率 × (1-slope_blend) + SMA25傾き × slope_blend
     - price_vs_sma200: SMA200乖離率（0〜5%が最高、15%超で0）
     """
     if weights is None:
@@ -158,14 +159,26 @@ def compute_composite_score(signal_result: dict, df: pd.DataFrame, weights: dict
     rsi_dist = abs(rsi - 55)
     rsi_score = max(1.0 - rsi_dist / 25.0, 0.0)
 
-    # sma_momentum
+    # sma_momentum (divergence + SMA25 slope blend)
     sma_short_val = signal_result.get("sma_short", 0)
     sma_long_val = signal_result.get("sma_long", 0)
     if sma_long_val > 0 and not np.isnan(sma_short_val) and not np.isnan(sma_long_val):
         momentum = (sma_short_val - sma_long_val) / sma_long_val
-        sma_score = min(max(momentum / 0.10, 0.0), 1.0)
+        base_sma_score = min(max(momentum / 0.10, 0.0), 1.0)
     else:
-        sma_score = 0.0
+        base_sma_score = 0.0
+
+    slope_score = 0.5
+    sma_short_period = 25
+    if len(close) > slope_days + sma_short_period:
+        sma25 = calculate_sma(close, sma_short_period)
+        sma_cur = float(sma25.iloc[-1])
+        sma_prev = float(sma25.iloc[-1 - slope_days])
+        if sma_prev > 0 and not np.isnan(sma_cur) and not np.isnan(sma_prev):
+            slope_pct = (sma_cur - sma_prev) / sma_prev
+            slope_score = min(max(slope_pct / 0.02, 0.0), 1.0)
+
+    sma_score = (1 - slope_blend) * base_sma_score + slope_blend * slope_score
 
     # price_vs_sma200
     sma_trend_val = signal_result.get("sma_trend", 0)

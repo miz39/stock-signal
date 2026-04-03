@@ -245,10 +245,14 @@ def run(profile_name: str = "default"):
 
     # 複合スコアを計算してソート（dfキャッシュを利用、追加API呼び出しゼロ）
     score_weights = strat.get("score_weights")
+    slope_days = strat.get("slope_days", 5)
+    slope_blend = strat.get("slope_blend", 0.3)
     for sig in buy_signals:
         cached_df = sig.pop("_df", None)
         if cached_df is not None:
-            sig["composite_score"] = compute_composite_score(sig, cached_df, score_weights)
+            sig["composite_score"] = compute_composite_score(
+                sig, cached_df, score_weights,
+                slope_days=slope_days, slope_blend=slope_blend)
         else:
             sig["composite_score"] = 0.0
 
