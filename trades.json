@@ -312,7 +312,7 @@
     "exit_date": null,
     "status": "open",
     "high_price": 7417.0,
-    "stop_price": 6823.6,
+    "stop_price": 6851.0,
     "original_shares": 4,
     "partial_exit_done": true
   },
@@ -351,8 +351,8 @@
     "exit_price": null,
     "exit_date": null,
     "status": "open",
-    "high_price": 2513.0,
-    "stop_price": 2312.0
+    "high_price": 2522.0,
+    "stop_price": 2320.2
   },
   {
     "ticker": "3099.T",
@@ -363,8 +363,8 @@
     "exit_price": null,
     "exit_date": null,
     "status": "open",
-    "high_price": 3030.0,
-    "stop_price": 2787.6
+    "high_price": 3041.0,
+    "stop_price": 2797.7
   },
   {
     "ticker": "2503.T",
@@ -387,8 +387,8 @@
     "exit_price": null,
     "exit_date": null,
     "status": "open",
-    "high_price": 4555.0,
-    "stop_price": 4190.6,
+    "high_price": 4580.0,
+    "stop_price": 4213.6,
     "partial_exit_done": true
   },
   {

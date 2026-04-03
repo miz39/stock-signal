@@ -55,23 +55,47 @@ td.num { text-align:right; font-variant-numeric:tabular-nums; }
 <body>
 <a class="back" href="index.html">&larr; Dashboard</a>
 <h1>戦略分析ダッシュボード</h1>
-<div class="updated">最終更新: 2026-04-03 09:47 JST</div>
+<div class="updated">最終更新: 2026-04-04 00:28 JST</div>
 
-<!-- Section 1: Strategy Performance -->
+<!-- Section 1: Profile Comparison -->
 <div class="section">
-  <h2>戦略パフォーマンス</h2>
-  <div class="profile-grid">
-    <div class="profile-card" style="border-top:3px solid #2196F3">
-      <div class="profile-name" style="color:#2196F3">運用方針</div>
-      <div class="profile-stats"><div class="pstat"><span class="pstat-label">SMA短期/長期</span><span class="pstat-value">25 / 75</span></div><div class="pstat"><span class="pstat-label">SMAトレンド</span><span class="pstat-value">200</span></div><div class="pstat"><span class="pstat-label">RSIエントリー</span><span class="pstat-value">50 - 65</span></div><div class="pstat"><span class="pstat-label">ストップロス</span><span class="pstat-value">-8%</span></div><div class="pstat"><span class="pstat-label">建値移動</span><span class="pstat-value">+6%</span></div><div class="pstat"><span class="pstat-label">半分利確</span><span class="pstat-value">+8%</span></div><div class="pstat"><span class="pstat-label">全部利確</span><span class="pstat-value">+15%</span></div></div>
-    </div>
-    <div class="profile-card" style="border-top:3px solid #00C853">
-      <div class="profile-name" style="color:#00C853">パフォーマンス</div>
-      <div class="profile-stats"><div class="pstat"><span class="pstat-label">勝率</span><span class="pstat-value" style="color:#FF1744">46.4%</span></div><div class="pstat"><span class="pstat-label">確定損益</span><span class="pstat-value" style="color:#00C853">&yen;+1,113</span></div><div class="pstat"><span class="pstat-label">PF</span><span class="pstat-value" style="color:#00C853">1.08</span></div><div class="pstat"><span class="pstat-label">最大DD</span><span class="pstat-value" style="color:#FF9800">&yen;10,836</span></div><div class="pstat"><span class="pstat-label">トレード数</span><span class="pstat-value" style="color:#E0E0E0">28件</span></div><div class="pstat"><span class="pstat-label">平均保有日数</span><span class="pstat-value" style="color:#E0E0E0">9.5日</span></div></div>
-    </div>
+  <h2>プロファイル比較</h2>
+  <div class="profile-grid"><div class="profile-card" style="border-top:3px solid #2196F3">
+  <div class="profile-name" style="color:#2196F3">Default</div>
+  <div class="profile-stats">
+    <div class="pstat"><span class="pstat-label">勝率</span><span class="pstat-value">46.4%</span></div>
+    <div class="pstat"><span class="pstat-label">損益</span><span class="pstat-value" style="color:#00C853">&yen;+1,113</span></div>
+    <div class="pstat"><span class="pstat-label">トレード</span><span class="pstat-value">28件</span></div>
+    <div class="pstat"><span class="pstat-label">PF</span><span class="pstat-value">1.08</span></div>
+    <div class="pstat"><span class="pstat-label">保有中</span><span class="pstat-value">10銘柄</span></div>
+  </div>
+</div><div class="profile-card" style="border-top:3px solid #FF9800">
+  <div class="profile-name" style="color:#FF9800">Conservative</div>
+  <div class="profile-stats">
+    <div class="pstat"><span class="pstat-label">勝率</span><span class="pstat-value">0%</span></div>
+    <div class="pstat"><span class="pstat-label">損益</span><span class="pstat-value" style="color:#9E9E9E">&yen;0</span></div>
+    <div class="pstat"><span class="pstat-label">トレード</span><span class="pstat-value">0件</span></div>
+    <div class="pstat"><span class="pstat-label">PF</span><span class="pstat-value">0</span></div>
+    <div class="pstat"><span class="pstat-label">保有中</span><span class="pstat-value">9銘柄</span></div>
+  </div>
+</div><div class="profile-card" style="border-top:3px solid #9C27B0">
+  <div class="profile-name" style="color:#9C27B0">Aggressive</div>
+  <div class="profile-stats">
+    <div class="pstat"><span class="pstat-label">勝率</span><span class="pstat-value">0%</span></div>
+    <div class="pstat"><span class="pstat-label">損益</span><span class="pstat-value" style="color:#9E9E9E">&yen;0</span></div>
+    <div class="pstat"><span class="pstat-label">トレード</span><span class="pstat-value">0件</span></div>
+    <div class="pstat"><span class="pstat-label">PF</span><span class="pstat-value">0</span></div>
+    <div class="pstat"><span class="pstat-label">保有中</span><span class="pstat-value">9銘柄</span></div>
+  </div>
+</div></div>
+  <div style="overflow-x:auto">
+  <table>
+    <thead><tr><th>パラメータ</th><th style='color:#2196F3'>Default</th><th style='color:#FF9800'>Conservative</th><th style='color:#9C27B0'>Aggressive</th></tr></thead>
+    <tbody><tr><td>ストップロス</td><td class='num'>-8%</td><td class='num'>-12%</td><td class='num'>-5%</td></tr><tr><td>建値移動</td><td class='num'>+6%</td><td class='num'>+8%</td><td class='num'>+3%</td></tr><tr><td>半分利確</td><td class='num'>+8%</td><td class='num'>+10%</td><td class='num'>+6%</td></tr><tr><td>全部利確</td><td class='num'>+15%</td><td class='num'>+20%</td><td class='num'>+10%</td></tr></tbody>
+  </table>
   </div>
   <div class="chart-wrap" style="margin-top:16px">
-    <canvas id="equityChart" height="250"></canvas>
+    <canvas id="equityCompareChart" height="250"></canvas>
   </div>
 </div>
 
@@ -177,26 +201,55 @@ td.num { text-align:right; font-variant-numeric:tabular-nums; }
 </div>
 
 <script>
-// Equity chart (default profile)
-const eqLabels = ["2026-03-04", "2026-03-05", "2026-03-06", "2026-03-07", "2026-03-08", "2026-03-09", "2026-03-10", "2026-03-11", "2026-03-12", "2026-03-13", "2026-03-14", "2026-03-15", "2026-03-16", "2026-03-17", "2026-03-18", "2026-03-19", "2026-03-20", "2026-03-21", "2026-03-22", "2026-03-23", "2026-03-24", "2026-03-25", "2026-03-26", "2026-03-27", "2026-03-28", "2026-03-29", "2026-03-30", "2026-03-31", "2026-04-01", "2026-04-02", "2026-04-03"];
-const eqData = [300000, 300000, 300000, 300000, 300000, 293542.0, 293542.0, 293542.0, 294766.0, 293630.8, 293630.8, 293630.8, 292423.3, 292423.3, 292423.3, 292423.3, 292423.3, 292423.3, 292423.3, 289696.0, 288174.1, 288174.1, 294722.1, 294778.1, 294778.1, 294778.1, 294778.1, 297920.3, 298942.8, 300042.8, 308766.6];
+// Equity comparison chart
+const eqLabels = ["2026-03-04", "2026-03-05", "2026-03-06", "2026-03-07", "2026-03-08", "2026-03-09", "2026-03-10", "2026-03-11", "2026-03-12", "2026-03-13", "2026-03-14", "2026-03-15", "2026-03-16", "2026-03-17", "2026-03-18", "2026-03-19", "2026-03-20", "2026-03-21", "2026-03-22", "2026-03-23", "2026-03-24", "2026-03-25", "2026-03-26", "2026-03-27", "2026-03-28", "2026-03-29", "2026-03-30", "2026-03-31", "2026-04-01", "2026-04-02", "2026-04-03", "2026-04-04"];
+const eqDatasets = [{
+      label: 'Default',
+      data: [300000, 300000, 300000, 300000, 300000, 293542.0, 293542.0, 293542.0, 294766.0, 293630.8, 293630.8, 293630.8, 292423.3, 292423.3, 292423.3, 292423.3, 292423.3, 292423.3, 292423.3, 289696.0, 288174.1, 288174.1, 294722.1, 294778.1, 294778.1, 294778.1, 294778.1, 297920.3, 298942.8, 300042.8, 301112.9, 301112.9],
+      _labels: ["2026-03-04", "2026-03-05", "2026-03-06", "2026-03-07", "2026-03-08", "2026-03-09", "2026-03-10", "2026-03-11", "2026-03-12", "2026-03-13", "2026-03-14", "2026-03-15", "2026-03-16", "2026-03-17", "2026-03-18", "2026-03-19", "2026-03-20", "2026-03-21", "2026-03-22", "2026-03-23", "2026-03-24", "2026-03-25", "2026-03-26", "2026-03-27", "2026-03-28", "2026-03-29", "2026-03-30", "2026-03-31", "2026-04-01", "2026-04-02", "2026-04-03", "2026-04-04"],
+      borderColor: '#2196F3',
+      borderWidth: 2,
+      pointRadius: 0,
+      pointHoverRadius: 3,
+      fill: false,
+      tension: 0.3,
+    },{
+      label: 'Conservative',
+      data: [300000, 300000, 300000, 300000, 300000, 300000, 300000, 300000, 300000, 300000],
+      _labels: ["2026-03-26", "2026-03-27", "2026-03-28", "2026-03-29", "2026-03-30", "2026-03-31", "2026-04-01", "2026-04-02", "2026-04-03", "2026-04-04"],
+      borderColor: '#FF9800',
+      borderWidth: 2,
+      pointRadius: 0,
+      pointHoverRadius: 3,
+      fill: false,
+      tension: 0.3,
+    },{
+      label: 'Aggressive',
+      data: [300000, 300000, 300000, 300000, 300000, 300000, 300000, 300000, 300000, 300000],
+      _labels: ["2026-03-26", "2026-03-27", "2026-03-28", "2026-03-29", "2026-03-30", "2026-03-31", "2026-04-01", "2026-04-02", "2026-04-03", "2026-04-04"],
+      borderColor: '#9C27B0',
+      borderWidth: 2,
+      pointRadius: 0,
+      pointHoverRadius: 3,
+      fill: false,
+      tension: 0.3,
+    },];
 const initial = 300000;
 
 if (eqLabels.length > 0) {
-  new Chart(document.getElementById('equityChart'), {
+  // Align datasets to the common label set
+  eqDatasets.forEach(ds => {
+    const lmap = {};
+    ds._labels.forEach((l, i) => { lmap[l] = ds.data[i]; });
+    ds.data = eqLabels.map(l => lmap[l] !== undefined ? lmap[l] : null);
+    delete ds._labels;
+  });
+
+  new Chart(document.getElementById('equityCompareChart'), {
     type: 'line',
     data: {
       labels: eqLabels,
-      datasets: [{
-        label: '総資産',
-        data: eqData,
-        borderColor: '#2196F3',
-        borderWidth: 2,
-        pointRadius: 0,
-        pointHoverRadius: 3,
-        fill: false,
-        tension: 0.3,
-      }, {
+      datasets: [...eqDatasets, {
         label: '初期資金 (¥' + initial.toLocaleString() + ')',
         data: eqLabels.map(() => initial),
         borderColor: '#757575',
@@ -210,7 +263,7 @@ if (eqLabels.length > 0) {
       responsive: true,
       maintainAspectRatio: false,
       plugins: {
-        title: { display:true, text:'資産推移', color:'#9E9E9E', font:{ size:12 } },
+        title: { display:true, text:'資産推移比較', color:'#9E9E9E', font:{ size:12 } },
         legend: { labels: { color:'#9E9E9E', font:{ size:10 }, usePointStyle:true, pointStyle:'line' } },
         tooltip: { callbacks: { label: c => c.dataset.label + ': ¥' + (c.parsed.y != null ? c.parsed.y.toLocaleString() : '-') } }
       },
@@ -222,7 +275,7 @@ if (eqLabels.length > 0) {
     }
   });
 } else {
-  document.getElementById('equityChart').parentElement.innerHTML =
+  document.getElementById('equityCompareChart').parentElement.innerHTML =
     '<p style="text-align:center;color:#757575;padding:24px">データがありません</p>';
 }
 
@@ -277,7 +330,7 @@ if (evData.length > 0) {
 }
 
 // N-day accuracy chart
-const nday = {"checkpoints": [5, 10, 15, 20, 30], "win_rates": [53.6, 60.7, 53.6, 60.7, 60.7], "avg_returns": [0.87, 1.94, 1.66, 1.8, 3.37], "sample_counts": [28, 28, 28, 28, 28]};
+const nday = {"checkpoints": [5, 10, 15, 20, 30], "win_rates": [51.9, 50.0, 31.6, 38.9, 0], "avg_returns": [0.59, -0.22, -2.0, -1.96, 0], "sample_counts": [27, 22, 19, 18, 0]};
 if (nday.win_rates && nday.win_rates.length > 0) {
   new Chart(document.getElementById('ndayChart'), {
     type: 'bar',
