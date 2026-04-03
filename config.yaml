@@ -9,6 +9,7 @@ account:
   max_daily_entries: 3     # 1日あたりの新規エントリー上限
   max_sector_positions: 2  # 同一セクターの同時保有上限
   cooldown_days: 7         # 損切り後の再エントリー禁止日数
+  max_consecutive_losses: 2  # N回連続損切りで当該銘柄エントリー禁止
 
 strategy:
   sma_short: 25

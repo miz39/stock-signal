@@ -114,6 +114,61 @@ class TestGetCashBalance:
         assert cash == 299000.0  # 300000 + (900-1000)*10
 
 
+class TestConsecutiveLossTickers:
+    def test_single_loss_not_blocked(self, temp_trades_file):
+        """1回の損切りではブロックされない（デフォルト閾値2）"""
+        portfolio.record_entry("1234.T", 1000.0, 10, entry_date="2026-01-01")
+        portfolio.record_exit("1234.T", 900.0, exit_date="2026-01-10")
+        blocked = portfolio.get_consecutive_loss_tickers(2)
+        assert "1234.T" not in blocked
+
+    def test_two_consecutive_losses_blocked(self, temp_trades_file):
+        """2回連続損切りでブロックされる"""
+        portfolio.record_entry("1234.T", 1000.0, 10, entry_date="2026-01-01")
+        portfolio.record_exit("1234.T", 900.0, exit_date="2026-01-10")
+        portfolio.record_entry("1234.T", 950.0, 10, entry_date="2026-01-15")
+        portfolio.record_exit("1234.T", 850.0, exit_date="2026-01-25")
+        blocked = portfolio.get_consecutive_loss_tickers(2)
+        assert "1234.T" in blocked
+
+    def test_loss_win_loss_not_blocked(self, temp_trades_file):
+        """負け→勝ち→負けは連続1回なのでブロックされない"""
+        portfolio.record_entry("1234.T", 1000.0, 10, entry_date="2026-01-01")
+        portfolio.record_exit("1234.T", 900.0, exit_date="2026-01-10")
+        portfolio.record_entry("1234.T", 950.0, 10, entry_date="2026-01-15")
+        portfolio.record_exit("1234.T", 1050.0, exit_date="2026-01-25")
+        portfolio.record_entry("1234.T", 1000.0, 10, entry_date="2026-02-01")
+        portfolio.record_exit("1234.T", 900.0, exit_date="2026-02-10")
+        blocked = portfolio.get_consecutive_loss_tickers(2)
+        assert "1234.T" not in blocked
+
+    def test_different_tickers_independent(self, temp_trades_file):
+        """異なる銘柄は独立にカウントされる"""
+        # Ticker A: 2 consecutive losses
+        portfolio.record_entry("1111.T", 1000.0, 10, entry_date="2026-01-01")
+        portfolio.record_exit("1111.T", 900.0, exit_date="2026-01-10")
+        portfolio.record_entry("1111.T", 950.0, 10, entry_date="2026-01-15")
+        portfolio.record_exit("1111.T", 850.0, exit_date="2026-01-25")
+        # Ticker B: 1 loss only
+        portfolio.record_entry("2222.T", 500.0, 20, entry_date="2026-01-01")
+        portfolio.record_exit("2222.T", 450.0, exit_date="2026-01-10")
+        blocked = portfolio.get_consecutive_loss_tickers(2)
+        assert "1111.T" in blocked
+        assert "2222.T" not in blocked
+
+    def test_win_after_losses_resets(self, temp_trades_file):
+        """連敗後に勝ちが入るとリセットされる"""
+        portfolio.record_entry("1234.T", 1000.0, 10, entry_date="2026-01-01")
+        portfolio.record_exit("1234.T", 900.0, exit_date="2026-01-10")
+        portfolio.record_entry("1234.T", 950.0, 10, entry_date="2026-01-15")
+        portfolio.record_exit("1234.T", 850.0, exit_date="2026-01-25")
+        # Now a win
+        portfolio.record_entry("1234.T", 800.0, 10, entry_date="2026-02-01")
+        portfolio.record_exit("1234.T", 1000.0, exit_date="2026-02-10")
+        blocked = portfolio.get_consecutive_loss_tickers(2)
+        assert "1234.T" not in blocked
+
+
 class TestPartialExit:
     def test_partial_exit(self, temp_trades_file):
         portfolio.record_entry("1234.T", 1000.0, 10, entry_date="2026-01-01")

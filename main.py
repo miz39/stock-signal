@@ -27,6 +27,7 @@ from portfolio import (
     get_weekly_report,
     get_cash_balance,
     get_recently_stopped_tickers,
+    get_consecutive_loss_tickers,
     record_entry,
     record_exit,
     record_partial_exit,
@@ -349,6 +350,7 @@ def run(profile_name: str = "default"):
         max_daily = account.get("max_daily_entries", 3)
         max_sector = account.get("max_sector_positions", 2)
         cooldown_days = account.get("cooldown_days", 7)
+        max_consecutive_losses = account.get("max_consecutive_losses", 2)
         daily_entries = 0
 
         # 現在のセクター別保有数を集計
@@ -359,6 +361,8 @@ def run(profile_name: str = "default"):
 
         # 再エントリー禁止銘柄（直近N日以内に損切りした銘柄）
         cooldown_tickers = get_recently_stopped_tickers(cooldown_days)
+        # 連続損切り銘柄
+        consecutive_loss_tickers = get_consecutive_loss_tickers(max_consecutive_losses)
 
         for sig in buy_signals:
             if daily_entries >= max_daily:
@@ -366,6 +370,10 @@ def run(profile_name: str = "default"):
             if sig["ticker"] not in open_tickers and len(open_tickers) < account["max_positions"]:
                 # 再エントリー禁止チェック
                 if sig["ticker"] in cooldown_tickers:
+                    continue
+                # 連続損切りチェック
+                if sig["ticker"] in consecutive_loss_tickers:
+                    logger.info(f"  連続損切りスキップ: {NIKKEI_225.get(sig['ticker'], sig['ticker'])}")
                     continue
                 # セクター制限チェック
                 sec = get_sector(sig["ticker"])

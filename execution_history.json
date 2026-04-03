@@ -3131,5 +3131,190 @@
       "cash": 28792.0,
       "total_assets": 306038.0
     }
+  },
+  {
+    "timestamp": "2026-04-03T09:47:30.384003+09:00",
+    "date": "2026-04-03",
+    "session": "8:50 寄り前",
+    "profile": "default",
+    "mode": "paper",
+    "scan": {
+      "total": 225,
+      "buy_count": 76,
+      "sell_count": 0,
+      "error_count": 0
+    },
+    "buy_signals": [
+      {
+        "ticker": "4062.T",
+        "name": "イビデン",
+        "price": 8106.0,
+        "rsi": 50.1,
+        "reason": "ゴールデンクロス（SMA25 > SMA75）+ RSI適正（50.1）+ 上昇トレンド",
+        "stop_loss": 7457.5,
+        "shares": 3,
+        "sma_short": 8108.8,
+        "sma_long": 7746.0,
+        "sma_trend": 5613.0
+      },
+      {
+        "ticker": "6503.T",
+        "name": "三菱電機",
+        "price": 5352.0,
+        "rsi": 50.1,
+        "reason": "ゴールデンクロス（SMA25 > SMA75）+ RSI適正（50.1）+ 上昇トレンド",
+        "stop_loss": 4923.8,
+        "shares": 5,
+        "sma_short": 5411.8,
+        "sma_long": 5162.3,
+        "sma_trend": 4219.0
+      },
+      {
+        "ticker": "5713.T",
+        "name": "住友金属鉱山",
+        "price": 9524.0,
+        "rsi": 50.3,
+        "reason": "ゴールデンクロス（SMA25 > SMA75）+ RSI適正（50.3）+ 上昇トレンド",
+        "stop_loss": 8762.1,
+        "shares": 3,
+        "sma_short": 9871.0,
+        "sma_long": 8608.3,
+        "sma_trend": 5842.7
+      },
+      {
+        "ticker": "2503.T",
+        "name": "キリンホールディングス",
+        "price": 2553.5,
+        "rsi": 50.8,
+        "reason": "ゴールデンクロス（SMA25 > SMA75）+ RSI適正（50.8）+ 上昇トレンド",
+        "stop_loss": 2349.2,
+        "shares": 11,
+        "sma_short": 2571.1,
+        "sma_long": 2477.1,
+        "sma_trend": 2256.5
+      },
+      {
+        "ticker": "6178.T",
+        "name": "日本郵政",
+        "price": 1840.0,
+        "rsi": 50.9,
+        "reason": "ゴールデンクロス（SMA25 > SMA75）+ RSI適正（50.9）+ 上昇トレンド",
+        "stop_loss": 1692.8,
+        "shares": 15,
+        "sma_short": 1825.5,
+        "sma_long": 1807.8,
+        "sma_trend": 1558.2
+      },
+      {
+        "ticker": "9021.T",
+        "name": "西日本旅客鉄道",
+        "price": 3196.0,
+        "rsi": 51.0,
+        "reason": "ゴールデンクロス（SMA25 > SMA75）+ RSI適正（51.0）+ 上昇トレンド",
+        "stop_loss": 2940.3,
+        "shares": 9,
+        "sma_short": 3192.8,
+        "sma_long": 3167.0,
+        "sma_trend": 3167.8
+      },
+      {
+        "ticker": "5631.T",
+        "name": "日本製鋼所",
+        "price": 9492.0,
+        "rsi": 51.4,
+        "reason": "ゴールデンクロス（SMA25 > SMA75）+ RSI適正（51.4）+ 上昇トレンド",
+        "stop_loss": 8732.6,
+        "shares": 3,
+        "sma_short": 9514.3,
+        "sma_long": 9012.6,
+        "sma_trend": 8958.3
+      },
+      {
+        "ticker": "5802.T",
+        "name": "住友電気工業",
+        "price": 9528.0,
+        "rsi": 51.5,
+        "reason": "ゴールデンクロス（SMA25 > SMA75）+ RSI適正（51.5）+ 上昇トレンド",
+        "stop_loss": 8765.8,
+        "shares": 3,
+        "sma_short": 9747.0,
+        "sma_long": 8078.3,
+        "sma_trend": 5717.4
+      },
+      {
+        "ticker": "8601.T",
+        "name": "大和証券グループ本社",
+        "price": 1531.0,
+        "rsi": 51.7,
+        "reason": "ゴールデンクロス（SMA25 > SMA75）+ RSI適正（51.7）+ 上昇トレンド",
+        "stop_loss": 1408.5,
+        "shares": 18,
+        "sma_short": 1507.2,
+        "sma_long": 1499.6,
+        "sma_trend": 1267.2
+      },
+      {
+        "ticker": "7186.T",
+        "name": "コンコルディア・フィナンシャルグループ",
+        "price": 1467.0,
+        "rsi": 51.8,
+        "reason": "ゴールデンクロス（SMA25 > SMA75）+ RSI適正（51.8）+ 上昇トレンド",
+        "stop_loss": 1349.6,
+        "shares": 19,
+        "sma_short": 1452.8,
+        "sma_long": 1426.1,
+        "sma_trend": 1195.7
+      }
+    ],
+    "sell_signals": [],
+    "executions": {
+      "entries": [],
+      "exits": [],
+      "partial_exits": [
+        {
+          "ticker": "5803.T",
+          "name": "フジクラ",
+          "shares": 3,
+          "price": 4555.0,
+          "entry_price": 4198.3,
+          "gain_pct": 8.5,
+          "total_shares": 7,
+          "pnl": 1070.1
+        }
+      ],
+      "topups": [
+        {
+          "ticker": "5803.T",
+          "name": "フジクラ",
+          "price": 4558.0,
+          "additional_shares": 2,
+          "total_shares": 6,
+          "old_shares": 4,
+          "rsi": 56.5
+        }
+      ],
+      "trailing_stop_updates": [
+        {
+          "ticker": "2282.T",
+          "name": "日本ハム",
+          "new_stop": 6851.0,
+          "current_price": 7417.0,
+          "gain_pct": 8.3
+        },
+        {
+          "ticker": "5803.T",
+          "name": "フジクラ",
+          "new_stop": 4198.3,
+          "current_price": 4555.0,
+          "gain_pct": 8.5
+        }
+      ]
+    },
+    "portfolio_snapshot": {
+      "open_count": 10,
+      "stock_value": 275331.0,
+      "cash": 33341.0,
+      "total_assets": 308672.0
+    }
   }
 ]

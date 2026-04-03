@@ -239,6 +239,29 @@ def get_recently_stopped_tickers(cooldown_days: int = 7) -> set:
     return stopped
 
 
+def get_consecutive_loss_tickers(max_losses: int = 2) -> set:
+    """N回以上連続で損失クローズした銘柄のセットを返す。"""
+    trades = _load_trades()
+    from collections import defaultdict
+    ticker_trades = defaultdict(list)
+    for t in trades:
+        if t["status"] == "closed" and "pnl" in t and t.get("exit_date"):
+            ticker_trades[t["ticker"]].append(t)
+
+    blocked = set()
+    for ticker, ttrades in ticker_trades.items():
+        ttrades.sort(key=lambda t: t["exit_date"])
+        consecutive = 0
+        for t in reversed(ttrades):
+            if t["pnl"] < 0:
+                consecutive += 1
+            else:
+                break
+        if consecutive >= max_losses:
+            blocked.add(ticker)
+    return blocked
+
+
 def get_weekly_report() -> dict:
     """今週のトレード数、損益、累計を返す。"""
     trades = _load_trades()

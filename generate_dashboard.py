@@ -2274,6 +2274,112 @@ def generate_strategy_html(profiles_data: dict, config: dict) -> str:
             longest_labels = pdata["equity_labels"]
     longest_labels_json = json.dumps(longest_labels)
 
+    # --- Section 1.5: Expected Value Simulation ---
+    # Calculate EV metrics
+    ev_per_trade = 0
+    monthly_ev = 0
+    breakeven_wr = 0
+    trades_per_month = 0
+    ev_sensitivity = []
+    ev_scenarios = []
+
+    if closed and wins + losses > 0:
+        avg_win_abs = abs(avg_win) if avg_win else 0
+        avg_loss_abs = abs(avg_loss) if avg_loss else 0
+        wr_decimal = win_rate / 100
+
+        # E[PnL/trade]
+        ev_per_trade = round(wr_decimal * avg_win_abs - (1 - wr_decimal) * avg_loss_abs, 1)
+
+        # Trades per month
+        first_exit = None
+        last_exit = None
+        for t in closed:
+            if t.get("exit_date"):
+                d = t["exit_date"]
+                if first_exit is None or d < first_exit:
+                    first_exit = d
+                if last_exit is None or d > last_exit:
+                    last_exit = d
+        if first_exit and last_exit:
+            from datetime import date as dt_date
+            try:
+                d1 = dt_date.fromisoformat(first_exit)
+                d2 = dt_date.fromisoformat(last_exit)
+                span_days = max((d2 - d1).days, 30)
+                trades_per_month = round(len(closed) / span_days * 30, 1)
+            except Exception:
+                trades_per_month = len(closed)
+        else:
+            trades_per_month = len(closed)
+
+        monthly_ev = round(ev_per_trade * trades_per_month, 0)
+
+        # Breakeven win rate
+        if avg_win_abs + avg_loss_abs > 0:
+            breakeven_wr = round(avg_loss_abs / (avg_win_abs + avg_loss_abs) * 100, 1)
+
+        # Sensitivity: vary win rate from 35% to 60%
+        for wr_pct in [35, 40, 45, 50, 55, 60]:
+            wr_d = wr_pct / 100
+            ev = round(wr_d * avg_win_abs - (1 - wr_d) * avg_loss_abs, 1)
+            m_ev = round(ev * trades_per_month, 0)
+            ev_sensitivity.append({"wr": wr_pct, "ev": ev, "monthly": m_ev})
+
+        # Scenario comparison
+        stop_loss_pct_val = strat.get("stop_loss_pct", 0.08)
+        profit_take_pct_val = strat.get("profit_take_pct", 0.08)
+        profit_take_full_pct_val = strat.get("profit_take_full_pct", 0.15)
+
+        scenarios = [
+            {"name": "現行", "stop": stop_loss_pct_val, "half": profit_take_pct_val, "full": profit_take_full_pct_val, "scale": 1.0},
+            {"name": "タイト", "stop": 0.06, "half": 0.08, "full": 0.12, "scale": 0.06 / stop_loss_pct_val if stop_loss_pct_val else 1.0},
+            {"name": "ワイド", "stop": 0.10, "half": 0.10, "full": 0.15, "scale": 0.10 / stop_loss_pct_val if stop_loss_pct_val else 1.0},
+        ]
+        for sc in scenarios:
+            if sc["name"] == "現行":
+                sc_wr = win_rate
+                sc_avg_win = avg_win_abs
+                sc_avg_loss = avg_loss_abs
+            else:
+                # Linear scaling: wider stop → higher win rate, larger avg loss
+                sc_wr = round(min(win_rate * sc["scale"], 80), 1)
+                sc_avg_loss = round(avg_loss_abs * sc["scale"], 0)
+                # Profit targets scale proportionally
+                win_scale = sc["half"] / profit_take_pct_val if profit_take_pct_val else 1.0
+                sc_avg_win = round(avg_win_abs * win_scale, 0)
+            sc_wr_d = sc_wr / 100
+            sc_ev = round(sc_wr_d * sc_avg_win - (1 - sc_wr_d) * sc_avg_loss, 1)
+            sc_monthly = round(sc_ev * trades_per_month, 0)
+            sc_be = round(sc_avg_loss / (sc_avg_win + sc_avg_loss) * 100, 1) if (sc_avg_win + sc_avg_loss) > 0 else 0
+            ev_scenarios.append({
+                "name": sc["name"],
+                "stop": f'-{sc["stop"]*100:.0f}%',
+                "half": f'+{sc["half"]*100:.0f}%',
+                "full": f'+{sc["full"]*100:.0f}%',
+                "wr": sc_wr, "avg_win": sc_avg_win, "avg_loss": sc_avg_loss,
+                "ev": sc_ev, "monthly": sc_monthly, "be": sc_be,
+            })
+
+    ev_sensitivity_json = json.dumps(ev_sensitivity)
+
+    # Build scenario table rows HTML
+    scenario_rows_html = ""
+    for sc in ev_scenarios:
+        ev_color = "#00C853" if sc["ev"] > 0 else "#FF1744" if sc["ev"] < 0 else "#9E9E9E"
+        scenario_rows_html += f"""<tr>
+<td><strong>{sc["name"]}</strong></td>
+<td class="num">{sc["stop"]}</td>
+<td class="num">{sc["half"]}</td>
+<td class="num">{sc["full"]}</td>
+<td class="num">{sc["wr"]}%</td>
+<td class="num">&yen;{sc["avg_win"]:,.0f}</td>
+<td class="num">&yen;{sc["avg_loss"]:,.0f}</td>
+<td class="num" style="color:{ev_color}">&yen;{sc["ev"]:+,.0f}</td>
+<td class="num" style="color:{ev_color}">&yen;{sc["monthly"]:+,.0f}</td>
+<td class="num">{sc["be"]}%</td>
+</tr>"""
+
     # --- Section 2: N-day accuracy ---
     default_closed = profiles_data.get("default", {}).get("closed", [])
     nday_data = _build_nday_accuracy(default_closed)
@@ -2402,6 +2508,49 @@ td.num {{ text-align:right; font-variant-numeric:tabular-nums; }}
   </div>
 </div>
 
+<!-- Section 1.5: Expected Value Simulation -->
+<div class="section">
+  <h2>期待値シミュレーション</h2>
+  <div class="profile-grid">
+    <div class="profile-card" style="border-top:3px solid #FFD600">
+      <div class="profile-name" style="color:#FFD600">E[PnL/トレード]</div>
+      <div class="profile-stats">
+        <div class="pstat"><span class="pstat-label">期待値</span><span class="pstat-value" style="color:{"#00C853" if ev_per_trade > 0 else "#FF1744" if ev_per_trade < 0 else "#9E9E9E"}">&yen;{ev_per_trade:+,.0f}</span></div>
+        <div class="pstat"><span class="pstat-label">月間推定</span><span class="pstat-value" style="color:{"#00C853" if monthly_ev > 0 else "#FF1744" if monthly_ev < 0 else "#9E9E9E"}">&yen;{monthly_ev:+,.0f}</span></div>
+        <div class="pstat"><span class="pstat-label">損益分岐勝率</span><span class="pstat-value">{breakeven_wr}%</span></div>
+        <div class="pstat"><span class="pstat-label">月間トレード数</span><span class="pstat-value">{trades_per_month}回</span></div>
+      </div>
+    </div>
+    <div class="profile-card" style="border-top:3px solid #9E9E9E">
+      <div class="profile-name" style="color:#9E9E9E">算出根拠</div>
+      <div class="profile-stats">
+        <div class="pstat"><span class="pstat-label">現在勝率</span><span class="pstat-value">{win_rate}%</span></div>
+        <div class="pstat"><span class="pstat-label">平均勝ち</span><span class="pstat-value" style="color:#00C853">&yen;{abs(avg_win):,.0f}</span></div>
+        <div class="pstat"><span class="pstat-label">平均負け</span><span class="pstat-value" style="color:#FF1744">&yen;{abs(avg_loss):,.0f}</span></div>
+        <div class="pstat"><span class="pstat-label">計算式</span><span class="pstat-value" style="font-size:0.65rem">WR&times;AvgW - (1-WR)&times;AvgL</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="chart-wrap" style="margin-top:16px">
+    <canvas id="evSensitivityChart" height="250"></canvas>
+  </div>
+
+  <div style="overflow-x:auto;margin-top:16px">
+    <h3 style="font-size:0.85rem;margin-bottom:8px;color:#9E9E9E">パラメータシナリオ比較</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>シナリオ</th><th>ストップ</th><th>半利確</th><th>全利確</th>
+          <th>推定勝率</th><th>平均勝</th><th>平均負</th><th>E[PnL]</th><th>月間</th><th>損益分岐</th>
+        </tr>
+      </thead>
+      <tbody>{scenario_rows_html}</tbody>
+    </table>
+    <p style="font-size:0.68rem;color:#757575;margin-top:6px">※ タイト/ワイドの推定値はストップ幅に基づく線形スケーリング。実際のボラティリティ等で変動します。</p>
+  </div>
+</div>
+
 <!-- Section 2: N-day Signal Accuracy -->
 <div class="section">
   <h2>シグナル精度（BUY後N日）</h2>
@@ -2474,6 +2623,56 @@ if (eqLabels.length > 0) {{
 }} else {{
   document.getElementById('equityCompareChart').parentElement.innerHTML =
     '<p style="text-align:center;color:#757575;padding:24px">データがありません</p>';
+}}
+
+// EV Sensitivity chart
+const evData = {ev_sensitivity_json};
+if (evData.length > 0) {{
+  const evLabels = evData.map(d => d.wr + '%');
+  const evBars = evData.map(d => d.ev);
+  const evLine = evData.map(d => d.monthly);
+  new Chart(document.getElementById('evSensitivityChart'), {{
+    type: 'bar',
+    data: {{
+      labels: evLabels,
+      datasets: [{{
+        label: 'E[PnL/トレード] (¥)',
+        data: evBars,
+        backgroundColor: evBars.map(v => v >= 0 ? 'rgba(0,200,83,0.7)' : 'rgba(255,23,68,0.7)'),
+        borderRadius: 4,
+        yAxisID: 'y',
+      }}, {{
+        label: '月間推定 (¥)',
+        data: evLine,
+        type: 'line',
+        borderColor: '#FFD600',
+        borderWidth: 2,
+        pointRadius: 4,
+        pointBackgroundColor: evLine.map(v => v >= 0 ? '#00C853' : '#FF1744'),
+        fill: false,
+        yAxisID: 'y1',
+      }}]
+    }},
+    options: {{
+      responsive: true, maintainAspectRatio: false,
+      plugins: {{
+        title: {{ display:true, text:'勝率感度シミュレーション（現在の平均勝ち/負け固定）', color:'#9E9E9E', font:{{ size:12 }} }},
+        legend: {{ labels: {{ color:'#9E9E9E', font:{{ size:10 }} }} }},
+        tooltip: {{ callbacks: {{ label: function(c) {{
+          if (c.datasetIndex === 0) return 'E[PnL]: ¥' + c.parsed.y.toLocaleString();
+          return '月間: ¥' + c.parsed.y.toLocaleString();
+        }} }} }}
+      }},
+      scales: {{
+        x: {{ title: {{ display:true, text:'勝率', color:'#757575', font:{{ size:9 }} }}, ticks: {{ color:'#757575', font:{{ size:9 }} }}, grid: {{ color:'#2A2A2A' }} }},
+        y: {{ position:'left', title: {{ display:true, text:'E[PnL/トレード] (¥)', color:'#757575', font:{{ size:9 }} }}, ticks: {{ color:'#757575', font:{{ size:9 }}, callback: v => '¥' + v.toLocaleString() }}, grid: {{ color:'#2A2A2A' }} }},
+        y1: {{ position:'right', title: {{ display:true, text:'月間推定 (¥)', color:'#FFD600', font:{{ size:9 }} }}, ticks: {{ color:'#FFD600', font:{{ size:9 }}, callback: v => '¥' + v.toLocaleString() }}, grid: {{ display:false }} }}
+      }}
+    }}
+  }});
+}} else {{
+  document.getElementById('evSensitivityChart').parentElement.innerHTML =
+    '<p style="text-align:center;color:#757575;padding:24px">クローズドトレードのデータがありません</p>';
 }}
 
 // N-day accuracy chart
