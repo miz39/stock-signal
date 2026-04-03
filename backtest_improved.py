@@ -24,7 +24,7 @@ from nikkei225 import NIKKEI_225, get_sector
 
 CONFIG_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "config.yaml")
 
-SLIPPAGE = 0.005  # S-stock spread: 0.5%
+SLIPPAGE = 0.002  # S-stock execution gap: 0.2% (no commission, market open fill)
 
 
 def build_profile_strategy(config, profile_name="default"):
