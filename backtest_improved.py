@@ -18,7 +18,7 @@ import yfinance as yf
 import yaml
 import os
 from collections import defaultdict
-from strategy import calculate_sma, calculate_rsi, compute_composite_score
+from strategy import calculate_sma, calculate_rsi, compute_composite_score, calculate_adx, calculate_ichimoku, detect_coch
 from nikkei225 import NIKKEI_225, get_sector
 
 
@@ -108,7 +108,9 @@ def run_strategy_backtest(all_data, config, strategy_params,
                           slippage=0.0,
                           use_regime=False, use_composite_score=False,
                           score_weights=None, score_threshold=0.0,
-                          bull_max_daily=None):
+                          bull_max_daily=None,
+                          use_adx_filter=False, adx_threshold=25,
+                          use_coch_exit=False, coch_lookback=3):
     """Run backtest with given strategy parameters."""
     strat = config["strategy"]
     account = config["account"]
@@ -127,7 +129,7 @@ def run_strategy_backtest(all_data, config, strategy_params,
         if "Volume" in df.columns:
             vol_s = df["Volume"].squeeze() if isinstance(df["Volume"], pd.DataFrame) else df["Volume"]
             vol = vol_s
-        indicators[ticker] = {
+        ind_entry = {
             "close": close,
             "sma_short": calculate_sma(close, strat["sma_short"]),
             "sma_long": calculate_sma(close, strat["sma_long"]),
@@ -135,6 +137,10 @@ def run_strategy_backtest(all_data, config, strategy_params,
             "rsi": calculate_rsi(close, strat["rsi_period"]),
             "volume": vol,
         }
+        if use_adx_filter or use_coch_exit:
+            ind_entry["adx"] = calculate_adx(df, strat.get("adx_period", 14))
+            ind_entry["df"] = df  # keep full OHLCV for CoCh
+        indicators[ticker] = ind_entry
 
     # Pre-compute Nikkei 225 regime indicators
     nk_regime = None
@@ -235,6 +241,21 @@ def run_strategy_backtest(all_data, config, strategy_params,
                         pos["shares"] -= exit_shares
                         pos["partial_exit_done"] = True
 
+            # --- CoCh exit ---
+            if use_coch_exit and ticker in indicators and "df" in indicators[ticker]:
+                coch_df = indicators[ticker]["df"]
+                if idx >= coch_lookback * 2 + 2:
+                    coch_slice = coch_df.iloc[:idx + 1]
+                    coch_result = detect_coch(coch_slice, lookback=coch_lookback)
+                    if coch_result["triggered"] and coch_result["type"] == "bearish":
+                        balance += sell_price * pos["shares"]
+                        trades.append(_make_trade(
+                            ticker, pos, cur_date, sell_price, gain_pct, pos["shares"],
+                            "CoCh（トレンド構造崩壊）",
+                        ))
+                        del positions[ticker]
+                        continue
+
             # --- Stop loss ---
             if ticker not in positions:
                 continue
@@ -297,6 +318,11 @@ def run_strategy_backtest(all_data, config, strategy_params,
                 if np.isnan(sma_t) or np.isnan(rsi_val):
                     continue
                 if sma_s > sma_l and rsi_min <= rsi_val <= rsi_max and price > sma_t:
+                    # ADX filter
+                    if use_adx_filter and "adx" in ind:
+                        adx_val = float(ind["adx"].iloc[idx])
+                        if np.isnan(adx_val) or adx_val < adx_threshold:
+                            continue
                     cand = {"ticker": ticker, "price": price, "rsi": rsi_val,
                             "sma_short": sma_s, "sma_long": sma_l, "sma_trend": sma_t}
                     # Compute composite score if enabled

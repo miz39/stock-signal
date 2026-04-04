@@ -20,7 +20,8 @@ import yaml
 from datetime import datetime, date, timezone, timedelta
 
 from data import fetch_stock_data
-from strategy import generate_signal, detect_market_regime, compute_composite_score
+from strategy import generate_signal, detect_market_regime, compute_composite_score, fetch_tv_recommendation, detect_coch
+from llm_analyst import review_candidates
 from risk import calculate_stop_loss, calculate_position_size
 from portfolio import (
     get_open_positions,
@@ -247,16 +248,46 @@ def run(profile_name: str = "default"):
     score_weights = strat.get("score_weights")
     slope_days = strat.get("slope_days", 5)
     slope_blend = strat.get("slope_blend", 0.3)
+    tv_enabled = strat.get("tv_recommendation_enabled", False)
+    buy_dfs = {}  # ticker -> DataFrame cache for LLM review
     for sig in buy_signals:
         cached_df = sig.pop("_df", None)
         if cached_df is not None:
+            buy_dfs[sig["ticker"]] = cached_df
+        tv_score = None
+        if tv_enabled:
+            tv_score = fetch_tv_recommendation(sig["ticker"])
+            sig["tv_score"] = tv_score
+        if cached_df is not None:
             sig["composite_score"] = compute_composite_score(
                 sig, cached_df, score_weights,
-                slope_days=slope_days, slope_blend=slope_blend)
+                slope_days=slope_days, slope_blend=slope_blend,
+                tv_score=tv_score)
         else:
             sig["composite_score"] = 0.0
 
     buy_signals.sort(key=lambda s: s.get("composite_score", 0), reverse=True)
+
+    # LLM review for BUY candidates
+    llm_enabled = strat.get("llm_review_enabled", False)
+    if llm_enabled and buy_signals:
+        llm_max = strat.get("llm_max_review", 10)
+        # Build portfolio context for LLM
+        sector_counts_for_llm = {}
+        for t in open_tickers:
+            sec = get_sector(t)
+            sector_counts_for_llm[sec] = sector_counts_for_llm.get(sec, 0) + 1
+        llm_portfolio_ctx = {
+            "open_count": len(open_positions),
+            "same_sector_count": 0,  # filled per-candidate inside review
+            "cash": available_cash,
+            "market_regime": market_regime.get("regime", "neutral"),
+        }
+        buy_signals = review_candidates(
+            buy_signals, buy_dfs, config,
+            portfolio_context=llm_portfolio_ctx,
+            max_review=llm_max,
+        )
 
     # 通知用シグナル（買い上位10 + 保有銘柄の売り）
     notify_signals = sell_signals + buy_signals[:10]
@@ -267,6 +298,37 @@ def run(profile_name: str = "default"):
     profit_take_ratio = strat.get("profit_take_ratio", 0.5)
     profit_take_full_pct = strat.get("profit_take_full_pct", 0.15)
     stop_loss_pct = strat.get("stop_loss_pct", 0.08)
+
+    # CoCh exit check (before trailing stop)
+    coch_enabled = strat.get("coch_exit_enabled", False)
+    coch_lookback = strat.get("coch_lookback", 3)
+    coch_exits = []
+    if coch_enabled and mode == "paper":
+        for pos in open_positions:
+            ticker = pos["ticker"]
+            try:
+                df_pos = fetch_stock_data(ticker, period="3mo")
+                coch = detect_coch(df_pos, lookback=coch_lookback)
+                if coch["triggered"] and coch["type"] == "bearish":
+                    current = float(df_pos["Close"].iloc[-1])
+                    coch_exits.append({
+                        "ticker": ticker, "price": current,
+                        "entry_price": pos["entry_price"], "shares": pos["shares"],
+                    })
+                    logger.info(f"  CoCh検出: {NIKKEI_225.get(ticker, ticker)}（{ticker}）"
+                                f"bearish CoCh level={coch['level']:.0f}")
+            except Exception as e:
+                logger.warning(f"  CoCh判定失敗 ({ticker}): {e}")
+
+    # Execute CoCh exits
+    for ce in coch_exits:
+        record_exit(ce["ticker"], ce["price"])
+        logger.info(f"  → CoCh売却: {NIKKEI_225.get(ce['ticker'], ce['ticker'])}")
+
+    # Refresh positions after CoCh exits
+    if coch_exits:
+        open_positions = get_open_positions()
+        open_tickers = {p["ticker"] for p in open_positions}
 
     # トレーリングストップ更新 + 利確チェック + 損切りチェック
     trailing_stop_exits = []
@@ -363,7 +425,7 @@ def run(profile_name: str = "default"):
 
         for sig in sell_signals:
             # 既に利確/ストップで売却済みの場合はスキップ
-            exited_tickers = {ts["ticker"] for ts in trailing_stop_exits} | {fp["ticker"] for fp in full_profit_exits}
+            exited_tickers = {ts["ticker"] for ts in trailing_stop_exits} | {fp["ticker"] for fp in full_profit_exits} | {ce["ticker"] for ce in coch_exits}
             if sig["ticker"] not in exited_tickers:
                 record_exit(sig["ticker"], sig["price"])
 
@@ -511,9 +573,21 @@ def run(profile_name: str = "default"):
             code = sig["ticker"].replace(".T", "")
             stop_pct = (sig.get("stop_loss", 0) / sig["price"] - 1) * 100 if sig.get("stop_loss") else -5
             score_str = f" | Score {sig.get('composite_score', 0):.2f}" if sig.get("composite_score") else ""
+            tv_label = ""
+            if sig.get("tv_score") is not None:
+                tv_val = sig["tv_score"]
+                if tv_val >= 15 / 26:
+                    tv_label = " | TV:BUY"
+                elif tv_val >= 11 / 26:
+                    tv_label = " | TV:NEUTRAL"
+                else:
+                    tv_label = " | TV:SELL"
+            llm_label = ""
+            if sig.get("llm_review") and not sig["llm_review"].get("skipped"):
+                llm_label = " | LLM:✅" if sig["llm_review"]["approved"] else " | LLM:❌"
             lines.append(
                 f"**{name}**（{code}）¥{sig['price']:,.0f} | RSI {sig['rsi']:.1f} | "
-                f"{sig.get('recommended_shares', '-')}株推奨{score_str}"
+                f"{sig.get('recommended_shares', '-')}株推奨{score_str}{tv_label}{llm_label}"
             )
         embeds.append({
             "title": f"🟢 買い候補 TOP5",
@@ -655,6 +729,18 @@ def run(profile_name: str = "default"):
             "pnl": round(pnl_per_share * fp["shares"], 1),
             "pnl_pct": round(fp.get("gain_pct", 0), 1),
         })
+    for ce in coch_exits:
+        name = NIKKEI_225.get(ce["ticker"], ce["ticker"])
+        entry_price = ce["entry_price"]
+        shares = ce["shares"]
+        pnl_per_share = ce["price"] - entry_price
+        exit_records.append({
+            "ticker": ce["ticker"], "name": name,
+            "price": ce["price"], "reason": "CoCh（トレンド構造崩壊）",
+            "entry_price": entry_price, "shares": shares,
+            "pnl": round(pnl_per_share * shares, 1),
+            "pnl_pct": round(pnl_per_share / entry_price * 100, 1) if entry_price else 0,
+        })
     for ts in trailing_stop_exits:
         name = NIKKEI_225.get(ts["ticker"], ts["ticker"])
         entry_price = ts.get("entry_price") or next((p["entry_price"] for p in original_positions if p["ticker"] == ts["ticker"]), ts["price"])
@@ -720,6 +806,8 @@ def run(profile_name: str = "default"):
                 "stop_loss": s.get("stop_loss"),
                 "shares": s.get("recommended_shares"),
                 "composite_score": s.get("composite_score"),
+                "tv_score": s.get("tv_score"),
+                "llm_review": s.get("llm_review"),
                 "sma_short": round(s["sma_short"], 1) if not math.isnan(s.get("sma_short", float("nan"))) else None,
                 "sma_long": round(s["sma_long"], 1) if not math.isnan(s.get("sma_long", float("nan"))) else None,
                 "sma_trend": round(s["sma_trend"], 1) if not math.isnan(s.get("sma_trend", float("nan"))) else None,

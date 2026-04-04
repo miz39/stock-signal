@@ -13,7 +13,7 @@ account:
 
 strategy:
   sma_short: 25
-  sma_long: 75
+  sma_long: 100
   sma_trend: 200
   rsi_period: 14
   rsi_overbought: 70
@@ -27,13 +27,30 @@ strategy:
   profit_take_full_pct: 0.15    # +15%で全部利確
   min_volume: 500000             # 直近20日平均出来高が50万株以上
   market_regime_enabled: true     # 日経225 SMA50/SMA200で相場レジーム判定
-  score_weights:                  # 複合スコアの重み（合計1.0）— モメンタム重視
-    volume_surge: 0.30
-    rsi_sweet_spot: 0.20
-    sma_momentum: 0.35
-    price_vs_sma200: 0.15
+  tv_recommendation_enabled: true  # TradingView TA推奨をスコアに組み込む
+  # ADX Filter
+  adx_period: 14
+  adx_threshold: 25
+  # Ichimoku (composite score only, not hard gate)
+  ichimoku_tenkan: 9
+  ichimoku_kijun: 26
+  ichimoku_senkou_b: 52
+  # CoCh Exit
+  coch_exit_enabled: true
+  coch_lookback: 3
+  score_weights:                  # 複合スコアの重み（合計1.0）
+    volume_surge: 0.20
+    rsi_sweet_spot: 0.10
+    sma_momentum: 0.25
+    price_vs_sma200: 0.10
+    tv_recommendation: 0.15
+    ichimoku_bullish: 0.10
+    trend_strength: 0.10
   slope_days: 5                    # SMA25傾き計算の日数（5日前との比較）
   slope_blend: 0.3                 # sma_momentum内の傾きブレンド率（0=乖離のみ, 1=傾きのみ）
+  llm_review_enabled: true           # LLM review for BUY candidates (requires OPENAI_API_KEY)
+  openai_model: "gpt-4o-mini"        # LLM model for review
+  llm_max_review: 10                 # Max candidates to review per scan
 
 risk:
   max_sector_pct: 0.30           # セクター集中度上限（金額ベース）
