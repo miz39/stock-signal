@@ -4,3 +4,4 @@ numpy
 pyyaml
 requests
 discord.py
+tradingview-ta

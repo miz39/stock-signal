@@ -55,7 +55,7 @@ a.stock-link:hover { text-decoration:underline; }
 </head>
 <body>
 <h1>Paper Trade Dashboard</h1>
-<div class="updated">最終更新: 2026-04-04 00:44 JST &nbsp;|&nbsp; <a href="history.html" style="color:#64B5F6;text-decoration:none">実行履歴 &rarr;</a> &nbsp;|&nbsp; <a href="weekly-review.html" style="color:#64B5F6;text-decoration:none">週次レビュー &rarr;</a> &nbsp;|&nbsp; <a href="strategy.html" style="color:#64B5F6;text-decoration:none">戦略分析 &rarr;</a></div>
+<div class="updated">最終更新: 2026-04-04 13:00 JST &nbsp;|&nbsp; <a href="history.html" style="color:#64B5F6;text-decoration:none">実行履歴 &rarr;</a> &nbsp;|&nbsp; <a href="weekly-review.html" style="color:#64B5F6;text-decoration:none">週次レビュー &rarr;</a> &nbsp;|&nbsp; <a href="strategy.html" style="color:#64B5F6;text-decoration:none">戦略分析 &rarr;</a></div>
 
 <div class="hero-card">
   <div class="label">総資産</div>
@@ -156,6 +156,51 @@ a.stock-link:hover { text-decoration:underline; }
 <div class="section">
   <h2>RSI 有効性分析</h2>
   <div class="chart-wrap"><canvas id="rsiChart" height="220"></canvas></div>
+</div>
+
+<div class="section">
+  <h2>直近の買い候補 TOP5</h2>
+  <div style="overflow-x:auto">
+  <table>
+    <thead><tr><th>銘柄</th><th>株価</th><th>RSI</th><th>Score</th><th>TV推奨</th><th>推奨株数</th></tr></thead>
+    <tbody><tr>
+<td>京セラ<br><span class="ticker">6971</span></td>
+<td class="num">&yen;2,472</td>
+<td class="num">50.1</td>
+<td class="num">-</td>
+<td class="num"></td>
+<td class="num">12</td>
+</tr><tr>
+<td>日本製鋼所<br><span class="ticker">5631</span></td>
+<td class="num">&yen;9,416</td>
+<td class="num">50.7</td>
+<td class="num">-</td>
+<td class="num"></td>
+<td class="num">3</td>
+</tr><tr>
+<td>良品計画<br><span class="ticker">7453</span></td>
+<td class="num">&yen;3,487</td>
+<td class="num">51.1</td>
+<td class="num">-</td>
+<td class="num"></td>
+<td class="num">8</td>
+</tr><tr>
+<td>コンコルディア・フィナンシャルグループ<br><span class="ticker">7186</span></td>
+<td class="num">&yen;1,458</td>
+<td class="num">51.1</td>
+<td class="num">-</td>
+<td class="num"></td>
+<td class="num">20</td>
+</tr><tr>
+<td>HOYA<br><span class="ticker">7741</span></td>
+<td class="num">&yen;27,670</td>
+<td class="num">51.2</td>
+<td class="num">-</td>
+<td class="num"></td>
+<td class="num">1</td>
+</tr></tbody>
+  </table>
+  </div>
 </div>
 
 <div class="section">

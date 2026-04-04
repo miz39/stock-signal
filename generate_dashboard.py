@@ -321,6 +321,31 @@ def build_dashboard_data(trades: list, initial_balance: float = 300000, history:
     # RSI analysis (requires execution_history)
     rsi_analysis = _build_rsi_analysis(closed_trades, history or [])
 
+    # Latest buy candidates from most recent execution_history
+    latest_buy_candidates = []
+    if history:
+        latest_entry = history[-1]
+        for sig in latest_entry.get("buy_signals", [])[:5]:
+            tv_score = sig.get("tv_score")
+            tv_label = ""
+            if tv_score is not None:
+                if tv_score >= 15 / 26:
+                    tv_label = "BUY"
+                elif tv_score >= 11 / 26:
+                    tv_label = "NEUTRAL"
+                else:
+                    tv_label = "SELL"
+            latest_buy_candidates.append({
+                "name": sig.get("name", NIKKEI_225.get(sig.get("ticker", ""), sig.get("ticker", ""))),
+                "ticker": sig.get("ticker", ""),
+                "price": sig.get("price", 0),
+                "rsi": sig.get("rsi"),
+                "composite_score": sig.get("composite_score"),
+                "tv_score": tv_score,
+                "tv_label": tv_label,
+                "shares": sig.get("shares"),
+            })
+
     return {
         "initial_balance": initial_balance,
         "total_assets": total_assets,
@@ -349,6 +374,7 @@ def build_dashboard_data(trades: list, initial_balance: float = 300000, history:
         "scatter_data": scatter_data,
         "signal_accuracy": signal_accuracy,
         "rsi_analysis": rsi_analysis,
+        "latest_buy_candidates": latest_buy_candidates,
     }
 
 
@@ -799,6 +825,29 @@ def generate_html(data: dict, config: dict = None, profile_label: str = "") -> s
     stock_value = data.get("stock_value", 0)
     total_change = total_assets - initial_balance
 
+    # 買い候補行
+    buy_candidate_rows = ""
+    candidates = data.get("latest_buy_candidates", [])
+    if candidates:
+        for c in candidates:
+            score_str = f"{c['composite_score']:.2f}" if c.get("composite_score") is not None else "-"
+            tv_str = ""
+            if c.get("tv_label"):
+                tv_color = {"BUY": "#00C853", "NEUTRAL": "#FFC107", "SELL": "#FF1744"}.get(c["tv_label"], "#9E9E9E")
+                tv_str = f'<span style="color:{tv_color};font-weight:600">TV:{c["tv_label"]}</span>'
+            rsi_str = f"{c['rsi']:.1f}" if c.get("rsi") is not None else "-"
+            code = c["ticker"].replace(".T", "")
+            buy_candidate_rows += f"""<tr>
+<td>{c['name']}<br><span class="ticker">{code}</span></td>
+<td class="num">&yen;{c['price']:,.0f}</td>
+<td class="num">{rsi_str}</td>
+<td class="num">{score_str}</td>
+<td class="num">{tv_str}</td>
+<td class="num">{c.get('shares') or '-'}</td>
+</tr>"""
+    else:
+        buy_candidate_rows = '<tr><td colspan="6" class="empty">買い候補データがありません</td></tr>'
+
     # オープンポジション行
     open_rows = ""
     if data["open_positions"]:
@@ -956,6 +1005,16 @@ a.stock-link:hover {{ text-decoration:underline; }}
 <div class="section">
   <h2>RSI 有効性分析</h2>
   <div class="chart-wrap"><canvas id="rsiChart" height="220"></canvas></div>
+</div>
+
+<div class="section">
+  <h2>直近の買い候補 TOP5</h2>
+  <div style="overflow-x:auto">
+  <table>
+    <thead><tr><th>銘柄</th><th>株価</th><th>RSI</th><th>Score</th><th>TV推奨</th><th>推奨株数</th></tr></thead>
+    <tbody>{buy_candidate_rows}</tbody>
+  </table>
+  </div>
 </div>
 
 <div class="section">
@@ -1781,6 +1840,12 @@ details[open] > summary::before {{ transform:rotate(90deg); }}
 .act-body b {{ color:#E0E0E0; font-weight:600; }}
 .act-reason {{ font-size:0.75rem; color:#757575; margin-top:4px; }}
 .green {{ color:#00C853; }} .red {{ color:#FF1744; }}
+.tv-buy {{ color:#00C853; font-weight:600; font-size:0.75rem; }}
+.tv-neutral {{ color:#FFC107; font-weight:600; font-size:0.75rem; }}
+.tv-sell {{ color:#FF1744; font-weight:600; font-size:0.75rem; }}
+.candidates {{ font-size:0.78rem; color:#90A4AE; margin-top:6px; padding:8px 10px; background:#1A1A1A; border-radius:6px; }}
+.candidates b {{ color:#B0BEC5; }}
+.candidates .cand-item {{ padding:2px 0; }}
 
 .no-action {{ background:#1E1E1E; border-radius:8px; padding:14px; color:#757575; font-size:0.82rem; text-align:center; }}
 .snapshot {{ margin-top:4px; padding:8px 16px; background:#1A1A1A; border-radius:6px; font-size:0.75rem; color:#757575; }}
@@ -1800,6 +1865,7 @@ const $ = s => s ? String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(
 const Y = v => v != null ? '&yen;' + Number(v).toLocaleString() : '-';
 const P = v => v > 0 ? '<span class="green">+' + v.toFixed(1) + '%</span>' : '<span class="red">' + v.toFixed(1) + '%</span>';
 const PNL = v => v > 0 ? '<span class="green">+' + Y(v) + '</span>' : v < 0 ? '<span class="red">' + Y(v) + '</span>' : Y(0);
+const TV = v => {{ if (v == null) return ''; if (v >= 15/26) return ' <span class="tv-buy">TV:BUY</span>'; if (v >= 11/26) return ' <span class="tv-neutral">TV:NEUTRAL</span>'; return ' <span class="tv-sell">TV:SELL</span>'; }};
 
 if (!H.length) {{
   document.getElementById('root').innerHTML = '<div class="empty">データなし</div>';
@@ -1825,6 +1891,7 @@ if (!H.length) {{
       const scan = h.scan || {{}};
       const x = h.executions || {{}};
       const entries = x.entries || [], exits = x.exits || [], partials = x.partial_exits || [], stops = x.trailing_stop_updates || [];
+      const bsigs = h.buy_signals || [];
       const ac = entries.length + exits.length + partials.length + stops.length;
 
       o += '<details class="session-group"' + (latest?' open':'') + '><summary>' + $(h.session);
@@ -1904,6 +1971,18 @@ if (!H.length) {{
         if (ps.cash != null) o += ' / 現金 <b>' + Y(ps.cash) + '</b>';
         if (ps.total_assets != null) o += ' / 総資産 <b>' + Y(ps.total_assets) + '</b>';
         o += '</div>';
+      }}
+
+      // Buy candidates (top signals from scan)
+      if (bsigs.length) {{
+        o += '<details class="candidates-wrap"><summary style="cursor:pointer;font-size:0.78rem;color:#64B5F6;margin-top:6px">買い候補 TOP' + Math.min(bsigs.length,5) + '</summary>';
+        o += '<div class="candidates">';
+        bsigs.slice(0,5).forEach(s => {{
+          const code = (s.ticker||'').replace('.T','');
+          const sc = s.composite_score != null ? s.composite_score.toFixed(2) : '-';
+          o += '<div class="cand-item"><b>' + $(s.name||code) + '</b>（' + code + '）' + Y(s.price) + ' RSI ' + (s.rsi != null ? s.rsi.toFixed(1) : '-') + ' Score ' + sc + TV(s.tv_score) + '</div>';
+        }});
+        o += '</div></details>';
       }}
 
       o += '</div></details>';
