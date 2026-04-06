@@ -251,7 +251,7 @@
     "exit_date": null,
     "status": "open",
     "high_price": 2768.0,
-    "stop_price": 2546.6
+    "stop_price": 2572.0
   },
   {
     "ticker": "8031.T",
@@ -364,7 +364,7 @@
     "exit_date": null,
     "status": "open",
     "high_price": 3132.0,
-    "stop_price": 2881.4
+    "stop_price": 2931.3
   },
   {
     "ticker": "2503.T",
@@ -388,7 +388,7 @@
     "exit_date": null,
     "status": "open",
     "high_price": 4678.0,
-    "stop_price": 4303.8,
+    "stop_price": 4318.2,
     "partial_exit_done": true
   },
   {
