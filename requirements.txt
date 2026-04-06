@@ -5,3 +5,9 @@ pyyaml
 requests
 discord.py
 tradingview-ta
+openai
+anthropic
+jquants-api-client
+gspread
+google-auth
+mcp
