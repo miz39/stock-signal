@@ -12,6 +12,10 @@ from llm_analyst import (
     _build_prompt,
     review_buy_candidate,
     review_candidates,
+    deep_analyze_candidate,
+    OpenAIProvider,
+    AnthropicProvider,
+    _get_llm_provider,
 )
 
 
@@ -41,7 +45,10 @@ def _make_config():
             "openai_model": "gpt-4o-mini",
             "llm_review_enabled": True,
             "llm_max_review": 5,
-        }
+        },
+        "llm": {
+            "provider": "openai",
+        },
     }
 
 
@@ -97,13 +104,27 @@ class TestBuildPrompt:
         assert "Reflection" in prompt
         assert "WIN" in prompt
 
+    def test_includes_agent_analysis(self):
+        sig = _make_signal()
+        sig["agent_analysis"] = {
+            "signal": "BUY",
+            "total_score": 0.85,
+            "confidence": 72,
+            "reasons_summary": ["【テクニカル】SMAゴールデンクロス"],
+        }
+        with patch("llm_analyst.NIKKEI_225", {"7203.T": "トヨタ"}), \
+             patch("llm_analyst.get_sector", return_value="自動車"):
+            prompt = _build_prompt("7203.T", sig, {}, [])
+        assert "Multi-Agent Analysis" in prompt
+        assert "BUY" in prompt
+
 
 class TestReviewBuyCandidate:
     def test_no_api_key_skips(self):
         sig = _make_signal()
         df = _make_df()
         config = _make_config()
-        with patch.dict("os.environ", {"OPENAI_API_KEY": ""}, clear=False):
+        with patch.dict("os.environ", {"OPENAI_API_KEY": "", "ANTHROPIC_API_KEY": ""}, clear=False):
             result = review_buy_candidate("7203.T", sig, df, config)
         assert result["skipped"] is True
         assert result["approved"] is True
@@ -113,17 +134,13 @@ class TestReviewBuyCandidate:
         df = _make_df()
         config = _make_config()
 
-        mock_response = MagicMock()
-        mock_response.choices = [MagicMock()]
-        mock_response.choices[0].message.content = json.dumps({
+        mock_provider = MagicMock(spec=OpenAIProvider)
+        mock_provider.chat.return_value = json.dumps({
             "approved": True, "confidence": 0.8, "reason": "Good setup"
         })
 
-        mock_client = MagicMock()
-        mock_client.chat.completions.create.return_value = mock_response
-
         with patch.dict("os.environ", {"OPENAI_API_KEY": "test-key"}, clear=False), \
-             patch("llm_analyst.OpenAI", return_value=mock_client):
+             patch("llm_analyst._get_llm_provider", return_value=(mock_provider, "gpt-4o-mini")):
             result = review_buy_candidate("7203.T", sig, df, config)
 
         assert result["approved"] is True
@@ -135,17 +152,13 @@ class TestReviewBuyCandidate:
         df = _make_df()
         config = _make_config()
 
-        mock_response = MagicMock()
-        mock_response.choices = [MagicMock()]
-        mock_response.choices[0].message.content = json.dumps({
+        mock_provider = MagicMock(spec=OpenAIProvider)
+        mock_provider.chat.return_value = json.dumps({
             "approved": False, "confidence": 0.7, "reason": "Overextended"
         })
 
-        mock_client = MagicMock()
-        mock_client.chat.completions.create.return_value = mock_response
-
         with patch.dict("os.environ", {"OPENAI_API_KEY": "test-key"}, clear=False), \
-             patch("llm_analyst.OpenAI", return_value=mock_client):
+             patch("llm_analyst._get_llm_provider", return_value=(mock_provider, "gpt-4o-mini")):
             result = review_buy_candidate("7203.T", sig, df, config)
 
         assert result["approved"] is False
@@ -156,8 +169,11 @@ class TestReviewBuyCandidate:
         df = _make_df()
         config = _make_config()
 
+        mock_provider = MagicMock(spec=OpenAIProvider)
+        mock_provider.chat.side_effect = Exception("Connection error")
+
         with patch.dict("os.environ", {"OPENAI_API_KEY": "test-key"}, clear=False), \
-             patch("llm_analyst.OpenAI", side_effect=Exception("Connection error")):
+             patch("llm_analyst._get_llm_provider", return_value=(mock_provider, "gpt-4o-mini")):
             result = review_buy_candidate("7203.T", sig, df, config)
 
         assert result["approved"] is True
@@ -178,23 +194,65 @@ class TestReviewCandidates:
             json.dumps({"approved": False, "confidence": 0.7, "reason": "Bad"}),
         ])
 
-        mock_response = MagicMock()
-        mock_response.choices = [MagicMock()]
-
-        def create_side_effect(**kwargs):
-            resp = MagicMock()
-            resp.choices = [MagicMock()]
-            resp.choices[0].message.content = next(responses)
-            return resp
-
-        mock_client = MagicMock()
-        mock_client.chat.completions.create.side_effect = create_side_effect
+        mock_provider = MagicMock(spec=OpenAIProvider)
+        mock_provider.chat.side_effect = lambda **kwargs: next(responses)
 
         with patch.dict("os.environ", {"OPENAI_API_KEY": "test-key"}, clear=False), \
-             patch("llm_analyst.OpenAI", return_value=mock_client):
+             patch("llm_analyst._get_llm_provider", return_value=(mock_provider, "gpt-4o-mini")):
             result = review_candidates(signals, dfs, config, max_review=5)
 
         # Only approved one should remain
         assert len(result) == 1
         assert result[0]["ticker"] == "7203.T"
         assert result[0]["llm_review"]["approved"] is True
+
+
+class TestDeepAnalysis:
+    def test_deep_analysis_returns_structured(self):
+        sig = _make_signal()
+        df = _make_df()
+        config = _make_config()
+
+        deep_result = {
+            "judgment": "BUY",
+            "conviction": 7,
+            "buy_reasons": ["理由1", "理由2", "理由3"],
+            "risk_factors": ["リスク1"],
+            "scenarios": {"bull": "上昇", "base": "横ばい", "bear": "下落"},
+            "summary": "買い推奨",
+        }
+
+        mock_provider = MagicMock(spec=OpenAIProvider)
+        mock_provider.chat.return_value = json.dumps(deep_result)
+
+        with patch.dict("os.environ", {"OPENAI_API_KEY": "test-key"}, clear=False), \
+             patch("llm_analyst._get_llm_provider", return_value=(mock_provider, "gpt-4o-mini")):
+            result = deep_analyze_candidate("7203.T", sig, df, config)
+
+        assert result["judgment"] == "BUY"
+        assert result["conviction"] == 7
+        assert result["skipped"] is False
+
+    def test_deep_analysis_no_api_key(self):
+        sig = _make_signal()
+        df = _make_df()
+        config = _make_config()
+
+        with patch.dict("os.environ", {"OPENAI_API_KEY": "", "ANTHROPIC_API_KEY": ""}, clear=False):
+            result = deep_analyze_candidate("7203.T", sig, df, config)
+
+        assert result["skipped"] is True
+
+
+class TestGetLLMProvider:
+    def test_default_openai(self):
+        config = _make_config()
+        provider, model = _get_llm_provider(config)
+        assert isinstance(provider, OpenAIProvider)
+        assert model == "gpt-4o-mini"
+
+    def test_anthropic_config(self):
+        config = _make_config()
+        config["llm"]["provider"] = "anthropic"
+        provider, model = _get_llm_provider(config)
+        assert isinstance(provider, AnthropicProvider)

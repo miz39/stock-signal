@@ -941,7 +941,7 @@ a.stock-link:hover {{ text-decoration:underline; }}
 </head>
 <body>
 <h1>Paper Trade Dashboard{profile_label}</h1>
-<div class="updated">最終更新: {now} &nbsp;|&nbsp; <a href="history.html" style="color:#64B5F6;text-decoration:none">実行履歴 &rarr;</a> &nbsp;|&nbsp; <a href="weekly-review.html" style="color:#64B5F6;text-decoration:none">週次レビュー &rarr;</a> &nbsp;|&nbsp; <a href="{'../strategy.html' if profile_label else 'strategy.html'}" style="color:#64B5F6;text-decoration:none">戦略分析 &rarr;</a></div>
+<div class="updated">最終更新: {now} &nbsp;|&nbsp; <a href="history.html" style="color:#64B5F6;text-decoration:none">実行履歴 &rarr;</a> &nbsp;|&nbsp; <a href="weekly-review.html" style="color:#64B5F6;text-decoration:none">週次レビュー &rarr;</a> &nbsp;|&nbsp; <a href="{'../strategy.html' if profile_label else 'strategy.html'}" style="color:#64B5F6;text-decoration:none">戦略分析 &rarr;</a> &nbsp;|&nbsp; <a href="{'../analysis.html' if profile_label else 'analysis.html'}" style="color:#64B5F6;text-decoration:none">AI分析 &rarr;</a></div>
 
 <div class="hero-card">
   <div class="label">総資産</div>
@@ -2858,6 +2858,421 @@ if (sma && sma.buckets) {{
     return html
 
 
+def generate_analysis_html(buy_signals: list, memos: list) -> str:
+    """Generate AI analysis dashboard HTML (docs/analysis.html).
+
+    Args:
+        buy_signals: List of signal dicts with agent_analysis, llm_review, ic_memo
+        memos: List of IC memo dicts (from load_all_memos or inline)
+    """
+    now = datetime.now(JST).strftime("%Y-%m-%d %H:%M JST")
+
+    # Build table rows
+    table_rows = ""
+    for i, sig in enumerate(buy_signals):
+        ticker = sig.get("ticker", "")
+        name = NIKKEI_225.get(ticker, ticker)
+        price = sig.get("price", 0)
+        rsi = sig.get("rsi", 0)
+        composite = sig.get("composite_score", 0)
+
+        agent = sig.get("agent_analysis", {})
+        agent_signal = agent.get("signal", "-")
+        agent_score = agent.get("total_score", 0) if agent else 0
+        agent_conf = agent.get("confidence", 0) if agent else 0
+
+        review = sig.get("llm_review", {})
+        if review.get("skipped", True):
+            llm_label = "-"
+            llm_cls = ""
+        elif review.get("approved"):
+            llm_label = "承認"
+            llm_cls = "green"
+        else:
+            llm_label = "却下"
+            llm_cls = "red"
+
+        memo = sig.get("ic_memo", {})
+        es = memo.get("executive_summary", {})
+        ic_rec = es.get("recommendation", "-")
+        ic_cls = "green" if ic_rec == "BUY" else ("red" if ic_rec == "PASS" else "")
+
+        table_rows += f"""<tr class="data-row" data-idx="{i}" onclick="selectRow({i})">
+  <td>{name}<br><small style="color:#757575">{ticker}</small></td>
+  <td class="num">&yen;{price:,.0f}</td>
+  <td class="num">{rsi:.1f}</td>
+  <td class="num">{composite:.3f}</td>
+  <td>{agent_signal}</td>
+  <td class="num">{agent_score:.2f}</td>
+  <td class="num">{agent_conf}%</td>
+  <td class="{llm_cls}">{llm_label}</td>
+  <td class="{ic_cls}">{ic_rec}</td>
+</tr>"""
+
+    # Build signals JSON for JS
+    signals_json = json.dumps([{
+        "ticker": s.get("ticker", ""),
+        "name": NIKKEI_225.get(s.get("ticker", ""), s.get("ticker", "")),
+        "price": s.get("price", 0),
+        "rsi": round(s.get("rsi", 0), 1),
+        "composite": round(s.get("composite_score", 0), 3),
+        "agent_signal": s.get("agent_analysis", {}).get("signal", "-") if s.get("agent_analysis") else "-",
+        "agent_score": round(s.get("agent_analysis", {}).get("total_score", 0), 2) if s.get("agent_analysis") else 0,
+        "agent_confidence": s.get("agent_analysis", {}).get("confidence", 0) if s.get("agent_analysis") else 0,
+        "scores": {
+            "technical": s.get("agent_analysis", {}).get("agents", {}).get("technical", {}).get("score", 0) if s.get("agent_analysis") else 0,
+            "fundamental": s.get("agent_analysis", {}).get("agents", {}).get("fundamental", {}).get("score", 0) if s.get("agent_analysis") else 0,
+            "sentiment": s.get("agent_analysis", {}).get("agents", {}).get("sentiment", {}).get("score", 0) if s.get("agent_analysis") else 0,
+            "risk": s.get("agent_analysis", {}).get("agents", {}).get("risk", {}).get("score", 0) if s.get("agent_analysis") else 0,
+        },
+        "llm_approved": s.get("llm_review", {}).get("approved", True),
+        "llm_reason": s.get("llm_review", {}).get("reason", ""),
+    } for s in buy_signals], ensure_ascii=False)
+
+    memos_json = json.dumps([m for m in memos if not m.get("skipped")], ensure_ascii=False)
+
+    # Summary stats
+    total_analyzed = len(buy_signals)
+    llm_approved = sum(1 for s in buy_signals
+                       if s.get("llm_review", {}).get("approved", True)
+                       and not s.get("llm_review", {}).get("skipped", True))
+    memo_count = len([m for m in memos if not m.get("skipped")])
+
+    # Heatmap data
+    heatmap_data = []
+    for s in buy_signals:
+        agent = s.get("agent_analysis", {})
+        agents_detail = agent.get("agents", {}) if agent else {}
+        heatmap_data.append({
+            "name": NIKKEI_225.get(s.get("ticker", ""), s.get("ticker", ""))[:6],
+            "technical": agents_detail.get("technical", {}).get("score", 0) if isinstance(agents_detail.get("technical"), dict) else 0,
+            "fundamental": agents_detail.get("fundamental", {}).get("score", 0) if isinstance(agents_detail.get("fundamental"), dict) else 0,
+            "sentiment": agents_detail.get("sentiment", {}).get("score", 0) if isinstance(agents_detail.get("sentiment"), dict) else 0,
+            "risk": agents_detail.get("risk", {}).get("score", 0) if isinstance(agents_detail.get("risk"), dict) else 0,
+        })
+    heatmap_json = json.dumps(heatmap_data, ensure_ascii=False)
+
+    html = f"""<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AI Analysis Dashboard</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+<style>
+* {{ margin:0; padding:0; box-sizing:border-box; }}
+body {{ font-family:'Helvetica Neue',Arial,sans-serif; background:#121212; color:#E0E0E0; padding:16px; }}
+h1 {{ font-size:1.5rem; margin-bottom:4px; }}
+.updated {{ color:#757575; font-size:0.8rem; margin-bottom:16px; }}
+.updated a {{ color:#64B5F6; text-decoration:none; }}
+.updated a:hover {{ text-decoration:underline; }}
+
+.summary-cards {{ display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:20px; }}
+.summary-card {{ background:#1E1E1E; border-radius:10px; padding:16px; text-align:center; }}
+.summary-card .label {{ color:#9E9E9E; font-size:0.75rem; margin-bottom:4px; }}
+.summary-card .value {{ font-size:1.8rem; font-weight:700; }}
+
+.section {{ background:#1E1E1E; border-radius:10px; padding:16px; margin-bottom:16px; }}
+.section-title {{ font-size:1rem; font-weight:600; margin-bottom:12px; color:#E0E0E0; }}
+
+table {{ width:100%; border-collapse:collapse; font-size:0.8rem; }}
+th {{ text-align:left; padding:8px 6px; border-bottom:2px solid #333; color:#9E9E9E; font-weight:500; cursor:pointer; }}
+th:hover {{ color:#64B5F6; }}
+td {{ padding:8px 6px; border-bottom:1px solid #2A2A2A; }}
+td.num {{ text-align:right; font-variant-numeric:tabular-nums; }}
+.data-row {{ cursor:pointer; transition:background 0.15s; }}
+.data-row:hover {{ background:#2A2A2A; }}
+.data-row.selected {{ background:#1A237E; }}
+.green {{ color:#00C853; }}
+.red {{ color:#FF1744; }}
+
+.charts-grid {{ display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px; }}
+.chart-wrap {{ background:#1E1E1E; border-radius:10px; padding:16px; }}
+.chart-wrap canvas {{ max-height:300px; }}
+
+.heatmap {{ display:grid; gap:2px; margin-top:8px; }}
+.heatmap-row {{ display:flex; gap:2px; align-items:center; }}
+.heatmap-label {{ width:60px; font-size:0.7rem; color:#9E9E9E; text-align:right; padding-right:6px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; }}
+.heatmap-cell {{ flex:1; height:28px; border-radius:3px; display:flex; align-items:center; justify-content:center; font-size:0.65rem; font-weight:600; }}
+.heatmap-header {{ display:flex; gap:2px; margin-left:62px; margin-bottom:4px; }}
+.heatmap-header span {{ flex:1; text-align:center; font-size:0.65rem; color:#9E9E9E; }}
+
+.memo-panel {{ background:#1E1E1E; border-radius:10px; padding:16px; margin-bottom:16px; display:none; }}
+.memo-panel.active {{ display:block; }}
+.memo-header {{ display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }}
+.memo-title {{ font-size:1.1rem; font-weight:600; }}
+.memo-badge {{ padding:4px 10px; border-radius:4px; font-size:0.75rem; font-weight:600; }}
+.memo-badge.buy {{ background:#00C853; color:#000; }}
+.memo-badge.hold {{ background:#FF9800; color:#000; }}
+.memo-badge.pass {{ background:#FF1744; color:#fff; }}
+.memo-grid {{ display:grid; grid-template-columns:1fr 1fr; gap:12px; }}
+.memo-section {{ background:#252525; border-radius:8px; padding:12px; }}
+.memo-section h4 {{ font-size:0.8rem; color:#64B5F6; margin-bottom:8px; }}
+.memo-section p, .memo-section li {{ font-size:0.78rem; line-height:1.5; color:#BDBDBD; }}
+.memo-section ul {{ padding-left:16px; }}
+.scenarios-grid {{ display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-top:8px; }}
+.scenario {{ background:#252525; border-radius:8px; padding:10px; text-align:center; }}
+.scenario .s-label {{ font-size:0.7rem; color:#9E9E9E; }}
+.scenario .s-target {{ font-size:1.1rem; font-weight:700; margin:4px 0; }}
+.scenario .s-prob {{ font-size:0.7rem; }}
+
+@media(max-width:768px) {{
+  .summary-cards {{ grid-template-columns:1fr; }}
+  .charts-grid {{ grid-template-columns:1fr; }}
+  .memo-grid {{ grid-template-columns:1fr; }}
+  .scenarios-grid {{ grid-template-columns:1fr; }}
+  table {{ font-size:0.7rem; }}
+  td, th {{ padding:6px 3px; }}
+}}
+</style>
+</head>
+<body>
+<h1>AI Analysis Dashboard</h1>
+<div class="updated">最終更新: {now} &nbsp;|&nbsp; <a href="index.html">&larr; Dashboard</a> &nbsp;|&nbsp; <a href="strategy.html">戦略分析 &rarr;</a></div>
+
+<div class="summary-cards">
+  <div class="summary-card">
+    <div class="label">分析銘柄数</div>
+    <div class="value">{total_analyzed}</div>
+  </div>
+  <div class="summary-card">
+    <div class="label">LLM承認数</div>
+    <div class="value" style="color:#00C853">{llm_approved}</div>
+  </div>
+  <div class="summary-card">
+    <div class="label">IC Memo数</div>
+    <div class="value" style="color:#64B5F6">{memo_count}</div>
+  </div>
+</div>
+
+<div class="section">
+  <div class="section-title">分析テーブル <small style="color:#757575">（ヘッダークリックでソート / 行クリックで詳細）</small></div>
+  <div style="overflow-x:auto">
+  <table id="analysisTable">
+    <thead>
+      <tr>
+        <th data-col="0">銘柄</th>
+        <th data-col="1">株価</th>
+        <th data-col="2">RSI</th>
+        <th data-col="3">Composite</th>
+        <th data-col="4">Agent Signal</th>
+        <th data-col="5">Score</th>
+        <th data-col="6">Confidence</th>
+        <th data-col="7">LLM</th>
+        <th data-col="8">IC Memo</th>
+      </tr>
+    </thead>
+    <tbody>
+{table_rows}
+    </tbody>
+  </table>
+  </div>
+</div>
+
+<div class="charts-grid">
+  <div class="chart-wrap">
+    <div class="section-title">Agent Scores (Radar)</div>
+    <canvas id="radarChart"></canvas>
+  </div>
+  <div class="chart-wrap">
+    <div class="section-title">Score Heatmap</div>
+    <div id="heatmapContainer"></div>
+  </div>
+</div>
+
+<div class="memo-panel" id="memoPanel">
+  <div class="memo-header">
+    <div class="memo-title" id="memoTitle">-</div>
+    <div class="memo-badge" id="memoBadge">-</div>
+  </div>
+  <div id="memoContent"></div>
+</div>
+
+<script>
+const SIGNALS = {signals_json};
+const MEMOS = {memos_json};
+const HEATMAP = {heatmap_json};
+
+// --- Table sort ---
+let sortCol = -1, sortAsc = true;
+document.querySelectorAll('#analysisTable th').forEach(th => {{
+  th.addEventListener('click', () => {{
+    const col = parseInt(th.dataset.col);
+    if (sortCol === col) sortAsc = !sortAsc;
+    else {{ sortCol = col; sortAsc = true; }}
+    const tbody = document.querySelector('#analysisTable tbody');
+    const rows = Array.from(tbody.querySelectorAll('tr'));
+    rows.sort((a, b) => {{
+      let av = a.cells[col].textContent.trim();
+      let bv = b.cells[col].textContent.trim();
+      const an = parseFloat(av.replace(/[¥,%]/g, '').replace(/,/g, ''));
+      const bn = parseFloat(bv.replace(/[¥,%]/g, '').replace(/,/g, ''));
+      if (!isNaN(an) && !isNaN(bn)) return sortAsc ? an - bn : bn - an;
+      return sortAsc ? av.localeCompare(bv) : bv.localeCompare(av);
+    }});
+    rows.forEach(r => tbody.appendChild(r));
+  }});
+}});
+
+// --- Radar chart ---
+let radarChart = null;
+function updateRadar(idx) {{
+  const s = SIGNALS[idx];
+  if (!s) return;
+  const scores = s.scores;
+  const data = [scores.technical, scores.fundamental, scores.sentiment, scores.risk];
+
+  if (radarChart) radarChart.destroy();
+  radarChart = new Chart(document.getElementById('radarChart'), {{
+    type: 'radar',
+    data: {{
+      labels: ['Technical', 'Fundamental', 'Sentiment', 'Risk'],
+      datasets: [{{
+        label: s.name,
+        data: data,
+        borderColor: '#64B5F6',
+        backgroundColor: 'rgba(100,181,246,0.15)',
+        borderWidth: 2,
+        pointBackgroundColor: '#64B5F6',
+      }}]
+    }},
+    options: {{
+      scales: {{
+        r: {{
+          min: 0, max: 1,
+          ticks: {{ stepSize: 0.2, color: '#757575', backdropColor: 'transparent' }},
+          grid: {{ color: '#333' }},
+          pointLabels: {{ color: '#E0E0E0', font: {{ size: 11 }} }},
+          angleLines: {{ color: '#333' }},
+        }}
+      }},
+      plugins: {{ legend: {{ display: false }} }},
+    }}
+  }});
+}}
+
+// --- Heatmap ---
+function buildHeatmap() {{
+  const container = document.getElementById('heatmapContainer');
+  if (!HEATMAP.length) {{ container.innerHTML = '<p style="color:#757575">データなし</p>'; return; }}
+
+  const dims = ['technical', 'fundamental', 'sentiment', 'risk'];
+  const dimLabels = ['Tech', 'Fund', 'Sent', 'Risk'];
+
+  let html = '<div class="heatmap-header">';
+  dimLabels.forEach(l => html += `<span>${{l}}</span>`);
+  html += '</div><div class="heatmap">';
+
+  HEATMAP.forEach(item => {{
+    html += `<div class="heatmap-row"><div class="heatmap-label">${{item.name}}</div>`;
+    dims.forEach(d => {{
+      const v = item[d] || 0;
+      const color = scoreColor(v);
+      html += `<div class="heatmap-cell" style="background:${{color}}">${{v.toFixed(2)}}</div>`;
+    }});
+    html += '</div>';
+  }});
+  html += '</div>';
+  container.innerHTML = html;
+}}
+
+function scoreColor(v) {{
+  if (v >= 0.7) return 'rgba(0,200,83,' + (0.3 + v * 0.5) + ')';
+  if (v >= 0.4) return 'rgba(117,117,117,' + (0.3 + v * 0.4) + ')';
+  return 'rgba(255,23,68,' + (0.3 + (1 - v) * 0.4) + ')';
+}}
+
+// --- Row select & Memo ---
+let selectedIdx = -1;
+function selectRow(idx) {{
+  document.querySelectorAll('.data-row').forEach(r => r.classList.remove('selected'));
+  const row = document.querySelector(`.data-row[data-idx="${{idx}}"]`);
+  if (row) row.classList.add('selected');
+  selectedIdx = idx;
+  updateRadar(idx);
+  showMemo(idx);
+}}
+
+function showMemo(idx) {{
+  const panel = document.getElementById('memoPanel');
+  const sig = SIGNALS[idx];
+  if (!sig) return;
+
+  const memo = MEMOS.find(m => m.ticker === sig.ticker);
+  if (!memo) {{
+    panel.classList.remove('active');
+    return;
+  }}
+
+  panel.classList.add('active');
+  const es = memo.executive_summary || {{}};
+  const rec = es.recommendation || '-';
+
+  document.getElementById('memoTitle').textContent = `${{memo.name}} (${{memo.ticker}}) — IC Memo`;
+  const badge = document.getElementById('memoBadge');
+  badge.textContent = rec;
+  badge.className = 'memo-badge ' + (rec === 'BUY' ? 'buy' : rec === 'PASS' ? 'pass' : 'hold');
+
+  const val = memo.valuation || {{}};
+  const fund = memo.fundamental || {{}};
+  const tech = memo.technical || {{}};
+  const risk = memo.risk_analysis || {{}};
+  const scen = memo.scenarios || {{}};
+  const pos = memo.position_sizing || {{}};
+
+  let catalysts = (es.key_catalysts || []).map(c => `<li>${{c}}</li>`).join('');
+
+  let html = `
+  <div class="memo-section" style="margin-bottom:12px">
+    <h4>Executive Summary</h4>
+    <p>Conviction: <strong>${{es.conviction || '-'}}/10</strong> &nbsp; Target: <strong>&yen;${{(es.target_price || 0).toLocaleString()}}</strong> &nbsp; Upside: <strong>${{es.upside_pct || 0}}%</strong></p>
+    ${{catalysts ? '<ul>' + catalysts + '</ul>' : ''}}
+  </div>
+  <div class="memo-grid">
+    <div class="memo-section"><h4>Valuation</h4><p>${{val.summary || '-'}}</p><p style="margin-top:6px;color:#757575;font-size:0.7rem">DCF: &yen;${{(val.dcf_estimate?.fair_value || 0).toLocaleString()}} (${{val.dcf_estimate?.method || '-'}})</p></div>
+    <div class="memo-section"><h4>Fundamental</h4><p>${{fund.revenue_trend || '-'}}</p><p>${{fund.profitability || '-'}}</p></div>
+    <div class="memo-section"><h4>Technical</h4><p>${{tech.trend || '-'}}</p><p>${{tech.momentum || '-'}}</p></div>
+    <div class="memo-section"><h4>Risk</h4><p>${{risk.market_risk || '-'}}</p><p>${{risk.stock_risk || '-'}}</p><p style="margin-top:4px;font-size:0.7rem;color:#FF9800">SL根拠: ${{risk.stop_loss_rationale || '-'}}</p></div>
+  </div>
+  <div class="section-title" style="margin-top:16px">Scenarios</div>
+  <div class="scenarios-grid">
+    <div class="scenario" style="border-top:3px solid #00C853"><div class="s-label">Bull</div><div class="s-target" style="color:#00C853">&yen;${{(scen.bull?.target || 0).toLocaleString()}}</div><div class="s-prob">${{scen.bull?.probability || '-'}}</div><p style="font-size:0.7rem;color:#9E9E9E;margin-top:4px">${{scen.bull?.trigger || ''}}</p></div>
+    <div class="scenario" style="border-top:3px solid #FF9800"><div class="s-label">Base</div><div class="s-target" style="color:#FF9800">&yen;${{(scen.base?.target || 0).toLocaleString()}}</div><div class="s-prob">${{scen.base?.probability || '-'}}</div><p style="font-size:0.7rem;color:#9E9E9E;margin-top:4px">${{scen.base?.trigger || ''}}</p></div>
+    <div class="scenario" style="border-top:3px solid #FF1744"><div class="s-label">Bear</div><div class="s-target" style="color:#FF1744">&yen;${{(scen.bear?.target || 0).toLocaleString()}}</div><div class="s-prob">${{scen.bear?.probability || '-'}}</div><p style="font-size:0.7rem;color:#9E9E9E;margin-top:4px">${{scen.bear?.trigger || ''}}</p></div>
+  </div>
+  <div class="memo-section" style="margin-top:12px"><h4>Position Sizing</h4><p>推奨株数: ${{pos.recommended_shares || '-'}} &nbsp; SL: &yen;${{(pos.stop_loss || 0).toLocaleString()}} &nbsp; リスク額: &yen;${{(pos.risk_amount || 0).toLocaleString()}}</p></div>`;
+
+  document.getElementById('memoContent').innerHTML = html;
+}}
+
+// Init
+buildHeatmap();
+if (SIGNALS.length > 0) selectRow(0);
+</script>
+</body>
+</html>"""
+    return html
+
+
+def generate_analysis_page(buy_signals: list = None, memos: list = None) -> None:
+    """Generate docs/analysis.html from signal data and IC memos."""
+    if buy_signals is None:
+        buy_signals = []
+    if memos is None:
+        try:
+            from ic_memo_generator import load_all_memos
+            memos = load_all_memos()
+        except ImportError:
+            memos = []
+
+    html = generate_analysis_html(buy_signals, memos)
+    output_path = os.path.join(DOCS_DIR, "analysis.html")
+    os.makedirs(os.path.dirname(output_path), exist_ok=True)
+    with open(output_path, "w", encoding="utf-8") as f:
+        f.write(html)
+    print(f"Analysis page generated: {output_path}")
+
+
 def generate_strategy_page(config: dict) -> None:
     """Build cross-profile data and generate docs/strategy.html."""
     profiles_data = build_cross_profile_data(config)
@@ -2910,6 +3325,17 @@ def generate_for_profile(profile_name: str, config: dict) -> None:
     print(f"Weekly review generated: {REVIEW_OUTPUT}")
     print(f"  Week: {review_data['week_start']} ~ {review_data['week_end']}")
     print(f"  Weekly P&L: ¥{review_data['weekly_total_pnl']:,.0f} ({review_data['weekly_trade_count']} trades)")
+
+    # レポートページを生成
+    try:
+        from report_generator import generate_report_html
+        reports_html = generate_report_html()
+        reports_output = os.path.join(DOCS_DIR, "reports.html")
+        with open(reports_output, "w", encoding="utf-8") as f:
+            f.write(reports_html)
+        print(f"Reports page generated: {reports_output}")
+    except Exception as e:
+        print(f"Reports page generation failed: {e}")
 
     # 銘柄別詳細ページを生成
     open_trades = [t for t in trades if t.get("status") == "open"]

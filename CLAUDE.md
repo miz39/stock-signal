@@ -30,6 +30,71 @@
 - 1日最大3エントリー / 同一セクター最大2銘柄
 - 損切り後7日間は同一銘柄再エントリー禁止
 
+## MCP トレーディングワークフロー
+
+Claude Code が MCP サーバー経由で直接データ取得・分析・売買記録を行う。
+LLM API コスト不要（Claude Code Max プラン定額内）。
+
+### MCP ツール一覧
+
+| カテゴリ | ツール | 概要 |
+|---------|--------|------|
+| Market | `scan_market` | 日経225全銘柄スキャン（3-5分） |
+| Market | `get_stock_data` | 個別銘柄の価格サマリー |
+| Market | `get_market_regime` | 市場レジーム（bull/bear/neutral） |
+| Market | `get_financial_data` | ファンダメンタルデータ（PER/PBR/ROE等） |
+| Analysis | `get_signal` | 個別銘柄のBUY/SELL/HOLDシグナル |
+| Analysis | `get_technical_summary` | テクニカル指標一括取得 |
+| Portfolio | `get_positions` | オープンポジション一覧 |
+| Portfolio | `get_cash` | 現金残高 |
+| Portfolio | `get_performance` | 勝率/PnL/PF |
+| Portfolio | `get_weekly_report` | 週次レポート |
+| Trading | `execute_buy` | 買いエントリー（confirm=False でプレビュー） |
+| Trading | `execute_sell` | 売りイグジット（confirm=False でプレビュー） |
+| Trading | `update_stops` | 全ポジションのトレーリングストップ更新 |
+| Risk | `get_risk_report` | セクター集中度/DD/VaR/相関 |
+| Valuation | `run_full_analysis` | Trading + Valuation 統合分析（9エージェント） |
+| Valuation | `get_dcf_valuation` | DCF 理論株価 + 前提値 |
+| Valuation | `get_comps_analysis` | セクター内比較テーブル |
+| Valuation | `get_financial_statements` | BS/PL/CF サマリー（三表分析） |
+| Valuation | `get_sensitivity_table` | WACC×成長率の感応度テーブル |
+| Valuation | `generate_ic_memo` | 実データベースの IC メモ |
+
+### /scan（日次スキャン）
+1. `scan_market` で全銘柄スキャン
+2. BUY 候補 上位5銘柄に対して `get_technical_summary` で詳細取得
+3. 各候補を以下の観点で分析（Claude Code 自身が判断）:
+   - テクニカル: トレンド方向、RSI水準、ADX強度、一目の雲
+   - バリュエーション: PER/PBR のセクター内位置
+   - リスク: ボラティリティ、52週高値乖離、セクター集中
+4. BUY / HOLD / PASS の判定 + 確信度 + 理由を提示
+5. ユーザー承認後 `execute_buy` で約定
+
+### /check（保有チェック）
+1. `get_positions` で保有一覧
+2. 各ポジションの含み損益、利確/ストップ到達状況
+3. イグジット推奨があれば提示
+
+### /risk（リスク分析）
+1. `get_risk_report` でリスクレポート取得
+2. 改善提案を提示
+
+### /analyze（銘柄分析 — バリュエーション込み）
+1. `run_full_analysis` で Trading + Valuation 9エージェント統合分析
+2. 結果を整理して提示:
+   - Trading Layer: テクニカル/ファンダ/センチメント/リスク
+   - Valuation Layer: DCF理論株価/セクター比較/三表分析/収益構造/感応度
+   - 総合判定: Combined Signal + Score
+3. 必要に応じて `generate_ic_memo` で IC メモ生成
+4. 100株現物投資向けの買い判断材料を提供
+
+### 注意事項
+- `scan_market` は225銘柄スキャンで3-5分かかる
+- `run_full_analysis` はバリュエーション5エージェント分の API 呼び出しがあるため1-2分かかる
+- `get_comps_analysis` はセクター全銘柄のデータ取得で2-3分かかる場合あり
+- cron（`main.py`）と同時実行を避ける（trades.json 競合）
+- cron は `llm_review_enabled: false` で API コストゼロ運用
+
 ## 主要ファイル
 | ファイル | 役割 |
 |----------|------|
@@ -45,6 +110,15 @@
 | `holidays.py` | 東証休場日判定（年1回JPXカレンダーを参照して更新） |
 | `generate_dashboard.py` | HTML ダッシュボード + 週次レビュー生成 |
 | `config.yaml` | 全パラメータ設定 |
+| `ic_memo_generator.py` | IC メモ生成（実データ注入対応） |
+| `agents/coordinator.py` | エージェント統合（Trading + Valuation 2層構成） |
+| `agents/dcf.py` | DCF バリュエーションエージェント |
+| `agents/three_statement.py` | 三表財務分析エージェント |
+| `agents/comps.py` | 類似企業比較エージェント |
+| `agents/operating_model.py` | オペレーティングモデル分析エージェント |
+| `agents/sensitivity.py` | 感応度分析エージェント |
+| `mcp_server/` | MCP サーバー（Claude Code 連携用、stdio） |
+| `mcp_server/tools/valuation.py` | バリュエーション MCP ツール（6ツール） |
 
 ## バックテストファイル
 | ファイル | 用途 |

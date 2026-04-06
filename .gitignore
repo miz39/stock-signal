@@ -2,6 +2,7 @@
 deploy/env.conf
 .env
 .env.*
+credentials.json
 
 # Logs
 *.log
@@ -17,6 +18,7 @@ backups/
 __pycache__/
 *.pyc
 venv/
+.venv/
 my_portfolio.json
 .command_list_hash
 

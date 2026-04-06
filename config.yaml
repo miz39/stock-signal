@@ -48,9 +48,38 @@ strategy:
     trend_strength: 0.10
   slope_days: 5                    # SMA25傾き計算の日数（5日前との比較）
   slope_blend: 0.3                 # sma_momentum内の傾きブレンド率（0=乖離のみ, 1=傾きのみ）
-  llm_review_enabled: true           # LLM review for BUY candidates (requires OPENAI_API_KEY)
+  llm_review_enabled: false          # Disabled — use Claude Code via MCP for analysis instead
   openai_model: "gpt-4o-mini"        # LLM model for review
   llm_max_review: 10                 # Max candidates to review per scan
+
+agents:
+  enabled: true
+  weights:
+    technical: 0.35
+    fundamental: 0.25
+    sentiment: 0.20
+    risk: 0.20
+
+valuation:
+  enabled: true
+  wacc_defaults:
+    建設・資源: 0.09
+    食品: 0.08
+    化学・医薬: 0.09
+    鉄鋼・金属: 0.10
+    機械・電機: 0.09
+    自動車・精密: 0.09
+    金融・商社: 0.08
+    運輸・通信・サービス: 0.08
+    不動産・倉庫: 0.08
+  terminal_growth: 0.015
+  projection_years: 5
+  weights:
+    dcf: 0.30
+    comps: 0.25
+    three_statement: 0.20
+    operating_model: 0.15
+    sensitivity: 0.10
 
 risk:
   max_sector_pct: 0.30           # セクター集中度上限（金額ベース）

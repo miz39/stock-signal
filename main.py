@@ -129,6 +129,157 @@ def is_friday_close() -> bool:
     return now.weekday() == 4 and now.hour >= 15
 
 
+def scan_only(profile_name: str = "default") -> dict:
+    """MCP server: scan-only mode that returns results without trading or notifications."""
+    config = load_config()
+
+    if profile_name != "default":
+        profile_overrides = config.get("profiles", {}).get(profile_name, {})
+        if not profile_overrides:
+            return {"error": f"Profile '{profile_name}' not found in config.yaml"}
+        strategy_overrides = profile_overrides.get("strategy", {})
+        config["strategy"] = {**config.get("strategy", {}), **strategy_overrides}
+
+    validate_config(config)
+    set_profile(profile_name)
+
+    strat = config.get("strategy", {})
+    account = config["account"]
+    balance = account["balance"]
+
+    # Market regime
+    market_regime = {"regime": "neutral", "sma50": None, "sma200": None, "price": 0}
+    if strat.get("market_regime_enabled", True):
+        try:
+            nikkei_df = fetch_stock_data("^N225")
+            market_regime = detect_market_regime(nikkei_df)
+        except Exception as e:
+            logger.warning(f"Market regime fetch failed: {e}")
+
+    available_cash = max(get_cash_balance(balance), 0)
+    open_positions = get_open_positions()
+    stock_value = sum(p["entry_price"] * p["shares"] for p in open_positions)
+    total_assets = available_cash + stock_value
+    open_tickers = {p["ticker"] for p in open_positions}
+
+    buy_signals = []
+    sell_signals = []
+    error_count = 0
+
+    total = len(config["watchlist"])
+    for i, ticker in enumerate(config["watchlist"]):
+        try:
+            df = fetch_stock_data(ticker)
+            sig = generate_signal(df, config)
+            sig["ticker"] = ticker
+            sig["name"] = NIKKEI_225.get(ticker, ticker)
+
+            if sig["signal"] == "BUY":
+                stop_pct = strat.get("stop_loss_pct", 0.08)
+                stop = calculate_stop_loss(sig["price"], stop_pct)
+                shares = calculate_position_size(
+                    total_assets, account["risk_per_trade"],
+                    sig["price"], stop, account["unit"],
+                    account.get("max_allocation", 0.15),
+                )
+                max_affordable = math.floor(available_cash / sig["price"]) if sig["price"] > 0 else 0
+                shares = min(shares, max(max_affordable, 0))
+                sig["stop_loss"] = stop
+                sig["recommended_shares"] = shares
+                sig["risk_amount"] = round((sig["price"] - stop) * shares, 0)
+                sig["_df"] = df
+                buy_signals.append(sig)
+
+            elif sig["signal"] == "SELL" and ticker in open_tickers:
+                sell_signals.append(sig)
+
+        except Exception as e:
+            error_count += 1
+            if error_count <= 5:
+                logger.error(f"{ticker} error: {e}")
+
+        if (i + 1) % 50 == 0:
+            logger.info(f"  Scanning: {i + 1}/{total}")
+
+    # Composite score
+    score_weights = strat.get("score_weights")
+    slope_days = strat.get("slope_days", 5)
+    slope_blend = strat.get("slope_blend", 0.3)
+    tv_enabled = strat.get("tv_recommendation_enabled", False)
+    for sig in buy_signals:
+        cached_df = sig.pop("_df", None)
+        tv_score = None
+        if tv_enabled:
+            tv_score = fetch_tv_recommendation(sig["ticker"])
+            sig["tv_score"] = tv_score
+        if cached_df is not None:
+            sig["composite_score"] = compute_composite_score(
+                sig, cached_df, score_weights,
+                slope_days=slope_days, slope_blend=slope_blend,
+                tv_score=tv_score)
+        else:
+            sig["composite_score"] = 0.0
+
+    buy_signals.sort(key=lambda s: s.get("composite_score", 0), reverse=True)
+
+    # Clean NaN values for JSON serialization
+    def clean_nan(obj):
+        if isinstance(obj, float) and (math.isnan(obj) or math.isinf(obj)):
+            return None
+        if isinstance(obj, dict):
+            return {k: clean_nan(v) for k, v in obj.items()}
+        if isinstance(obj, list):
+            return [clean_nan(v) for v in obj]
+        return obj
+
+    # Portfolio snapshot with current prices
+    for pos in open_positions:
+        try:
+            df = fetch_stock_data(pos["ticker"], period="5d")
+            pos["current_price"] = float(df["Close"].iloc[-1])
+        except Exception:
+            pos["current_price"] = pos["entry_price"]
+
+    portfolio_pnl = sum(
+        (p.get("current_price", p["entry_price"]) - p["entry_price"]) * p["shares"]
+        for p in open_positions
+    )
+
+    return clean_nan({
+        "market_regime": market_regime,
+        "scan_summary": {
+            "total_scanned": total,
+            "buy_count": len(buy_signals),
+            "sell_count": len(sell_signals),
+            "error_count": error_count,
+        },
+        "buy_candidates": [
+            {k: v for k, v in s.items() if k != "_df"}
+            for s in buy_signals[:10]
+        ],
+        "sell_signals": sell_signals,
+        "portfolio": {
+            "open_positions": [
+                {
+                    "ticker": p["ticker"],
+                    "name": NIKKEI_225.get(p["ticker"], p["ticker"]),
+                    "entry_price": p["entry_price"],
+                    "current_price": p.get("current_price", p["entry_price"]),
+                    "shares": p["shares"],
+                    "entry_date": p["entry_date"],
+                    "stop_price": p.get("stop_price"),
+                    "unrealized_pnl": round((p.get("current_price", p["entry_price"]) - p["entry_price"]) * p["shares"], 1),
+                }
+                for p in open_positions
+            ],
+            "cash": round(available_cash, 1),
+            "stock_value": round(stock_value, 1),
+            "total_assets": round(total_assets, 1),
+            "unrealized_pnl": round(portfolio_pnl, 1),
+        },
+    })
+
+
 def run(profile_name: str = "default"):
     if not is_market_open():
         logger.info("東証休場日のためスキップ")
