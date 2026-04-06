@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AI Analysis Dashboard</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:'Helvetica Neue',Arial,sans-serif; background:#121212; color:#E0E0E0; padding:16px; }
+h1 { font-size:1.5rem; margin-bottom:4px; }
+.updated { color:#757575; font-size:0.8rem; margin-bottom:16px; }
+.updated a { color:#64B5F6; text-decoration:none; }
+.updated a:hover { text-decoration:underline; }
+
+.summary-cards { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:20px; }
+.summary-card { background:#1E1E1E; border-radius:10px; padding:16px; text-align:center; }
+.summary-card .label { color:#9E9E9E; font-size:0.75rem; margin-bottom:4px; }
+.summary-card .value { font-size:1.8rem; font-weight:700; }
+
+.section { background:#1E1E1E; border-radius:10px; padding:16px; margin-bottom:16px; }
+.section-title { font-size:1rem; font-weight:600; margin-bottom:12px; color:#E0E0E0; }
+
+table { width:100%; border-collapse:collapse; font-size:0.8rem; }
+th { text-align:left; padding:8px 6px; border-bottom:2px solid #333; color:#9E9E9E; font-weight:500; cursor:pointer; }
+th:hover { color:#64B5F6; }
+td { padding:8px 6px; border-bottom:1px solid #2A2A2A; }
+td.num { text-align:right; font-variant-numeric:tabular-nums; }
+.data-row { cursor:pointer; transition:background 0.15s; }
+.data-row:hover { background:#2A2A2A; }
+.data-row.selected { background:#1A237E; }
+.green { color:#00C853; }
+.red { color:#FF1744; }
+
+.charts-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px; }
+.chart-wrap { background:#1E1E1E; border-radius:10px; padding:16px; }
+.chart-wrap canvas { max-height:300px; }
+
+.heatmap { display:grid; gap:2px; margin-top:8px; }
+.heatmap-row { display:flex; gap:2px; align-items:center; }
+.heatmap-label { width:60px; font-size:0.7rem; color:#9E9E9E; text-align:right; padding-right:6px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; }
+.heatmap-cell { flex:1; height:28px; border-radius:3px; display:flex; align-items:center; justify-content:center; font-size:0.65rem; font-weight:600; }
+.heatmap-header { display:flex; gap:2px; margin-left:62px; margin-bottom:4px; }
+.heatmap-header span { flex:1; text-align:center; font-size:0.65rem; color:#9E9E9E; }
+
+.memo-panel { background:#1E1E1E; border-radius:10px; padding:16px; margin-bottom:16px; display:none; }
+.memo-panel.active { display:block; }
+.memo-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
+.memo-title { font-size:1.1rem; font-weight:600; }
+.memo-badge { padding:4px 10px; border-radius:4px; font-size:0.75rem; font-weight:600; }
+.memo-badge.buy { background:#00C853; color:#000; }
+.memo-badge.hold { background:#FF9800; color:#000; }
+.memo-badge.pass { background:#FF1744; color:#fff; }
+.memo-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.memo-section { background:#252525; border-radius:8px; padding:12px; }
+.memo-section h4 { font-size:0.8rem; color:#64B5F6; margin-bottom:8px; }
+.memo-section p, .memo-section li { font-size:0.78rem; line-height:1.5; color:#BDBDBD; }
+.memo-section ul { padding-left:16px; }
+.scenarios-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-top:8px; }
+.scenario { background:#252525; border-radius:8px; padding:10px; text-align:center; }
+.scenario .s-label { font-size:0.7rem; color:#9E9E9E; }
+.scenario .s-target { font-size:1.1rem; font-weight:700; margin:4px 0; }
+.scenario .s-prob { font-size:0.7rem; }
+
+@media(max-width:768px) {
+  .summary-cards { grid-template-columns:1fr; }
+  .charts-grid { grid-template-columns:1fr; }
+  .memo-grid { grid-template-columns:1fr; }
+  .scenarios-grid { grid-template-columns:1fr; }
+  table { font-size:0.7rem; }
+  td, th { padding:6px 3px; }
+}
+</style>
+</head>
+<body>
+<h1>AI Analysis Dashboard</h1>
+<div class="updated">最終更新: 2026-04-05 12:39 JST &nbsp;|&nbsp; <a href="index.html">&larr; Dashboard</a> &nbsp;|&nbsp; <a href="strategy.html">戦略分析 &rarr;</a></div>
+
+<div class="summary-cards">
+  <div class="summary-card">
+    <div class="label">分析銘柄数</div>
+    <div class="value">1</div>
+  </div>
+  <div class="summary-card">
+    <div class="label">LLM承認数</div>
+    <div class="value" style="color:#00C853">1</div>
+  </div>
+  <div class="summary-card">
+    <div class="label">IC Memo数</div>
+    <div class="value" style="color:#64B5F6">1</div>
+  </div>
+</div>
+
+<div class="section">
+  <div class="section-title">分析テーブル <small style="color:#757575">（ヘッダークリックでソート / 行クリックで詳細）</small></div>
+  <div style="overflow-x:auto">
+  <table id="analysisTable">
+    <thead>
+      <tr>
+        <th data-col="0">銘柄</th>
+        <th data-col="1">株価</th>
+        <th data-col="2">RSI</th>
+        <th data-col="3">Composite</th>
+        <th data-col="4">Agent Signal</th>
+        <th data-col="5">Score</th>
+        <th data-col="6">Confidence</th>
+        <th data-col="7">LLM</th>
+        <th data-col="8">IC Memo</th>
+      </tr>
+    </thead>
+    <tbody>
+<tr class="data-row" data-idx="0" onclick="selectRow(0)">
+  <td>トヨタ自動車<br><small style="color:#757575">7203.T</small></td>
+  <td class="num">&yen;2,500</td>
+  <td class="num">55.3</td>
+  <td class="num">0.750</td>
+  <td>BUY</td>
+  <td class="num">0.72</td>
+  <td class="num">75%</td>
+  <td class="green">承認</td>
+  <td class="green">BUY</td>
+</tr>
+    </tbody>
+  </table>
+  </div>
+</div>
+
+<div class="charts-grid">
+  <div class="chart-wrap">
+    <div class="section-title">Agent Scores (Radar)</div>
+    <canvas id="radarChart"></canvas>
+  </div>
+  <div class="chart-wrap">
+    <div class="section-title">Score Heatmap</div>
+    <div id="heatmapContainer"></div>
+  </div>
+</div>
+
+<div class="memo-panel" id="memoPanel">
+  <div class="memo-header">
+    <div class="memo-title" id="memoTitle">-</div>
+    <div class="memo-badge" id="memoBadge">-</div>
+  </div>
+  <div id="memoContent"></div>
+</div>
+
+<script>
+const SIGNALS = [{"ticker": "7203.T", "name": "トヨタ自動車", "price": 2500, "rsi": 55.3, "composite": 0.75, "agent_signal": "BUY", "agent_score": 0.72, "agent_confidence": 75, "scores": {"technical": 0.8, "fundamental": 0.6, "sentiment": 0.7, "risk": 0.65}, "llm_approved": true, "llm_reason": "テクニカル面良好"}];
+const MEMOS = [{"ticker": "7203.T", "name": "トヨタ自動車", "executive_summary": {"recommendation": "BUY", "conviction": 8, "target_price": 2750, "upside_pct": 10.0, "key_catalysts": ["EV拡大"]}, "valuation": {"dcf_estimate": {"fair_value": 2700, "method": "PER基準"}, "summary": "セクター平均比割安"}, "fundamental": {"revenue_trend": "増収基調", "profitability": "ROE改善中"}, "technical": {"trend": "上昇トレンド", "momentum": "良好"}, "risk_analysis": {"market_risk": "為替リスク", "stock_risk": "半導体不足", "stop_loss_rationale": "SMA100下抜け"}, "scenarios": {"bull": {"trigger": "EV販売好調", "target": 2900, "probability": "30%"}, "base": {"trigger": "現状維持", "target": 2700, "probability": "50%"}, "bear": {"trigger": "円高進行", "target": 2300, "probability": "20%"}}, "position_sizing": {"recommended_shares": 10, "stop_loss": 2300, "risk_amount": 2000}}];
+const HEATMAP = [{"name": "トヨタ自動車", "technical": 0.8, "fundamental": 0.6, "sentiment": 0.7, "risk": 0.65}];
+
+// --- Table sort ---
+let sortCol = -1, sortAsc = true;
+document.querySelectorAll('#analysisTable th').forEach(th => {
+  th.addEventListener('click', () => {
+    const col = parseInt(th.dataset.col);
+    if (sortCol === col) sortAsc = !sortAsc;
+    else { sortCol = col; sortAsc = true; }
+    const tbody = document.querySelector('#analysisTable tbody');
+    const rows = Array.from(tbody.querySelectorAll('tr'));
+    rows.sort((a, b) => {
+      let av = a.cells[col].textContent.trim();
+      let bv = b.cells[col].textContent.trim();
+      const an = parseFloat(av.replace(/[¥,%]/g, '').replace(/,/g, ''));
+      const bn = parseFloat(bv.replace(/[¥,%]/g, '').replace(/,/g, ''));
+      if (!isNaN(an) && !isNaN(bn)) return sortAsc ? an - bn : bn - an;
+      return sortAsc ? av.localeCompare(bv) : bv.localeCompare(av);
+    });
+    rows.forEach(r => tbody.appendChild(r));
+  });
+});
+
+// --- Radar chart ---
+let radarChart = null;
+function updateRadar(idx) {
+  const s = SIGNALS[idx];
+  if (!s) return;
+  const scores = s.scores;
+  const data = [scores.technical, scores.fundamental, scores.sentiment, scores.risk];
+
+  if (radarChart) radarChart.destroy();
+  radarChart = new Chart(document.getElementById('radarChart'), {
+    type: 'radar',
+    data: {
+      labels: ['Technical', 'Fundamental', 'Sentiment', 'Risk'],
+      datasets: [{
+        label: s.name,
+        data: data,
+        borderColor: '#64B5F6',
+        backgroundColor: 'rgba(100,181,246,0.15)',
+        borderWidth: 2,
+        pointBackgroundColor: '#64B5F6',
+      }]
+    },
+    options: {
+      scales: {
+        r: {
+          min: 0, max: 1,
+          ticks: { stepSize: 0.2, color: '#757575', backdropColor: 'transparent' },
+          grid: { color: '#333' },
+          pointLabels: { color: '#E0E0E0', font: { size: 11 } },
+          angleLines: { color: '#333' },
+        }
+      },
+      plugins: { legend: { display: false } },
+    }
+  });
+}
+
+// --- Heatmap ---
+function buildHeatmap() {
+  const container = document.getElementById('heatmapContainer');
+  if (!HEATMAP.length) { container.innerHTML = '<p style="color:#757575">データなし</p>'; return; }
+
+  const dims = ['technical', 'fundamental', 'sentiment', 'risk'];
+  const dimLabels = ['Tech', 'Fund', 'Sent', 'Risk'];
+
+  let html = '<div class="heatmap-header">';
+  dimLabels.forEach(l => html += `<span>${l}</span>`);
+  html += '</div><div class="heatmap">';
+
+  HEATMAP.forEach(item => {
+    html += `<div class="heatmap-row"><div class="heatmap-label">${item.name}</div>`;
+    dims.forEach(d => {
+      const v = item[d] || 0;
+      const color = scoreColor(v);
+      html += `<div class="heatmap-cell" style="background:${color}">${v.toFixed(2)}</div>`;
+    });
+    html += '</div>';
+  });
+  html += '</div>';
+  container.innerHTML = html;
+}
+
+function scoreColor(v) {
+  if (v >= 0.7) return 'rgba(0,200,83,' + (0.3 + v * 0.5) + ')';
+  if (v >= 0.4) return 'rgba(117,117,117,' + (0.3 + v * 0.4) + ')';
+  return 'rgba(255,23,68,' + (0.3 + (1 - v) * 0.4) + ')';
+}
+
+// --- Row select & Memo ---
+let selectedIdx = -1;
+function selectRow(idx) {
+  document.querySelectorAll('.data-row').forEach(r => r.classList.remove('selected'));
+  const row = document.querySelector(`.data-row[data-idx="${idx}"]`);
+  if (row) row.classList.add('selected');
+  selectedIdx = idx;
+  updateRadar(idx);
+  showMemo(idx);
+}
+
+function showMemo(idx) {
+  const panel = document.getElementById('memoPanel');
+  const sig = SIGNALS[idx];
+  if (!sig) return;
+
+  const memo = MEMOS.find(m => m.ticker === sig.ticker);
+  if (!memo) {
+    panel.classList.remove('active');
+    return;
+  }
+
+  panel.classList.add('active');
+  const es = memo.executive_summary || {};
+  const rec = es.recommendation || '-';
+
+  document.getElementById('memoTitle').textContent = `${memo.name} (${memo.ticker}) — IC Memo`;
+  const badge = document.getElementById('memoBadge');
+  badge.textContent = rec;
+  badge.className = 'memo-badge ' + (rec === 'BUY' ? 'buy' : rec === 'PASS' ? 'pass' : 'hold');
+
+  const val = memo.valuation || {};
+  const fund = memo.fundamental || {};
+  const tech = memo.technical || {};
+  const risk = memo.risk_analysis || {};
+  const scen = memo.scenarios || {};
+  const pos = memo.position_sizing || {};
+
+  let catalysts = (es.key_catalysts || []).map(c => `<li>${c}</li>`).join('');
+
+  let html = `
+  <div class="memo-section" style="margin-bottom:12px">
+    <h4>Executive Summary</h4>
+    <p>Conviction: <strong>${es.conviction || '-'}/10</strong> &nbsp; Target: <strong>&yen;${(es.target_price || 0).toLocaleString()}</strong> &nbsp; Upside: <strong>${es.upside_pct || 0}%</strong></p>
+    ${catalysts ? '<ul>' + catalysts + '</ul>' : ''}
+  </div>
+  <div class="memo-grid">
+    <div class="memo-section"><h4>Valuation</h4><p>${val.summary || '-'}</p><p style="margin-top:6px;color:#757575;font-size:0.7rem">DCF: &yen;${(val.dcf_estimate?.fair_value || 0).toLocaleString()} (${val.dcf_estimate?.method || '-'})</p></div>
+    <div class="memo-section"><h4>Fundamental</h4><p>${fund.revenue_trend || '-'}</p><p>${fund.profitability || '-'}</p></div>
+    <div class="memo-section"><h4>Technical</h4><p>${tech.trend || '-'}</p><p>${tech.momentum || '-'}</p></div>
+    <div class="memo-section"><h4>Risk</h4><p>${risk.market_risk || '-'}</p><p>${risk.stock_risk || '-'}</p><p style="margin-top:4px;font-size:0.7rem;color:#FF9800">SL根拠: ${risk.stop_loss_rationale || '-'}</p></div>
+  </div>
+  <div class="section-title" style="margin-top:16px">Scenarios</div>
+  <div class="scenarios-grid">
+    <div class="scenario" style="border-top:3px solid #00C853"><div class="s-label">Bull</div><div class="s-target" style="color:#00C853">&yen;${(scen.bull?.target || 0).toLocaleString()}</div><div class="s-prob">${scen.bull?.probability || '-'}</div><p style="font-size:0.7rem;color:#9E9E9E;margin-top:4px">${scen.bull?.trigger || ''}</p></div>
+    <div class="scenario" style="border-top:3px solid #FF9800"><div class="s-label">Base</div><div class="s-target" style="color:#FF9800">&yen;${(scen.base?.target || 0).toLocaleString()}</div><div class="s-prob">${scen.base?.probability || '-'}</div><p style="font-size:0.7rem;color:#9E9E9E;margin-top:4px">${scen.base?.trigger || ''}</p></div>
+    <div class="scenario" style="border-top:3px solid #FF1744"><div class="s-label">Bear</div><div class="s-target" style="color:#FF1744">&yen;${(scen.bear?.target || 0).toLocaleString()}</div><div class="s-prob">${scen.bear?.probability || '-'}</div><p style="font-size:0.7rem;color:#9E9E9E;margin-top:4px">${scen.bear?.trigger || ''}</p></div>
+  </div>
+  <div class="memo-section" style="margin-top:12px"><h4>Position Sizing</h4><p>推奨株数: ${pos.recommended_shares || '-'} &nbsp; SL: &yen;${(pos.stop_loss || 0).toLocaleString()} &nbsp; リスク額: &yen;${(pos.risk_amount || 0).toLocaleString()}</p></div>`;
+
+  document.getElementById('memoContent').innerHTML = html;
+}
+
+// Init
+buildHeatmap();
+if (SIGNALS.length > 0) selectRow(0);
+</script>
+</body>
+</html>
