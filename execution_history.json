@@ -3482,16 +3482,16 @@
     }
   },
   {
-    "timestamp": "2026-04-06T13:59:18.375483+09:00",
+    "timestamp": "2026-04-06T15:13:22.189257+09:00",
     "date": "2026-04-06",
     "session": "12:35 昼",
     "profile": "default",
     "mode": "paper",
     "market_regime": {
       "regime": "neutral",
-      "sma50": 54738.3,
-      "sma200": 48010.7,
-      "price": 53859.0
+      "sma50": 54737.0,
+      "sma200": 48010.4,
+      "price": 53791.2
     },
     "scan": {
       "total": 225,
@@ -3503,62 +3503,86 @@
       {
         "ticker": "9107.T",
         "name": "川崎汽船",
-        "price": 2768.0,
-        "rsi": 62.3,
-        "reason": "ゴールデンクロス（SMA25 > SMA100）+ RSI適正（62.3）+ 上昇トレンド",
-        "stop_loss": 2546.6,
+        "price": 2758.0,
+        "rsi": 61.8,
+        "reason": "ゴールデンクロス（SMA25 > SMA100）+ RSI適正（61.8）+ 上昇トレンド",
+        "stop_loss": 2537.4,
         "shares": 10,
-        "composite_score": 0.6199,
+        "composite_score": 0.6254,
         "tv_score": 0.6154,
         "llm_review": null,
-        "sma_short": 2626.9,
-        "sma_long": 2270.9,
-        "sma_trend": 2166.3
+        "valuation": {
+          "signal": "STRONG_BUY",
+          "score": 1.31,
+          "fair_value": 7229.0,
+          "upside_pct": 162.1
+        },
+        "sma_short": 2626.5,
+        "sma_long": 2270.8,
+        "sma_trend": 2166.2
       },
       {
         "ticker": "1605.T",
         "name": "INPEX",
-        "price": 4603.0,
-        "rsi": 57.9,
-        "reason": "ゴールデンクロス（SMA25 > SMA100）+ RSI適正（57.9）+ 上昇トレンド",
-        "stop_loss": 4234.8,
+        "price": 4585.0,
+        "rsi": 57.2,
+        "reason": "ゴールデンクロス（SMA25 > SMA100）+ RSI適正（57.2）+ 上昇トレンド",
+        "stop_loss": 4218.2,
         "shares": 6,
-        "composite_score": 0.617,
+        "composite_score": 0.6219,
         "tv_score": 0.5769,
         "llm_review": null,
-        "sma_short": 4424.7,
-        "sma_long": 3549.5,
-        "sma_trend": 2951.7
+        "valuation": {
+          "signal": "STRONG_BUY",
+          "score": 1.28,
+          "fair_value": 6830.0,
+          "upside_pct": 49.0
+        },
+        "sma_short": 4424.0,
+        "sma_long": 3549.3,
+        "sma_trend": 2951.6
       },
       {
         "ticker": "8058.T",
         "name": "三菱商事",
-        "price": 5469.0,
-        "rsi": 56.2,
-        "reason": "ゴールデンクロス（SMA25 > SMA100）+ RSI適正（56.2）+ 上昇トレンド",
-        "stop_loss": 5031.5,
+        "price": 5462.0,
+        "rsi": 56.0,
+        "reason": "ゴールデンクロス（SMA25 > SMA100）+ RSI適正（56.0）+ 上昇トレンド",
+        "stop_loss": 5025.0,
         "shares": 5,
-        "composite_score": 0.5859,
+        "composite_score": 0.5883,
         "tv_score": 0.5385,
         "llm_review": null,
-        "sma_short": 5301.3,
-        "sma_long": 4320.1,
-        "sma_trend": 3746.6
+        "valuation": {
+          "signal": "BUY",
+          "score": 0.5,
+          "fair_value": 10544.0,
+          "upside_pct": 93.0
+        },
+        "sma_short": 5301.0,
+        "sma_long": 4320.0,
+        "sma_trend": 3746.5
       },
       {
         "ticker": "8766.T",
         "name": "東京海上ホールディングス",
-        "price": 7328.0,
-        "rsi": 64.3,
-        "reason": "ゴールデンクロス（SMA25 > SMA100）+ RSI適正（64.3）+ 上昇トレンド",
-        "stop_loss": 6741.8,
+        "price": 7313.0,
+        "rsi": 64.1,
+        "reason": "ゴールデンクロス（SMA25 > SMA100）+ RSI適正（64.1）+ 上昇トレンド",
+        "stop_loss": 6728.0,
         "shares": 4,
-        "composite_score": 0.5606,
+        "composite_score": 0.5629,
         "tv_score": 0.5769,
         "llm_review": null,
-        "sma_short": 6503.8,
-        "sma_long": 5974.3,
-        "sma_trend": 5976.9
+        "valuation": {
+          "signal": "STRONG_BUY",
+          "score": 1.19,
+          "fair_value": 14925.0,
+          "upside_pct": 104.1
+        },
+        "sma_short": 6503.2,
+        "sma_long": 5974.1,
+        "sma_trend": 5976.8
       }
     ],
     "sell_signals": [],
@@ -3572,37 +3596,37 @@
           "ticker": "9107.T",
           "name": "川崎汽船",
           "new_stop": 2572.0,
-          "current_price": 2768.0,
-          "gain_pct": 7.6
+          "current_price": 2737.5,
+          "gain_pct": 6.4
         },
         {
           "ticker": "2282.T",
           "name": "日本ハム",
           "new_stop": 6851.0,
-          "current_price": 7358.0,
-          "gain_pct": 7.4
+          "current_price": 7320.0,
+          "gain_pct": 6.8
         },
         {
           "ticker": "3099.T",
           "name": "三越伊勢丹ホールディングス",
           "new_stop": 2931.3,
-          "current_price": 3132.0,
-          "gain_pct": 6.8
+          "current_price": 3120.0,
+          "gain_pct": 6.4
         },
         {
           "ticker": "5803.T",
           "name": "フジクラ",
           "new_stop": 4318.2,
-          "current_price": 4678.0,
-          "gain_pct": 8.3
+          "current_price": 4645.0,
+          "gain_pct": 7.6
         }
       ]
     },
     "portfolio_snapshot": {
       "open_count": 10,
-      "stock_value": 280217.0,
+      "stock_value": 279069.0,
       "cash": 33341.0,
-      "total_assets": 313558.0
+      "total_assets": 312410.0
     }
   }
 ]

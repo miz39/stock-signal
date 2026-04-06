@@ -440,6 +440,47 @@ def run(profile_name: str = "default"):
             max_review=llm_max,
         )
 
+    # Valuation analysis for buy candidates + held positions
+    val_cfg = config.get("valuation", {})
+    valuation_enabled = val_cfg.get("enabled", False)
+    valuation_results = {}  # ticker -> valuation result
+
+    if valuation_enabled:
+        from agents.coordinator import analyze_valuation
+        # Analyze top buy candidates
+        val_top_n = min(5, len(buy_signals))
+        for sig in buy_signals[:val_top_n]:
+            ticker = sig["ticker"]
+            try:
+                df_val = buy_dfs.get(ticker)
+                if df_val is None:
+                    df_val = fetch_stock_data(ticker)
+                val_result = analyze_valuation(ticker, config, df=df_val)
+                sig["valuation"] = val_result
+                valuation_results[ticker] = val_result
+                label = val_result.get("signal_label", "?")
+                fv = val_result.get("fair_value")
+                fv_str = f" 理論株価¥{fv:,.0f}" if fv else ""
+                logger.info(f"  バリュエーション: {NIKKEI_225.get(ticker, ticker)} → {label} (score={val_result['total_score']:+.2f}){fv_str}")
+            except Exception as e:
+                logger.warning(f"  バリュエーション失敗 ({ticker}): {e}")
+
+        # Analyze held positions
+        for pos in open_positions:
+            ticker = pos["ticker"]
+            if ticker in valuation_results:
+                continue
+            try:
+                df_val = fetch_stock_data(ticker)
+                val_result = analyze_valuation(ticker, config, df=df_val)
+                valuation_results[ticker] = val_result
+                label = val_result.get("signal_label", "?")
+                fv = val_result.get("fair_value")
+                fv_str = f" 理論株価¥{fv:,.0f}" if fv else ""
+                logger.info(f"  バリュエーション(保有): {NIKKEI_225.get(ticker, ticker)} → {label} (score={val_result['total_score']:+.2f}){fv_str}")
+            except Exception as e:
+                logger.warning(f"  バリュエーション失敗 ({ticker}): {e}")
+
     # 通知用シグナル（買い上位10 + 保有銘柄の売り）
     notify_signals = sell_signals + buy_signals[:10]
 
@@ -736,9 +777,17 @@ def run(profile_name: str = "default"):
             llm_label = ""
             if sig.get("llm_review") and not sig["llm_review"].get("skipped"):
                 llm_label = " | LLM:✅" if sig["llm_review"]["approved"] else " | LLM:❌"
+            val_label = ""
+            val_data = sig.get("valuation") or valuation_results.get(sig["ticker"])
+            if val_data and val_data.get("signal"):
+                val_signal = val_data["signal_label"]
+                val_score = val_data["total_score"]
+                fv = val_data.get("fair_value")
+                fv_str = f" FV¥{fv:,.0f}" if fv else ""
+                val_label = f"\n  → Val: {val_signal}({val_score:+.2f}){fv_str}"
             lines.append(
                 f"**{name}**（{code}）¥{sig['price']:,.0f} | RSI {sig['rsi']:.1f} | "
-                f"{sig.get('recommended_shares', '-')}株推奨{score_str}{tv_label}{llm_label}"
+                f"{sig.get('recommended_shares', '-')}株推奨{score_str}{tv_label}{llm_label}{val_label}"
             )
         embeds.append({
             "title": f"🟢 買い候補 TOP5",
@@ -798,9 +847,15 @@ def run(profile_name: str = "default"):
             total_pnl += pnl
             total_value += value
             days = (dt_date.today() - dt_date.fromisoformat(pos["entry_date"])).days
+            pos_val_label = ""
+            pos_val = valuation_results.get(pos["ticker"])
+            if pos_val and pos_val.get("signal"):
+                fv = pos_val.get("fair_value")
+                fv_str = f" FV¥{fv:,.0f}" if fv else ""
+                pos_val_label = f"\n  → Val: {pos_val['signal_label']}({pos_val['total_score']:+.2f}){fv_str}"
             lines.append(
                 f"**{name}** ¥{entry:,.0f}→¥{current:,.0f}（{sign}{pnl_pct:.1f}%）"
-                f"{pos['shares']}株 | {sign}¥{pnl:,.0f} | {days}日目"
+                f"{pos['shares']}株 | {sign}¥{pnl:,.0f} | {days}日目{pos_val_label}"
             )
         total_sign = "+" if total_pnl >= 0 else ""
         cash = get_cash_balance(balance)
@@ -959,6 +1014,12 @@ def run(profile_name: str = "default"):
                 "composite_score": s.get("composite_score"),
                 "tv_score": s.get("tv_score"),
                 "llm_review": s.get("llm_review"),
+                "valuation": {
+                    "signal": (s.get("valuation") or {}).get("signal"),
+                    "score": (s.get("valuation") or {}).get("total_score"),
+                    "fair_value": (s.get("valuation") or {}).get("fair_value"),
+                    "upside_pct": (s.get("valuation") or {}).get("upside_pct"),
+                } if s.get("valuation") else None,
                 "sma_short": round(s["sma_short"], 1) if not math.isnan(s.get("sma_short", float("nan"))) else None,
                 "sma_long": round(s["sma_long"], 1) if not math.isnan(s.get("sma_long", float("nan"))) else None,
                 "sma_trend": round(s["sma_trend"], 1) if not math.isnan(s.get("sma_trend", float("nan"))) else None,
