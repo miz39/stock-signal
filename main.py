@@ -34,6 +34,7 @@ from portfolio import (
     record_partial_exit,
     record_topup,
     update_trailing_stop,
+    set_stop_price,
     move_stop_to_breakeven,
     set_profile,
     TRADES_FILE,
@@ -278,6 +279,32 @@ def scan_only(profile_name: str = "default") -> dict:
             "unrealized_pnl": round(portfolio_pnl, 1),
         },
     })
+
+
+def _serialize_valuation(val: dict) -> dict:
+    """Serialize valuation result for execution_history JSON."""
+    if not val:
+        return None
+    agents = []
+    for a in val.get("agents", []):
+        agents.append({
+            "agent": a.get("agent", ""),
+            "score": a.get("score", 0),
+            "confidence": a.get("confidence", 0),
+            "reasons": a.get("reasons", [])[:2],  # top 2 reasons
+            "fair_value": (a.get("metrics") or {}).get("fair_value"),
+            "upside_pct": (a.get("metrics") or {}).get("upside_pct"),
+        })
+    return {
+        "signal": val.get("signal"),
+        "signal_label": val.get("signal_label"),
+        "score": val.get("total_score"),
+        "confidence": val.get("confidence"),
+        "fair_value": val.get("fair_value"),
+        "upside_pct": val.get("upside_pct"),
+        "agents": agents,
+        "reasons_summary": val.get("reasons_summary", []),
+    }
 
 
 def run(profile_name: str = "default"):
@@ -541,8 +568,31 @@ def run(profile_name: str = "default"):
         # 含み益%を計算
         gain_pct = (current - entry_price) / entry_price
 
+        # Per-position profit thresholds (may be tightened by valuation)
+        pos_profit_tighten_pct = profit_tighten_pct
+        pos_profit_take_pct = profit_take_pct
+        pos_profit_take_full_pct = profit_take_full_pct
+
+        # Valuation-based exit tightening
+        val_exit_tighten = val_cfg.get("exit_tighten_threshold", -1.0)
+        val_exit_lower = val_cfg.get("exit_lower_threshold", -0.5)
+        val = valuation_results.get(ticker)
+        if val:
+            val_score = val.get("total_score", 0)
+            if val_score < val_exit_tighten:
+                # STRONG_SELL: tighten stop to -3% from current price
+                tight_stop = current * (1 - 0.03)
+                set_stop_price(ticker, tight_stop)
+                logger.info(f"  バリュエーション引き締め(強): {name} ストップ→¥{tight_stop:,.0f} (score={val_score:+.2f})")
+            elif val_score < val_exit_lower:
+                # SELL: lower profit-take targets
+                pos_profit_tighten_pct = min(pos_profit_tighten_pct, 0.04)
+                pos_profit_take_pct = min(pos_profit_take_pct, 0.06)
+                pos_profit_take_full_pct = min(pos_profit_take_full_pct, 0.10)
+                logger.info(f"  バリュエーション引き締め: {name} 利確基準引き下げ (score={val_score:+.2f})")
+
         # Phase 1: +6%以上 → ストップを建値（取得価格）に移動
-        if gain_pct >= profit_tighten_pct:
+        if gain_pct >= pos_profit_tighten_pct:
             result = move_stop_to_breakeven(ticker)
             if result and result.get("stop_price") >= entry_price:
                 logger.info(f"  建値移動: {name}（{ticker}）含み益{gain_pct*100:.1f}% → ストップ=建値¥{entry_price:,.0f}")
@@ -558,7 +608,7 @@ def run(profile_name: str = "default"):
             updated = update_trailing_stop(ticker, current)
 
         # Phase 2: +15%以上 → 全部利確
-        if gain_pct >= profit_take_full_pct and mode == "paper":
+        if gain_pct >= pos_profit_take_full_pct and mode == "paper":
             logger.info(f"  → 全部利確: {name}（{ticker}）含み益{gain_pct*100:.1f}% / {pos['shares']}株全売却")
             full_profit_exits.append({
                 "ticker": ticker, "price": current,
@@ -568,7 +618,7 @@ def run(profile_name: str = "default"):
             continue  # 全部利確したので損切りチェック不要
 
         # Phase 3: +8%以上 & 未利確 → 半分利確売り（1株の場合は全株売却）
-        if gain_pct >= profit_take_pct and not pos.get("partial_exit_done") and mode == "paper":
+        if gain_pct >= pos_profit_take_pct and not pos.get("partial_exit_done") and mode == "paper":
             if pos["shares"] == 1:
                 # 1株ポジションは全株売却
                 logger.info(f"  → 利確発動（全株）: {name}（{ticker}）含み益{gain_pct*100:.1f}% / 1株売却")
@@ -662,6 +712,12 @@ def run(profile_name: str = "default"):
                 # セクター制限チェック
                 sec = get_sector(sig["ticker"])
                 if sector_counts.get(sec, 0) >= max_sector:
+                    continue
+                # Valuation gate: skip overvalued stocks
+                val_entry_threshold = val_cfg.get("entry_threshold", -0.5)
+                val = valuation_results.get(sig["ticker"])
+                if val and val.get("total_score", 0) < val_entry_threshold:
+                    logger.info(f"  バリュエーション却下: {NIKKEI_225.get(sig['ticker'], sig['ticker'])} (score={val['total_score']:+.2f})")
                     continue
                 if sig.get("recommended_shares"):
                     record_entry(sig["ticker"], sig["price"], sig["recommended_shares"],
@@ -1014,12 +1070,7 @@ def run(profile_name: str = "default"):
                 "composite_score": s.get("composite_score"),
                 "tv_score": s.get("tv_score"),
                 "llm_review": s.get("llm_review"),
-                "valuation": {
-                    "signal": (s.get("valuation") or {}).get("signal"),
-                    "score": (s.get("valuation") or {}).get("total_score"),
-                    "fair_value": (s.get("valuation") or {}).get("fair_value"),
-                    "upside_pct": (s.get("valuation") or {}).get("upside_pct"),
-                } if s.get("valuation") else None,
+                "valuation": _serialize_valuation(s.get("valuation")) if s.get("valuation") else None,
                 "sma_short": round(s["sma_short"], 1) if not math.isnan(s.get("sma_short", float("nan"))) else None,
                 "sma_long": round(s["sma_long"], 1) if not math.isnan(s.get("sma_long", float("nan"))) else None,
                 "sma_trend": round(s["sma_trend"], 1) if not math.isnan(s.get("sma_trend", float("nan"))) else None,
@@ -1053,6 +1104,18 @@ def run(profile_name: str = "default"):
                 p.get("current_price", p["entry_price"]) * p["shares"]
                 for p in open_positions
             ) + get_cash_balance(balance), 0),
+            "positions": [
+                {
+                    "ticker": p["ticker"],
+                    "name": NIKKEI_225.get(p["ticker"], p["ticker"]),
+                    "entry_price": p["entry_price"],
+                    "current_price": p.get("current_price", p["entry_price"]),
+                    "shares": p["shares"],
+                    "pnl": round((p.get("current_price", p["entry_price"]) - p["entry_price"]) * p["shares"], 1),
+                    "valuation": _serialize_valuation(valuation_results.get(p["ticker"])),
+                }
+                for p in open_positions
+            ],
         },
     }
     save_execution_history(run_record, profile_name)

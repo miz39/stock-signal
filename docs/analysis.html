@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>AI Analysis Dashboard</title>
+<title>AI Valuation Analysis</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
 <style>
 * { margin:0; padding:0; box-sizing:border-box; }
@@ -43,82 +43,195 @@ td.num { text-align:right; font-variant-numeric:tabular-nums; }
 .heatmap-header { display:flex; gap:2px; margin-left:62px; margin-bottom:4px; }
 .heatmap-header span { flex:1; text-align:center; font-size:0.65rem; color:#9E9E9E; }
 
-.memo-panel { background:#1E1E1E; border-radius:10px; padding:16px; margin-bottom:16px; display:none; }
-.memo-panel.active { display:block; }
-.memo-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
-.memo-title { font-size:1.1rem; font-weight:600; }
-.memo-badge { padding:4px 10px; border-radius:4px; font-size:0.75rem; font-weight:600; }
-.memo-badge.buy { background:#00C853; color:#000; }
-.memo-badge.hold { background:#FF9800; color:#000; }
-.memo-badge.pass { background:#FF1744; color:#fff; }
-.memo-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
-.memo-section { background:#252525; border-radius:8px; padding:12px; }
-.memo-section h4 { font-size:0.8rem; color:#64B5F6; margin-bottom:8px; }
-.memo-section p, .memo-section li { font-size:0.78rem; line-height:1.5; color:#BDBDBD; }
-.memo-section ul { padding-left:16px; }
-.scenarios-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-top:8px; }
-.scenario { background:#252525; border-radius:8px; padding:10px; text-align:center; }
-.scenario .s-label { font-size:0.7rem; color:#9E9E9E; }
-.scenario .s-target { font-size:1.1rem; font-weight:700; margin:4px 0; }
-.scenario .s-prob { font-size:0.7rem; }
+.detail-panel { background:#1E1E1E; border-radius:10px; padding:16px; margin-bottom:16px; display:none; }
+.detail-panel.active { display:block; }
+.detail-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
+.detail-title { font-size:1.1rem; font-weight:600; }
+.signal-badge { padding:4px 10px; border-radius:4px; font-size:0.75rem; font-weight:600; }
+.signal-badge.strong_buy { background:#00C853; color:#000; }
+.signal-badge.buy { background:#4CAF50; color:#000; }
+.signal-badge.hold { background:#FF9800; color:#000; }
+.signal-badge.sell { background:#FF5722; color:#fff; }
+.signal-badge.strong_sell { background:#FF1744; color:#fff; }
+.agent-cards { display:grid; grid-template-columns:repeat(auto-fill, minmax(200px, 1fr)); gap:10px; margin-top:12px; }
+.agent-card { background:#252525; border-radius:8px; padding:12px; border-left:3px solid #333; }
+.agent-card .a-name { font-size:0.75rem; color:#9E9E9E; margin-bottom:4px; }
+.agent-card .a-score { font-size:1.2rem; font-weight:700; margin-bottom:4px; }
+.agent-card .a-reason { font-size:0.72rem; color:#BDBDBD; line-height:1.4; }
+.reasons-list { margin-top:12px; }
+.reasons-list li { font-size:0.78rem; color:#BDBDBD; line-height:1.6; margin-bottom:4px; }
 
 @media(max-width:768px) {
   .summary-cards { grid-template-columns:1fr; }
   .charts-grid { grid-template-columns:1fr; }
-  .memo-grid { grid-template-columns:1fr; }
-  .scenarios-grid { grid-template-columns:1fr; }
+  .agent-cards { grid-template-columns:1fr; }
   table { font-size:0.7rem; }
   td, th { padding:6px 3px; }
 }
 </style>
 </head>
 <body>
-<h1>AI Analysis Dashboard</h1>
-<div class="updated">最終更新: 2026-04-05 12:39 JST &nbsp;|&nbsp; <a href="index.html">&larr; Dashboard</a> &nbsp;|&nbsp; <a href="strategy.html">戦略分析 &rarr;</a></div>
+<h1>AI Valuation Analysis</h1>
+<div class="updated">最終更新: 2026-04-07 08:52 JST &nbsp;|&nbsp; スキャン: 2026-04-07 08:52 &nbsp;|&nbsp; <a href="index.html">&larr; Dashboard</a> &nbsp;|&nbsp; <a href="strategy.html">戦略分析 &rarr;</a></div>
 
 <div class="summary-cards">
   <div class="summary-card">
     <div class="label">分析銘柄数</div>
-    <div class="value">1</div>
+    <div class="value">14</div>
   </div>
   <div class="summary-card">
-    <div class="label">LLM承認数</div>
-    <div class="value" style="color:#00C853">1</div>
+    <div class="label">割安判定</div>
+    <div class="value" style="color:#00C853">10</div>
   </div>
   <div class="summary-card">
-    <div class="label">IC Memo数</div>
-    <div class="value" style="color:#64B5F6">1</div>
+    <div class="label">STRONG BUY</div>
+    <div class="value" style="color:#64B5F6">6</div>
   </div>
 </div>
 
 <div class="section">
-  <div class="section-title">分析テーブル <small style="color:#757575">（ヘッダークリックでソート / 行クリックで詳細）</small></div>
+  <div class="section-title">バリュエーション分析テーブル <small style="color:#757575">（ヘッダークリックでソート / 行クリックで詳細）</small></div>
   <div style="overflow-x:auto">
   <table id="analysisTable">
     <thead>
       <tr>
         <th data-col="0">銘柄</th>
-        <th data-col="1">株価</th>
-        <th data-col="2">RSI</th>
-        <th data-col="3">Composite</th>
-        <th data-col="4">Agent Signal</th>
-        <th data-col="5">Score</th>
-        <th data-col="6">Confidence</th>
-        <th data-col="7">LLM</th>
-        <th data-col="8">IC Memo</th>
+        <th data-col="1">種別</th>
+        <th data-col="2">株価</th>
+        <th data-col="3">判定</th>
+        <th data-col="4">Score</th>
+        <th data-col="5">Confidence</th>
+        <th data-col="6">理論株価</th>
+        <th data-col="7">乖離率</th>
       </tr>
     </thead>
     <tbody>
 <tr class="data-row" data-idx="0" onclick="selectRow(0)">
-  <td>トヨタ自動車<br><small style="color:#757575">7203.T</small></td>
-  <td class="num">&yen;2,500</td>
-  <td class="num">55.3</td>
-  <td class="num">0.750</td>
-  <td>BUY</td>
-  <td class="num">0.72</td>
-  <td class="num">75%</td>
-  <td class="green">承認</td>
-  <td class="green">BUY</td>
+  <td>川崎汽船<br><small style="color:#757575">9107.T</small></td>
+  <td><span style="color:#64B5F6;font-size:0.7rem">BUY候補</span></td>
+  <td class="num">&yen;2,734</td>
+  <td class="green">大幅割安</td>
+  <td class="num">+1.31</td>
+  <td class="num">94%</td>
+  <td class="num">&yen;7,229</td>
+  <td class="green">+164.4%</td>
+</tr><tr class="data-row" data-idx="1" onclick="selectRow(1)">
+  <td>INPEX<br><small style="color:#757575">1605.T</small></td>
+  <td><span style="color:#64B5F6;font-size:0.7rem">BUY候補</span></td>
+  <td class="num">&yen;4,512</td>
+  <td class="green">大幅割安</td>
+  <td class="num">+1.28</td>
+  <td class="num">94%</td>
+  <td class="num">&yen;6,830</td>
+  <td class="green">+51.4%</td>
+</tr><tr class="data-row" data-idx="2" onclick="selectRow(2)">
+  <td>三菱商事<br><small style="color:#757575">8058.T</small></td>
+  <td><span style="color:#64B5F6;font-size:0.7rem">BUY候補</span></td>
+  <td class="num">&yen;5,405</td>
+  <td class="">割安</td>
+  <td class="num">+0.50</td>
+  <td class="num">94%</td>
+  <td class="num">&yen;10,544</td>
+  <td class="green">+95.1%</td>
+</tr><tr class="data-row" data-idx="3" onclick="selectRow(3)">
+  <td>デンカ<br><small style="color:#757575">4061.T</small></td>
+  <td><span style="color:#64B5F6;font-size:0.7rem">BUY候補</span></td>
+  <td class="num">&yen;3,786</td>
+  <td class="">割高</td>
+  <td class="num">-0.46</td>
+  <td class="num">82%</td>
+  <td class="num">-</td>
+  <td class="red">-134.7%</td>
+</tr><tr class="data-row" data-idx="4" onclick="selectRow(4)">
+  <td>東京海上ホールディングス<br><small style="color:#757575">8766.T</small></td>
+  <td><span style="color:#64B5F6;font-size:0.7rem">BUY候補</span></td>
+  <td class="num">&yen;7,308</td>
+  <td class="green">大幅割安</td>
+  <td class="num">+1.19</td>
+  <td class="num">94%</td>
+  <td class="num">&yen;14,925</td>
+  <td class="green">+104.2%</td>
+</tr><tr class="data-row" data-idx="5" onclick="selectRow(5)">
+  <td>中部電力<br><small style="color:#757575">9502.T</small></td>
+  <td><span style="color:#FF9800;font-size:0.7rem">保有中</span></td>
+  <td class="num">&yen;2,712</td>
+  <td class="green">大幅割安</td>
+  <td class="num">+1.18</td>
+  <td class="num">94%</td>
+  <td class="num">&yen;10,054</td>
+  <td class="green">+270.7%</td>
+</tr><tr class="data-row" data-idx="6" onclick="selectRow(6)">
+  <td>日本ハム<br><small style="color:#757575">2282.T</small></td>
+  <td><span style="color:#FF9800;font-size:0.7rem">保有中</span></td>
+  <td class="num">&yen;7,323</td>
+  <td class="">割安</td>
+  <td class="num">+0.42</td>
+  <td class="num">89%</td>
+  <td class="num">&yen;7,747</td>
+  <td class="green">+5.8%</td>
+</tr><tr class="data-row" data-idx="7" onclick="selectRow(7)">
+  <td>J.フロント リテイリング<br><small style="color:#757575">3086.T</small></td>
+  <td><span style="color:#FF9800;font-size:0.7rem">保有中</span></td>
+  <td class="num">&yen;2,535</td>
+  <td class="green">割安</td>
+  <td class="num">+0.91</td>
+  <td class="num">93%</td>
+  <td class="num">&yen;9,995</td>
+  <td class="green">+294.3%</td>
+</tr><tr class="data-row" data-idx="8" onclick="selectRow(8)">
+  <td>三越伊勢丹ホールディングス<br><small style="color:#757575">3099.T</small></td>
+  <td><span style="color:#FF9800;font-size:0.7rem">保有中</span></td>
+  <td class="num">&yen;3,120</td>
+  <td class="green">大幅割安</td>
+  <td class="num">+1.07</td>
+  <td class="num">94%</td>
+  <td class="num">&yen;5,796</td>
+  <td class="green">+85.8%</td>
+</tr><tr class="data-row" data-idx="9" onclick="selectRow(9)">
+  <td>キリンホールディングス<br><small style="color:#757575">2503.T</small></td>
+  <td><span style="color:#FF9800;font-size:0.7rem">保有中</span></td>
+  <td class="num">&yen;2,620</td>
+  <td class="">適正</td>
+  <td class="num">-0.10</td>
+  <td class="num">90%</td>
+  <td class="num">&yen;950</td>
+  <td class="red">-63.7%</td>
+</tr><tr class="data-row" data-idx="10" onclick="selectRow(10)">
+  <td>フジクラ<br><small style="color:#757575">5803.T</small></td>
+  <td><span style="color:#FF9800;font-size:0.7rem">保有中</span></td>
+  <td class="num">&yen;4,600</td>
+  <td class="red">割高</td>
+  <td class="num">-0.67</td>
+  <td class="num">90%</td>
+  <td class="num">&yen;1,323</td>
+  <td class="red">-71.2%</td>
+</tr><tr class="data-row" data-idx="11" onclick="selectRow(11)">
+  <td>住友化学<br><small style="color:#757575">4005.T</small></td>
+  <td><span style="color:#FF9800;font-size:0.7rem">保有中</span></td>
+  <td class="num">&yen;533</td>
+  <td class="green">大幅割安</td>
+  <td class="num">+1.11</td>
+  <td class="num">88%</td>
+  <td class="num">&yen;856</td>
+  <td class="green">+60.5%</td>
+</tr><tr class="data-row" data-idx="12" onclick="selectRow(12)">
+  <td>三菱マテリアル<br><small style="color:#757575">5711.T</small></td>
+  <td><span style="color:#FF9800;font-size:0.7rem">保有中</span></td>
+  <td class="num">&yen;5,168</td>
+  <td class="red">割高</td>
+  <td class="num">-0.64</td>
+  <td class="num">71%</td>
+  <td class="num">-</td>
+  <td class="">-</td>
+</tr><tr class="data-row" data-idx="13" onclick="selectRow(13)">
+  <td>コンコルディア・フィナンシャルグループ<br><small style="color:#757575">7186.T</small></td>
+  <td><span style="color:#FF9800;font-size:0.7rem">保有中</span></td>
+  <td class="num">&yen;1,466</td>
+  <td class="green">割安</td>
+  <td class="num">+0.82</td>
+  <td class="num">73%</td>
+  <td class="num">&yen;5,245</td>
+  <td class="green">+257.9%</td>
 </tr>
     </tbody>
   </table>
@@ -127,27 +240,26 @@ td.num { text-align:right; font-variant-numeric:tabular-nums; }
 
 <div class="charts-grid">
   <div class="chart-wrap">
-    <div class="section-title">Agent Scores (Radar)</div>
+    <div class="section-title">Valuation Agent Scores (Radar)</div>
     <canvas id="radarChart"></canvas>
   </div>
   <div class="chart-wrap">
-    <div class="section-title">Score Heatmap</div>
+    <div class="section-title">Agent Score Heatmap</div>
     <div id="heatmapContainer"></div>
   </div>
 </div>
 
-<div class="memo-panel" id="memoPanel">
-  <div class="memo-header">
-    <div class="memo-title" id="memoTitle">-</div>
-    <div class="memo-badge" id="memoBadge">-</div>
+<div class="detail-panel" id="detailPanel">
+  <div class="detail-header">
+    <div class="detail-title" id="detailTitle">-</div>
+    <div class="signal-badge" id="detailBadge">-</div>
   </div>
-  <div id="memoContent"></div>
+  <div id="detailContent"></div>
 </div>
 
 <script>
-const SIGNALS = [{"ticker": "7203.T", "name": "トヨタ自動車", "price": 2500, "rsi": 55.3, "composite": 0.75, "agent_signal": "BUY", "agent_score": 0.72, "agent_confidence": 75, "scores": {"technical": 0.8, "fundamental": 0.6, "sentiment": 0.7, "risk": 0.65}, "llm_approved": true, "llm_reason": "テクニカル面良好"}];
-const MEMOS = [{"ticker": "7203.T", "name": "トヨタ自動車", "executive_summary": {"recommendation": "BUY", "conviction": 8, "target_price": 2750, "upside_pct": 10.0, "key_catalysts": ["EV拡大"]}, "valuation": {"dcf_estimate": {"fair_value": 2700, "method": "PER基準"}, "summary": "セクター平均比割安"}, "fundamental": {"revenue_trend": "増収基調", "profitability": "ROE改善中"}, "technical": {"trend": "上昇トレンド", "momentum": "良好"}, "risk_analysis": {"market_risk": "為替リスク", "stock_risk": "半導体不足", "stop_loss_rationale": "SMA100下抜け"}, "scenarios": {"bull": {"trigger": "EV販売好調", "target": 2900, "probability": "30%"}, "base": {"trigger": "現状維持", "target": 2700, "probability": "50%"}, "bear": {"trigger": "円高進行", "target": 2300, "probability": "20%"}}, "position_sizing": {"recommended_shares": 10, "stop_loss": 2300, "risk_amount": 2000}}];
-const HEATMAP = [{"name": "トヨタ自動車", "technical": 0.8, "fundamental": 0.6, "sentiment": 0.7, "risk": 0.65}];
+const SIGNALS = [{"ticker": "9107.T", "name": "川崎汽船", "price": 2733.5, "category": "BUY候補", "signal": "大幅割安", "score": 1.31, "confidence": 94, "fair_value": 7229.0, "upside_pct": 164.4, "agents": [{"agent": "DCF", "score": 2.0, "confidence": 83, "reasons": ["理論株価 ¥7,229 vs 現在 ¥2,734（+164.4%）", "WACC 8.0%, 永続成長率 1.5%"], "fair_value": 7229.0, "upside_pct": 164.4}, {"agent": "三表財務", "score": 1.8, "confidence": 100, "reasons": ["売上成長率 平均+11.8% → 高成長", "営業利益率 改善傾向"], "fair_value": null, "upside_pct": null}, {"agent": "類似企業比較", "score": 0.5, "confidence": 100, "reasons": ["PER 9.1 → セクター中央値12.6対比 -27.7% やや割安"], "fair_value": null, "upside_pct": null}, {"agent": "オペレーティング", "score": 0.2, "confidence": 100, "reasons": ["ROIC 5.5% → WACC 割れの可能性", "営業レバレッジ 2.4x → 増収時の利益拡大効果大"], "fair_value": null, "upside_pct": null}, {"agent": "感応度", "score": 2.0, "confidence": 100, "reasons": ["Bull ¥13,577 / Base ¥7,229 / Bear ¥4,886", "現在株価 ¥2,734 → 9/9 シナリオで割安"], "fair_value": null, "upside_pct": null}], "reasons": ["【DCF】理論株価 ¥7,229 vs 現在 ¥2,734（+164.4%）", "【三表財務】売上成長率 平均+11.8% → 高成長", "【類似企業比較】PER 9.1 → セクター中央値12.6対比 -27.7% やや割安", "【オペレーティング】ROIC 5.5% → WACC 割れの可能性", "【感応度】Bull ¥13,577 / Base ¥7,229 / Bear ¥4,886"]}, {"ticker": "1605.T", "name": "INPEX", "price": 4512.0, "category": "BUY候補", "signal": "大幅割安", "score": 1.28, "confidence": 94, "fair_value": 6830.0, "upside_pct": 51.4, "agents": [{"agent": "DCF", "score": 2.0, "confidence": 83, "reasons": ["理論株価 ¥6,830 vs 現在 ¥4,512（+51.4%）", "WACC 9.0%, 永続成長率 1.5%"], "fair_value": 6830.0, "upside_pct": 51.4}, {"agent": "三表財務", "score": 1.4, "confidence": 100, "reasons": ["営業利益率 52.9% → 高収益", "自己資本比率 61.4% → 財務健全"], "fair_value": null, "upside_pct": null}, {"agent": "類似企業比較", "score": 0.5, "confidence": 100, "reasons": ["PER 13.6 → セクター中央値17.9対比 -23.7% やや割安"], "fair_value": null, "upside_pct": null}, {"agent": "オペレーティング", "score": 0.5, "confidence": 100, "reasons": ["ROIC 9.1% → 平均的", "マージン安定性 σ=1.2pp → 高い安定性"], "fair_value": null, "upside_pct": null}, {"agent": "感応度", "score": 2.0, "confidence": 100, "reasons": ["Bull ¥11,908 / Base ¥6,830 / Bear ¥4,648", "現在株価 ¥4,512 → 9/9 シナリオで割安"], "fair_value": null, "upside_pct": null}], "reasons": ["【DCF】理論株価 ¥6,830 vs 現在 ¥4,512（+51.4%）", "【三表財務】営業利益率 52.9% → 高収益", "【類似企業比較】PER 13.6 → セクター中央値17.9対比 -23.7% やや割安", "【オペレーティング】ROIC 9.1% → 平均的", "【感応度】Bull ¥11,908 / Base ¥6,830 / Bear ¥4,648"]}, {"ticker": "8058.T", "name": "三菱商事", "price": 5405.0, "category": "BUY候補", "signal": "割安", "score": 0.5, "confidence": 94, "fair_value": 10544.0, "upside_pct": 95.1, "agents": [{"agent": "DCF", "score": 2.0, "confidence": 83, "reasons": ["理論株価 ¥10,544 vs 現在 ¥5,405（+95.1%）", "WACC 8.0%, 永続成長率 1.5%"], "fair_value": 10544.0, "upside_pct": 95.1}, {"agent": "三表財務", "score": 0.3, "confidence": 100, "reasons": ["売上成長率 平均+3.6%", "営業利益率 2.0% → 低収益"], "fair_value": null, "upside_pct": null}, {"agent": "類似企業比較", "score": -1.5, "confidence": 100, "reasons": ["PER 30.8 → セクター中央値15.4対比 +100.2% 割高", "PBR 2.20 → セクター中央値1.37対比 +60.8% 割高"], "fair_value": null, "upside_pct": null}, {"agent": "オペレーティング", "score": 0.1, "confidence": 100, "reasons": ["ROIC 2.2% → WACC 割れの可能性", "マージン安定性 σ=0.9pp → 高い安定性"], "fair_value": null, "upside_pct": null}, {"agent": "感応度", "score": 2.0, "confidence": 100, "reasons": ["Bull ¥20,410 / Base ¥10,544 / Bear ¥6,904", "現在株価 ¥5,405 → 9/9 シナリオで割安"], "fair_value": null, "upside_pct": null}], "reasons": ["【DCF】理論株価 ¥10,544 vs 現在 ¥5,405（+95.1%）", "【三表財務】売上成長率 平均+3.6%", "【類似企業比較】PER 30.8 → セクター中央値15.4対比 +100.2% 割高", "【オペレーティング】ROIC 2.2% → WACC 割れの可能性", "【感応度】Bull ¥20,410 / Base ¥10,544 / Bear ¥6,904"]}, {"ticker": "4061.T", "name": "デンカ", "price": 3786.0, "category": "BUY候補", "signal": "割高", "score": -0.46, "confidence": 82, "fair_value": -1313.0, "upside_pct": -134.7, "agents": [{"agent": "DCF", "score": -2.0, "confidence": 70, "reasons": ["理論株価 ¥-1,313 vs 現在 ¥3,786（-134.7%）", "WACC 9.0%, 永続成長率 1.5%"], "fair_value": -1313.0, "upside_pct": -134.7}, {"agent": "三表財務", "score": -0.1, "confidence": 100, "reasons": ["営業利益率 悪化傾向", "自己資本比率 45.2% → 標準"], "fair_value": null, "upside_pct": null}, {"agent": "類似企業比較", "score": 0.5, "confidence": 100, "reasons": ["PER 20.6 → セクター中央値22.7と同水準", "PBR 1.10 → セクター中央値2.06対比 -46.6% 割安"], "fair_value": null, "upside_pct": null}, {"agent": "オペレーティング", "score": 0.2, "confidence": 100, "reasons": ["ROIC 2.1% → WACC 割れの可能性", "営業レバレッジ 2.7x → 増収時の利益拡大効果大"], "fair_value": null, "upside_pct": null}, {"agent": "感応度", "score": 0, "confidence": 10, "reasons": ["有効なシナリオを生成できませんでした"], "fair_value": null, "upside_pct": null}], "reasons": ["【DCF】理論株価 ¥-1,313 vs 現在 ¥3,786（-134.7%）", "【三表財務】営業利益率 悪化傾向", "【類似企業比較】PER 20.6 → セクター中央値22.7と同水準", "【オペレーティング】ROIC 2.1% → WACC 割れの可能性", "【感応度】有効なシナリオを生成できませんでした"]}, {"ticker": "8766.T", "name": "東京海上ホールディングス", "price": 7308.0, "category": "BUY候補", "signal": "大幅割安", "score": 1.19, "confidence": 94, "fair_value": 14925.0, "upside_pct": 104.2, "agents": [{"agent": "DCF", "score": 2.0, "confidence": 83, "reasons": ["理論株価 ¥14,925 vs 現在 ¥7,308（+104.2%）", "WACC 8.0%, 永続成長率 1.5%"], "fair_value": 14925.0, "upside_pct": 104.2}, {"agent": "三表財務", "score": 1.2, "confidence": 100, "reasons": ["売上成長率 平均+9.7%", "営業利益率 19.5% → 高収益"], "fair_value": null, "upside_pct": null}, {"agent": "類似企業比較", "score": 0.0, "confidence": 100, "reasons": ["PER 13.3 → セクター中央値15.6対比 -14.6% やや割安", "PBR 2.61 → セクター中央値1.37対比 +90.8% 割高"], "fair_value": null, "upside_pct": null}, {"agent": "オペレーティング", "score": 1.0, "confidence": 100, "reasons": ["ROIC 25.4% → 高い資本効率", "営業レバレッジ 10.4x → 増収時の利益拡大効果大"], "fair_value": null, "upside_pct": null}, {"agent": "感応度", "score": 2.0, "confidence": 100, "reasons": ["Bull ¥26,742 / Base ¥14,925 / Bear ¥10,550", "現在株価 ¥7,308 → 9/9 シナリオで割安"], "fair_value": null, "upside_pct": null}], "reasons": ["【DCF】理論株価 ¥14,925 vs 現在 ¥7,308（+104.2%）", "【三表財務】売上成長率 平均+9.7%", "【類似企業比較】PER 13.3 → セクター中央値15.6対比 -14.6% やや割安", "【オペレーティング】ROIC 25.4% → 高い資本効率", "【感応度】Bull ¥26,742 / Base ¥14,925 / Bear ¥10,550"]}, {"ticker": "9502.T", "name": "中部電力", "price": 2712.5, "category": "保有中", "signal": "大幅割安", "score": 1.18, "confidence": 94, "fair_value": 10054.0, "upside_pct": 270.7, "agents": [{"agent": "DCF", "score": 2.0, "confidence": 83, "reasons": ["理論株価 ¥10,054 vs 現在 ¥2,712（+270.7%）", "WACC 8.0%, 永続成長率 1.5%"], "fair_value": 10054.0, "upside_pct": 270.7}, {"agent": "三表財務", "score": 1.0, "confidence": 100, "reasons": ["売上成長率 平均+13.2% → 高成長", "営業利益率 改善傾向"], "fair_value": null, "upside_pct": null}, {"agent": "類似企業比較", "score": 1.0, "confidence": 100, "reasons": ["PER 9.2 → セクター中央値12.6対比 -26.6% やや割安", "PBR 0.68 → セクター中央値1.19対比 -42.9% 割安"], "fair_value": null, "upside_pct": null}, {"agent": "オペレーティング", "score": -0.5, "confidence": 100, "reasons": ["ROIC 3.6% → WACC 割れの可能性", "営業レバレッジ -18.1x → 増収減益"], "fair_value": null, "upside_pct": null}, {"agent": "感応度", "score": 2.0, "confidence": 100, "reasons": ["Bull ¥21,400 / Base ¥10,054 / Bear ¥5,868", "現在株価 ¥2,712 → 9/9 シナリオで割安"], "fair_value": null, "upside_pct": null}], "reasons": ["【DCF】理論株価 ¥10,054 vs 現在 ¥2,712（+270.7%）", "【三表財務】売上成長率 平均+13.2% → 高成長", "【類似企業比較】PER 9.2 → セクター中央値12.6対比 -26.6% やや割安", "【オペレーティング】ROIC 3.6% → WACC 割れの可能性", "【感応度】Bull ¥21,400 / Base ¥10,054 / Bear ¥5,868"]}, {"ticker": "2282.T", "name": "日本ハム", "price": 7323.0, "category": "保有中", "signal": "割安", "score": 0.42, "confidence": 89, "fair_value": 7747.0, "upside_pct": 5.8, "agents": [{"agent": "DCF", "score": 0.5, "confidence": 70, "reasons": ["理論株価 ¥7,747 vs 現在 ¥7,323（+5.8%）", "WACC 8.0%, 永続成長率 1.5%"], "fair_value": 7747.0, "upside_pct": 5.8}, {"agent": "三表財務", "score": 1.0, "confidence": 100, "reasons": ["売上成長率 平均+6.0%", "営業利益率 2.6% → 低収益"], "fair_value": null, "upside_pct": null}, {"agent": "類似企業比較", "score": 0.0, "confidence": 100, "reasons": ["PER 22.6 → セクター中央値22.7と同水準"], "fair_value": null, "upside_pct": null}, {"agent": "オペレーティング", "score": 0.5, "confidence": 100, "reasons": ["ROIC 4.0% → WACC 割れの可能性", "営業レバレッジ 2.7x → 増収時の利益拡大効果大"], "fair_value": null, "upside_pct": null}, {"agent": "感応度", "score": 0.0, "confidence": 87, "reasons": ["Bull ¥15,412 / Base ¥7,747 / Bear ¥4,910", "現在株価 ¥7,323 → 5/9 シナリオで割安"], "fair_value": null, "upside_pct": null}], "reasons": ["【DCF】理論株価 ¥7,747 vs 現在 ¥7,323（+5.8%）", "【三表財務】売上成長率 平均+6.0%", "【類似企業比較】PER 22.6 → セクター中央値22.7と同水準", "【オペレーティング】ROIC 4.0% → WACC 割れの可能性", "【感応度】Bull ¥15,412 / Base ¥7,747 / Bear ¥4,910"]}, {"ticker": "3086.T", "name": "J.フロント リテイリング", "price": 2535.0, "category": "保有中", "signal": "割安", "score": 0.91, "confidence": 93, "fair_value": 9995.0, "upside_pct": 294.3, "agents": [{"agent": "DCF", "score": 2.0, "confidence": 80, "reasons": ["理論株価 ¥9,995 vs 現在 ¥2,535（+294.3%）", "WACC 8.0%, 永続成長率 1.5%"], "fair_value": 9995.0, "upside_pct": 294.3}, {"agent": "三表財務", "score": 1.0, "confidence": 100, "reasons": ["売上成長率 平均+10.1% → 高成長", "営業利益率 改善傾向"], "fair_value": null, "upside_pct": null}, {"agent": "類似企業比較", "score": -0.5, "confidence": 100, "reasons": ["PER 20.9 → セクター中央値22.8と同水準", "PBR 1.56 → セクター中央値1.10対比 +41.8% 割高"], "fair_value": null, "upside_pct": null}, {"agent": "オペレーティング", "score": 0.2, "confidence": 100, "reasons": ["ROIC 6.0% → WACC 割れの可能性", "営業レバレッジ 4.1x → 増収時の利益拡大効果大"], "fair_value": null, "upside_pct": null}, {"agent": "感応度", "score": 2.0, "confidence": 95, "reasons": ["Bull ¥19,570 / Base ¥9,995 / Bear ¥6,462", "現在株価 ¥2,535 → 9/9 シナリオで割安"], "fair_value": null, "upside_pct": null}], "reasons": ["【DCF】理論株価 ¥9,995 vs 現在 ¥2,535（+294.3%）", "【三表財務】売上成長率 平均+10.1% → 高成長", "【類似企業比較】PER 20.9 → セクター中央値22.8と同水準", "【オペレーティング】ROIC 6.0% → WACC 割れの可能性", "【感応度】Bull ¥19,570 / Base ¥9,995 / Bear ¥6,462"]}, {"ticker": "3099.T", "name": "三越伊勢丹ホールディングス", "price": 3120.0, "category": "保有中", "signal": "大幅割安", "score": 1.07, "confidence": 94, "fair_value": 5796.0, "upside_pct": 85.8, "agents": [{"agent": "DCF", "score": 2.0, "confidence": 83, "reasons": ["理論株価 ¥5,796 vs 現在 ¥3,120（+85.8%）", "WACC 8.0%, 永続成長率 1.5%"], "fair_value": 5796.0, "upside_pct": 85.8}, {"agent": "三表財務", "score": 1.2, "confidence": 100, "reasons": ["売上成長率 平均+10.0% → 高成長", "営業利益率 改善傾向"], "fair_value": null, "upside_pct": null}, {"agent": "類似企業比較", "score": 0.0, "confidence": 100, "reasons": ["PER 20.0 → セクター中央値22.8対比 -12.2% やや割安", "PBR 1.86 → セクター中央値1.10対比 +69.2% 割高"], "fair_value": null, "upside_pct": null}, {"agent": "オペレーティング", "score": 0.2, "confidence": 100, "reasons": ["ROIC 7.7% → WACC 割れの可能性", "営業レバレッジ 11.3x → 増収時の利益拡大効果大"], "fair_value": null, "upside_pct": null}, {"agent": "感応度", "score": 2.0, "confidence": 100, "reasons": ["Bull ¥10,850 / Base ¥5,796 / Bear ¥3,931", "現在株価 ¥3,120 → 9/9 シナリオで割安"], "fair_value": null, "upside_pct": null}], "reasons": ["【DCF】理論株価 ¥5,796 vs 現在 ¥3,120（+85.8%）", "【三表財務】売上成長率 平均+10.0% → 高成長", "【類似企業比較】PER 20.0 → セクター中央値22.8対比 -12.2% やや割安", "【オペレーティング】ROIC 7.7% → WACC 割れの可能性", "【感応度】Bull ¥10,850 / Base ¥5,796 / Bear ¥3,931"]}, {"ticker": "2503.T", "name": "キリンホールディングス", "price": 2620.0, "category": "保有中", "signal": "適正", "score": -0.1, "confidence": 90, "fair_value": 950.0, "upside_pct": -63.7, "agents": [{"agent": "DCF", "score": -2.0, "confidence": 83, "reasons": ["理論株価 ¥950 vs 現在 ¥2,620（-63.7%）", "WACC 8.0%, 永続成長率 1.5%"], "fair_value": 950.0, "upside_pct": -63.7}, {"agent": "三表財務", "score": 1.0, "confidence": 100, "reasons": ["売上成長率 平均+7.0%", "営業利益率 改善傾向"], "fair_value": null, "upside_pct": null}, {"agent": "類似企業比較", "score": 1.5, "confidence": 100, "reasons": ["PER 14.4 → セクター中央値23.1対比 -37.8% 割安"], "fair_value": null, "upside_pct": null}, {"agent": "オペレーティング", "score": 0.5, "confidence": 100, "reasons": ["ROIC 7.5% → WACC 割れの可能性", "営業レバレッジ 16.6x → 増収時の利益拡大効果大"], "fair_value": null, "upside_pct": null}, {"agent": "感応度", "score": -1.5, "confidence": 60, "reasons": ["Bull ¥2,561 / Base ¥950 / Bear ¥355", "現在株価 ¥2,620 → 0/9 シナリオで割安"], "fair_value": null, "upside_pct": null}], "reasons": ["【DCF】理論株価 ¥950 vs 現在 ¥2,620（-63.7%）", "【三表財務】売上成長率 平均+7.0%", "【類似企業比較】PER 14.4 → セクター中央値23.1対比 -37.8% 割安", "【オペレーティング】ROIC 7.5% → WACC 割れの可能性", "【感応度】Bull ¥2,561 / Base ¥950 / Bear ¥355"]}, {"ticker": "5803.T", "name": "フジクラ", "price": 4600.0, "category": "保有中", "signal": "割高", "score": -0.67, "confidence": 90, "fair_value": 1323.0, "upside_pct": -71.2, "agents": [{"agent": "DCF", "score": -2.0, "confidence": 83, "reasons": ["理論株価 ¥1,323 vs 現在 ¥4,600（-71.2%）", "WACC 10.0%, 永続成長率 1.5%"], "fair_value": 1323.0, "upside_pct": -71.2}, {"agent": "三表財務", "score": 1.5, "confidence": 100, "reasons": ["売上成長率 平均+14.0% → 高成長", "営業利益率 改善傾向"], "fair_value": null, "upside_pct": null}, {"agent": "類似企業比較", "score": -1.5, "confidence": 100, "reasons": ["PER 58.9 → セクター中央値26.8対比 +119.3% 割高", "PBR 15.02 → セクター中央値1.15対比 +1202.9% 割高"], "fair_value": null, "upside_pct": null}, {"agent": "オペレーティング", "score": 1.0, "confidence": 100, "reasons": ["ROIC 27.3% → 高い資本効率", "営業レバレッジ 4.2x → 増収時の利益拡大効果大"], "fair_value": null, "upside_pct": null}, {"agent": "感応度", "score": -1.5, "confidence": 60, "reasons": ["Bull ¥2,032 / Base ¥1,323 / Bear ¥984", "現在株価 ¥4,600 → 0/9 シナリオで割安"], "fair_value": null, "upside_pct": null}], "reasons": ["【DCF】理論株価 ¥1,323 vs 現在 ¥4,600（-71.2%）", "【三表財務】売上成長率 平均+14.0% → 高成長", "【類似企業比較】PER 58.9 → セクター中央値26.8対比 +119.3% 割高", "【オペレーティング】ROIC 27.3% → 高い資本効率", "【感応度】Bull ¥2,032 / Base ¥1,323 / Bear ¥984"]}, {"ticker": "4005.T", "name": "住友化学", "price": 533.2000122070312, "category": "保有中", "signal": "大幅割安", "score": 1.11, "confidence": 88, "fair_value": 856.0, "upside_pct": 60.5, "agents": [{"agent": "DCF", "score": 2.0, "confidence": 66, "reasons": ["理論株価 ¥856 vs 現在 ¥533（+60.5%）", "WACC 9.0%, 永続成長率 1.5%"], "fair_value": 856.0, "upside_pct": 60.5}, {"agent": "三表財務", "score": -0.6, "confidence": 100, "reasons": ["自己資本比率 26.2% → やや低い", "営業CF 2/3年プラス"], "fair_value": null, "upside_pct": null}, {"agent": "類似企業比較", "score": 2.0, "confidence": 100, "reasons": ["PER 10.3 → セクター中央値22.7対比 -54.7% 割安", "PBR 0.85 → セクター中央値2.06対比 -58.9% 割安"], "fair_value": null, "upside_pct": null}, {"agent": "オペレーティング", "score": -0.1, "confidence": 100, "reasons": ["ROIC 6.4% → WACC 割れの可能性", "営業レバレッジ 21.5x → 増収時の利益拡大効果大"], "fair_value": null, "upside_pct": null}, {"agent": "感応度", "score": 1.5, "confidence": 89, "reasons": ["Bull ¥1,785 / Base ¥856 / Bear ¥455", "現在株価 ¥533 → 8/9 シナリオで割安"], "fair_value": null, "upside_pct": null}], "reasons": ["【DCF】理論株価 ¥856 vs 現在 ¥533（+60.5%）", "【三表財務】自己資本比率 26.2% → やや低い", "【類似企業比較】PER 10.3 → セクター中央値22.7対比 -54.7% 割安", "【オペレーティング】ROIC 6.4% → WACC 割れの可能性", "【感応度】Bull ¥1,785 / Base ¥856 / Bear ¥455"]}, {"ticker": "5711.T", "name": "三菱マテリアル", "price": 5168.0, "category": "保有中", "signal": "割高", "score": -0.64, "confidence": 71, "fair_value": null, "upside_pct": null, "agents": [{"agent": "DCF", "score": -1.0, "confidence": 30, "reasons": ["FCF がマイナス → DCF 算出不可"], "fair_value": null, "upside_pct": null}, {"agent": "三表財務", "score": -0.3, "confidence": 100, "reasons": ["売上成長率 平均+4.0%", "営業利益率 1.9% → 低収益"], "fair_value": null, "upside_pct": null}, {"agent": "類似企業比較", "score": -1.0, "confidence": 100, "reasons": ["PER 45.4 → セクター中央値26.8対比 +69.0% 割高"], "fair_value": null, "upside_pct": null}, {"agent": "オペレーティング", "score": 0.5, "confidence": 100, "reasons": ["ROIC 2.5% → WACC 割れの可能性", "営業レバレッジ 2.2x → 増収時の利益拡大効果大"], "fair_value": null, "upside_pct": null}, {"agent": "感応度", "score": -1.0, "confidence": 20, "reasons": ["FCF がマイナスのため感応度分析不可"], "fair_value": null, "upside_pct": null}], "reasons": ["【DCF】FCF がマイナス → DCF 算出不可", "【三表財務】売上成長率 平均+4.0%", "【類似企業比較】PER 45.4 → セクター中央値26.8対比 +69.0% 割高", "【オペレーティング】ROIC 2.5% → WACC 割れの可能性", "【感応度】FCF がマイナスのため感応度分析不可"]}, {"ticker": "7186.T", "name": "コンコルディア・フィナンシャルグループ", "price": 1465.5, "category": "保有中", "signal": "割安", "score": 0.82, "confidence": 73, "fair_value": 5245.0, "upside_pct": 257.9, "agents": [{"agent": "DCF", "score": 2.0, "confidence": 70, "reasons": ["理論株価 ¥5,245 vs 現在 ¥1,466（+257.9%）", "WACC 9.0%, 永続成長率 1.5%"], "fair_value": 5245.0, "upside_pct": 257.9}, {"agent": "三表財務", "score": 0.1, "confidence": 87, "reasons": ["売上成長率 平均+5.9%", "自己資本比率 5.2% → やや低い"], "fair_value": null, "upside_pct": null}, {"agent": "類似企業比較", "score": 0.0, "confidence": 100, "reasons": ["PER 17.9 → セクター中央値18.1と同水準"], "fair_value": null, "upside_pct": null}, {"agent": "オペレーティング", "score": 0.0, "confidence": 0, "reasons": ["分析に必要なデータが不足しています"], "fair_value": null, "upside_pct": null}, {"agent": "感応度", "score": 2.0, "confidence": 100, "reasons": ["Bull ¥7,163 / Base ¥5,245 / Bear ¥4,414", "現在株価 ¥1,466 → 9/9 シナリオで割安"], "fair_value": null, "upside_pct": null}], "reasons": ["【DCF】理論株価 ¥5,245 vs 現在 ¥1,466（+257.9%）", "【三表財務】売上成長率 平均+5.9%", "【類似企業比較】PER 17.9 → セクター中央値18.1と同水準", "【オペレーティング】分析に必要なデータが不足しています", "【感応度】Bull ¥7,163 / Base ¥5,245 / Bear ¥4,414"]}];
+const HEATMAP = [{"name": "川崎汽船", "dcf": 2.0, "comps": 0.5, "three_stmt": 1.8, "operating": 0.2, "sensitivity": 2.0}, {"name": "INPEX", "dcf": 2.0, "comps": 0.5, "three_stmt": 1.4, "operating": 0.5, "sensitivity": 2.0}, {"name": "三菱商事", "dcf": 2.0, "comps": -1.5, "three_stmt": 0.3, "operating": 0.1, "sensitivity": 2.0}, {"name": "デンカ", "dcf": -2.0, "comps": 0.5, "three_stmt": -0.1, "operating": 0.2, "sensitivity": 0}, {"name": "東京海上ホー", "dcf": 2.0, "comps": 0.0, "three_stmt": 1.2, "operating": 1.0, "sensitivity": 2.0}, {"name": "中部電力", "dcf": 2.0, "comps": 1.0, "three_stmt": 1.0, "operating": -0.5, "sensitivity": 2.0}, {"name": "日本ハム", "dcf": 0.5, "comps": 0.0, "three_stmt": 1.0, "operating": 0.5, "sensitivity": 0.0}, {"name": "J.フロント", "dcf": 2.0, "comps": -0.5, "three_stmt": 1.0, "operating": 0.2, "sensitivity": 2.0}, {"name": "三越伊勢丹ホ", "dcf": 2.0, "comps": 0.0, "three_stmt": 1.2, "operating": 0.2, "sensitivity": 2.0}, {"name": "キリンホール", "dcf": -2.0, "comps": 1.5, "three_stmt": 1.0, "operating": 0.5, "sensitivity": -1.5}, {"name": "フジクラ", "dcf": -2.0, "comps": -1.5, "three_stmt": 1.5, "operating": 1.0, "sensitivity": -1.5}, {"name": "住友化学", "dcf": 2.0, "comps": 2.0, "three_stmt": -0.6, "operating": -0.1, "sensitivity": 1.5}, {"name": "三菱マテリア", "dcf": -1.0, "comps": -1.0, "three_stmt": -0.3, "operating": 0.5, "sensitivity": -1.0}, {"name": "コンコルディ", "dcf": 2.0, "comps": 0.0, "three_stmt": 0.1, "operating": 0.0, "sensitivity": 2.0}];
 
 // --- Table sort ---
 let sortCol = -1, sortAsc = true;
@@ -174,15 +286,15 @@ document.querySelectorAll('#analysisTable th').forEach(th => {
 let radarChart = null;
 function updateRadar(idx) {
   const s = SIGNALS[idx];
-  if (!s) return;
-  const scores = s.scores;
-  const data = [scores.technical, scores.fundamental, scores.sentiment, scores.risk];
+  if (!s || !s.agents) return;
+  const labels = s.agents.map(a => a.agent);
+  const data = s.agents.map(a => a.score);
 
   if (radarChart) radarChart.destroy();
   radarChart = new Chart(document.getElementById('radarChart'), {
     type: 'radar',
     data: {
-      labels: ['Technical', 'Fundamental', 'Sentiment', 'Risk'],
+      labels: labels,
       datasets: [{
         label: s.name,
         data: data,
@@ -195,10 +307,10 @@ function updateRadar(idx) {
     options: {
       scales: {
         r: {
-          min: 0, max: 1,
-          ticks: { stepSize: 0.2, color: '#757575', backdropColor: 'transparent' },
+          min: -2, max: 2,
+          ticks: { stepSize: 1, color: '#757575', backdropColor: 'transparent' },
           grid: { color: '#333' },
-          pointLabels: { color: '#E0E0E0', font: { size: 11 } },
+          pointLabels: { color: '#E0E0E0', font: { size: 10 } },
           angleLines: { color: '#333' },
         }
       },
@@ -212,8 +324,8 @@ function buildHeatmap() {
   const container = document.getElementById('heatmapContainer');
   if (!HEATMAP.length) { container.innerHTML = '<p style="color:#757575">データなし</p>'; return; }
 
-  const dims = ['technical', 'fundamental', 'sentiment', 'risk'];
-  const dimLabels = ['Tech', 'Fund', 'Sent', 'Risk'];
+  const dims = ['dcf', 'comps', 'three_stmt', 'operating', 'sensitivity'];
+  const dimLabels = ['DCF', 'Comps', '三表', 'OP', '感応度'];
 
   let html = '<div class="heatmap-header">';
   dimLabels.forEach(l => html += `<span>${l}</span>`);
@@ -224,7 +336,7 @@ function buildHeatmap() {
     dims.forEach(d => {
       const v = item[d] || 0;
       const color = scoreColor(v);
-      html += `<div class="heatmap-cell" style="background:${color}">${v.toFixed(2)}</div>`;
+      html += `<div class="heatmap-cell" style="background:${color}">${v.toFixed(1)}</div>`;
     });
     html += '</div>';
   });
@@ -233,12 +345,12 @@ function buildHeatmap() {
 }
 
 function scoreColor(v) {
-  if (v >= 0.7) return 'rgba(0,200,83,' + (0.3 + v * 0.5) + ')';
-  if (v >= 0.4) return 'rgba(117,117,117,' + (0.3 + v * 0.4) + ')';
-  return 'rgba(255,23,68,' + (0.3 + (1 - v) * 0.4) + ')';
+  if (v >= 1.0) return 'rgba(0,200,83,' + Math.min(0.9, 0.3 + v * 0.25) + ')';
+  if (v >= 0) return 'rgba(117,117,117,' + (0.2 + v * 0.3) + ')';
+  return 'rgba(255,23,68,' + Math.min(0.9, 0.2 + Math.abs(v) * 0.3) + ')';
 }
 
-// --- Row select & Memo ---
+// --- Row select & Detail ---
 let selectedIdx = -1;
 function selectRow(idx) {
   document.querySelectorAll('.data-row').forEach(r => r.classList.remove('selected'));
@@ -246,59 +358,55 @@ function selectRow(idx) {
   if (row) row.classList.add('selected');
   selectedIdx = idx;
   updateRadar(idx);
-  showMemo(idx);
+  showDetail(idx);
 }
 
-function showMemo(idx) {
-  const panel = document.getElementById('memoPanel');
+function showDetail(idx) {
+  const panel = document.getElementById('detailPanel');
   const sig = SIGNALS[idx];
   if (!sig) return;
 
-  const memo = MEMOS.find(m => m.ticker === sig.ticker);
-  if (!memo) {
-    panel.classList.remove('active');
-    return;
+  panel.classList.add('active');
+  document.getElementById('detailTitle').textContent = `${sig.name} (${sig.ticker})`;
+  const badge = document.getElementById('detailBadge');
+  badge.textContent = sig.signal;
+  const sigLower = (sig.signal_raw || sig.signal || '').toLowerCase().replace(/ /g, '_');
+  badge.className = 'signal-badge ' + (['strong_buy','buy','hold','sell','strong_sell'].includes(sigLower) ? sigLower : '');
+
+  const fv = sig.fair_value;
+  const up = sig.upside_pct;
+  let summaryHtml = `<p style="margin-bottom:8px">`;
+  summaryHtml += `Score: <strong>${(sig.score >= 0 ? '+' : '') + sig.score.toFixed(2)}</strong>`;
+  summaryHtml += ` &nbsp; Confidence: <strong>${sig.confidence}%</strong>`;
+  if (fv && fv > 0) summaryHtml += ` &nbsp; 理論株価: <strong>&yen;${fv.toLocaleString()}</strong>`;
+  if (up != null) summaryHtml += ` &nbsp; 乖離率: <strong style="color:${up >= 0 ? '#00C853' : '#FF1744'}">${up >= 0 ? '+' : ''}${up.toFixed(1)}%</strong>`;
+  summaryHtml += `</p>`;
+
+  // Agent cards
+  let cardsHtml = '<div class="agent-cards">';
+  (sig.agents || []).forEach(a => {
+    const sc = a.score || 0;
+    const borderColor = sc >= 1.0 ? '#00C853' : (sc >= 0 ? '#FF9800' : '#FF1744');
+    const reasons = (a.reasons || []).slice(0, 2).map(r => `<div class="a-reason">${r}</div>`).join('');
+    const fvAgent = a.fair_value;
+    const fvLine = fvAgent && fvAgent > 0 ? `<div class="a-reason" style="color:#64B5F6;margin-top:4px">理論株価: &yen;${fvAgent.toLocaleString()}</div>` : '';
+    cardsHtml += `<div class="agent-card" style="border-left-color:${borderColor}">
+      <div class="a-name">${a.agent}</div>
+      <div class="a-score" style="color:${borderColor}">${sc >= 0 ? '+' : ''}${sc.toFixed(2)}</div>
+      ${reasons}${fvLine}
+    </div>`;
+  });
+  cardsHtml += '</div>';
+
+  // Reasons summary
+  let reasonsHtml = '';
+  if (sig.reasons && sig.reasons.length) {
+    reasonsHtml = '<ul class="reasons-list">';
+    sig.reasons.forEach(r => reasonsHtml += `<li>${r}</li>`);
+    reasonsHtml += '</ul>';
   }
 
-  panel.classList.add('active');
-  const es = memo.executive_summary || {};
-  const rec = es.recommendation || '-';
-
-  document.getElementById('memoTitle').textContent = `${memo.name} (${memo.ticker}) — IC Memo`;
-  const badge = document.getElementById('memoBadge');
-  badge.textContent = rec;
-  badge.className = 'memo-badge ' + (rec === 'BUY' ? 'buy' : rec === 'PASS' ? 'pass' : 'hold');
-
-  const val = memo.valuation || {};
-  const fund = memo.fundamental || {};
-  const tech = memo.technical || {};
-  const risk = memo.risk_analysis || {};
-  const scen = memo.scenarios || {};
-  const pos = memo.position_sizing || {};
-
-  let catalysts = (es.key_catalysts || []).map(c => `<li>${c}</li>`).join('');
-
-  let html = `
-  <div class="memo-section" style="margin-bottom:12px">
-    <h4>Executive Summary</h4>
-    <p>Conviction: <strong>${es.conviction || '-'}/10</strong> &nbsp; Target: <strong>&yen;${(es.target_price || 0).toLocaleString()}</strong> &nbsp; Upside: <strong>${es.upside_pct || 0}%</strong></p>
-    ${catalysts ? '<ul>' + catalysts + '</ul>' : ''}
-  </div>
-  <div class="memo-grid">
-    <div class="memo-section"><h4>Valuation</h4><p>${val.summary || '-'}</p><p style="margin-top:6px;color:#757575;font-size:0.7rem">DCF: &yen;${(val.dcf_estimate?.fair_value || 0).toLocaleString()} (${val.dcf_estimate?.method || '-'})</p></div>
-    <div class="memo-section"><h4>Fundamental</h4><p>${fund.revenue_trend || '-'}</p><p>${fund.profitability || '-'}</p></div>
-    <div class="memo-section"><h4>Technical</h4><p>${tech.trend || '-'}</p><p>${tech.momentum || '-'}</p></div>
-    <div class="memo-section"><h4>Risk</h4><p>${risk.market_risk || '-'}</p><p>${risk.stock_risk || '-'}</p><p style="margin-top:4px;font-size:0.7rem;color:#FF9800">SL根拠: ${risk.stop_loss_rationale || '-'}</p></div>
-  </div>
-  <div class="section-title" style="margin-top:16px">Scenarios</div>
-  <div class="scenarios-grid">
-    <div class="scenario" style="border-top:3px solid #00C853"><div class="s-label">Bull</div><div class="s-target" style="color:#00C853">&yen;${(scen.bull?.target || 0).toLocaleString()}</div><div class="s-prob">${scen.bull?.probability || '-'}</div><p style="font-size:0.7rem;color:#9E9E9E;margin-top:4px">${scen.bull?.trigger || ''}</p></div>
-    <div class="scenario" style="border-top:3px solid #FF9800"><div class="s-label">Base</div><div class="s-target" style="color:#FF9800">&yen;${(scen.base?.target || 0).toLocaleString()}</div><div class="s-prob">${scen.base?.probability || '-'}</div><p style="font-size:0.7rem;color:#9E9E9E;margin-top:4px">${scen.base?.trigger || ''}</p></div>
-    <div class="scenario" style="border-top:3px solid #FF1744"><div class="s-label">Bear</div><div class="s-target" style="color:#FF1744">&yen;${(scen.bear?.target || 0).toLocaleString()}</div><div class="s-prob">${scen.bear?.probability || '-'}</div><p style="font-size:0.7rem;color:#9E9E9E;margin-top:4px">${scen.bear?.trigger || ''}</p></div>
-  </div>
-  <div class="memo-section" style="margin-top:12px"><h4>Position Sizing</h4><p>推奨株数: ${pos.recommended_shares || '-'} &nbsp; SL: &yen;${(pos.stop_loss || 0).toLocaleString()} &nbsp; リスク額: &yen;${(pos.risk_amount || 0).toLocaleString()}</p></div>`;
-
-  document.getElementById('memoContent').innerHTML = html;
+  document.getElementById('detailContent').innerHTML = summaryHtml + cardsHtml + reasonsHtml;
 }
 
 // Init

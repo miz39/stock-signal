@@ -74,6 +74,9 @@ valuation:
     不動産・倉庫: 0.08
   terminal_growth: 0.015
   projection_years: 5
+  entry_threshold: -0.5        # score below this → skip entry
+  exit_tighten_threshold: -1.0  # STRONG_SELL → tighten stop to -3%
+  exit_lower_threshold: -0.5    # SELL → lower profit-take targets
   weights:
     dcf: 0.30
     comps: 0.25

@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "stock-signal": {
+      "command": "/Users/mizukitakayama/GenerativeAI/stock-signal/.venv/bin/python3",
+      "args": ["-m", "mcp_server.server"],
+      "cwd": "/Users/mizukitakayama/GenerativeAI/stock-signal"
+    }
+  }
+}

@@ -55,7 +55,7 @@ td.num { text-align:right; font-variant-numeric:tabular-nums; }
 <body>
 <a class="back" href="index.html">&larr; Dashboard</a>
 <h1>戦略分析ダッシュボード</h1>
-<div class="updated">最終更新: 2026-04-07 10:05 JST</div>
+<div class="updated">最終更新: 2026-04-07 08:52 JST</div>
 
 <!-- Section 1: Profile Comparison -->
 <div class="section">
@@ -330,7 +330,7 @@ if (evData.length > 0) {
 }
 
 // N-day accuracy chart
-const nday = {"checkpoints": [5, 10, 15, 20, 30], "win_rates": [53.6, 60.7, 53.6, 60.7, 60.7], "avg_returns": [0.92, 1.97, 2.09, 2.25, 3.71], "sample_counts": [28, 28, 28, 28, 28]};
+const nday = {"checkpoints": [5, 10, 15, 20, 30], "win_rates": [53.6, 60.7, 53.6, 60.7, 60.7], "avg_returns": [0.92, 2.04, 2.02, 2.19, 3.47], "sample_counts": [28, 28, 28, 28, 28]};
 if (nday.win_rates && nday.win_rates.length > 0) {
   new Chart(document.getElementById('ndayChart'), {
     type: 'bar',

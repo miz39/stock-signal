@@ -103,6 +103,18 @@ def update_trailing_stop(ticker: str, current_price: float, trail_pct: float = 0
     return None
 
 
+def set_stop_price(ticker: str, new_stop: float) -> Optional[dict]:
+    """ストップ価格を指定値に設定する（現在値より高い場合のみ引き上げ）。"""
+    trades = _load_trades()
+    for trade in trades:
+        if trade["ticker"] == ticker and trade["status"] == "open":
+            if new_stop > trade.get("stop_price", 0):
+                trade["stop_price"] = round(new_stop, 1)
+                _save_trades(trades)
+            return trade
+    return None
+
+
 def move_stop_to_breakeven(ticker: str) -> Optional[dict]:
     """ストップを建値（取得価格）に移動する。"""
     trades = _load_trades()
