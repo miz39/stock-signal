@@ -3628,5 +3628,174 @@
       "cash": 33341.0,
       "total_assets": 312410.0
     }
+  },
+  {
+    "timestamp": "2026-04-06T17:20:09.965946+09:00",
+    "date": "2026-04-06",
+    "session": "15:10 引け後",
+    "profile": "default",
+    "mode": "paper",
+    "market_regime": {
+      "regime": "neutral",
+      "sma50": 54729.4,
+      "sma200": 48008.5,
+      "price": 53413.7
+    },
+    "scan": {
+      "total": 225,
+      "buy_count": 5,
+      "sell_count": 0,
+      "error_count": 0
+    },
+    "buy_signals": [
+      {
+        "ticker": "9107.T",
+        "name": "川崎汽船",
+        "price": 2733.5,
+        "rsi": 60.4,
+        "reason": "ゴールデンクロス（SMA25 > SMA100）+ RSI適正（60.4）+ 上昇トレンド",
+        "stop_loss": 2514.8,
+        "shares": 11,
+        "composite_score": 0.6396,
+        "tv_score": 0.6154,
+        "llm_review": null,
+        "valuation": {
+          "signal": "STRONG_BUY",
+          "score": 1.31,
+          "fair_value": 7229.0,
+          "upside_pct": 164.4
+        },
+        "sma_short": 2625.6,
+        "sma_long": 2270.6,
+        "sma_trend": 2166.1
+      },
+      {
+        "ticker": "1605.T",
+        "name": "INPEX",
+        "price": 4512.0,
+        "rsi": 54.6,
+        "reason": "ゴールデンクロス（SMA25 > SMA100）+ RSI適正（54.6）+ 上昇トレンド",
+        "stop_loss": 4151.0,
+        "shares": 6,
+        "composite_score": 0.6234,
+        "tv_score": 0.4615,
+        "llm_review": null,
+        "valuation": {
+          "signal": "STRONG_BUY",
+          "score": 1.28,
+          "fair_value": 6830.0,
+          "upside_pct": 51.4
+        },
+        "sma_short": 4421.1,
+        "sma_long": 3548.6,
+        "sma_trend": 2951.2
+      },
+      {
+        "ticker": "8058.T",
+        "name": "三菱商事",
+        "price": 5405.0,
+        "rsi": 54.2,
+        "reason": "ゴールデンクロス（SMA25 > SMA100）+ RSI適正（54.2）+ 上昇トレンド",
+        "stop_loss": 4972.6,
+        "shares": 5,
+        "composite_score": 0.6003,
+        "tv_score": 0.5385,
+        "llm_review": null,
+        "valuation": {
+          "signal": "BUY",
+          "score": 0.5,
+          "fair_value": 10544.0,
+          "upside_pct": 95.1
+        },
+        "sma_short": 5298.8,
+        "sma_long": 4319.5,
+        "sma_trend": 3746.3
+      },
+      {
+        "ticker": "4061.T",
+        "name": "デンカ",
+        "price": 3786.0,
+        "rsi": 64.8,
+        "reason": "ゴールデンクロス（SMA25 > SMA100）+ RSI適正（64.8）+ 上昇トレンド",
+        "stop_loss": 3483.1,
+        "shares": 7,
+        "composite_score": 0.585,
+        "tv_score": 0.5769,
+        "llm_review": null,
+        "valuation": {
+          "signal": "SELL",
+          "score": -0.46,
+          "fair_value": -1313.0,
+          "upside_pct": -134.7
+        },
+        "sma_short": 3423.2,
+        "sma_long": 2951.7,
+        "sma_trend": 2532.0
+      },
+      {
+        "ticker": "8766.T",
+        "name": "東京海上ホールディングス",
+        "price": 7308.0,
+        "rsi": 64.0,
+        "reason": "ゴールデンクロス（SMA25 > SMA100）+ RSI適正（64.0）+ 上昇トレンド",
+        "stop_loss": 6723.4,
+        "shares": 4,
+        "composite_score": 0.5739,
+        "tv_score": 0.5769,
+        "llm_review": null,
+        "valuation": {
+          "signal": "STRONG_BUY",
+          "score": 1.19,
+          "fair_value": 14925.0,
+          "upside_pct": 104.2
+        },
+        "sma_short": 6503.0,
+        "sma_long": 5974.1,
+        "sma_trend": 5976.8
+      }
+    ],
+    "sell_signals": [],
+    "executions": {
+      "entries": [],
+      "exits": [],
+      "partial_exits": [],
+      "topups": [],
+      "trailing_stop_updates": [
+        {
+          "ticker": "9107.T",
+          "name": "川崎汽船",
+          "new_stop": 2572.0,
+          "current_price": 2733.5,
+          "gain_pct": 6.3
+        },
+        {
+          "ticker": "2282.T",
+          "name": "日本ハム",
+          "new_stop": 6851.0,
+          "current_price": 7323.0,
+          "gain_pct": 6.9
+        },
+        {
+          "ticker": "3099.T",
+          "name": "三越伊勢丹ホールディングス",
+          "new_stop": 2931.3,
+          "current_price": 3120.0,
+          "gain_pct": 6.4
+        },
+        {
+          "ticker": "5803.T",
+          "name": "フジクラ",
+          "new_stop": 4318.2,
+          "current_price": 4600.0,
+          "gain_pct": 6.5
+        }
+      ]
+    },
+    "portfolio_snapshot": {
+      "open_count": 10,
+      "stock_value": 278134.0,
+      "cash": 33341.0,
+      "total_assets": 311475.0
+    }
   }
 ]
