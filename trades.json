@@ -363,8 +363,8 @@
     "exit_price": null,
     "exit_date": null,
     "status": "open",
-    "high_price": 3132.0,
-    "stop_price": 2931.3
+    "high_price": 3134.0,
+    "stop_price": 2883.3
   },
   {
     "ticker": "2503.T",
