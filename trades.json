@@ -363,8 +363,8 @@
     "exit_price": null,
     "exit_date": null,
     "status": "open",
-    "high_price": 3271.0,
-    "stop_price": 3009.3,
+    "high_price": 3290.0,
+    "stop_price": 3026.8,
     "partial_exit_done": true
   },
   {
@@ -531,7 +531,7 @@
     "exit_price": null,
     "exit_date": null,
     "status": "open",
-    "high_price": 5416.0,
-    "stop_price": 4982.7
+    "high_price": 5436.0,
+    "stop_price": 5001.1
   }
 ]
