@@ -238,7 +238,7 @@
     "exit_date": null,
     "status": "open",
     "high_price": 2774.0,
-    "stop_price": 2552.1,
+    "stop_price": 2600.0,
     "original_shares": 11,
     "partial_exit_done": true
   },
@@ -363,8 +363,8 @@
     "exit_price": null,
     "exit_date": null,
     "status": "open",
-    "high_price": 3269.0,
-    "stop_price": 3007.5,
+    "high_price": 3271.0,
+    "stop_price": 3009.3,
     "partial_exit_done": true
   },
   {
@@ -412,12 +412,13 @@
     "shares": 3,
     "original_shares": 5,
     "entry_date": "2026-04-01",
-    "exit_price": null,
-    "exit_date": null,
-    "status": "open",
-    "high_price": 5541.0,
-    "stop_price": 5097.7,
-    "partial_exit_done": true
+    "exit_price": 5583.0,
+    "exit_date": "2026-04-08",
+    "status": "closed",
+    "high_price": 5583.0,
+    "stop_price": 5136.4,
+    "partial_exit_done": true,
+    "pnl": 1617.6
   },
   {
     "ticker": "7186.T",
@@ -520,5 +521,17 @@
     "status": "open",
     "high_price": 1612.5,
     "stop_price": 1483.5
+  },
+  {
+    "ticker": "8058.T",
+    "entry_price": 5416.0,
+    "shares": 5,
+    "original_shares": 5,
+    "entry_date": "2026-04-08",
+    "exit_price": null,
+    "exit_date": null,
+    "status": "open",
+    "high_price": 5416.0,
+    "stop_price": 4982.7
   }
 ]
