@@ -941,7 +941,7 @@ a.stock-link:hover {{ text-decoration:underline; }}
 </head>
 <body>
 <h1>Paper Trade Dashboard{profile_label}</h1>
-<div class="updated">最終更新: {now} &nbsp;|&nbsp; <a href="history.html" style="color:#64B5F6;text-decoration:none">実行履歴 &rarr;</a> &nbsp;|&nbsp; <a href="weekly-review.html" style="color:#64B5F6;text-decoration:none">週次レビュー &rarr;</a> &nbsp;|&nbsp; <a href="{'../strategy.html' if profile_label else 'strategy.html'}" style="color:#64B5F6;text-decoration:none">戦略分析 &rarr;</a> &nbsp;|&nbsp; <a href="{'../analysis.html' if profile_label else 'analysis.html'}" style="color:#64B5F6;text-decoration:none">AI分析 &rarr;</a></div>
+<div class="updated">最終更新: {now} &nbsp;|&nbsp; <a href="history.html" style="color:#64B5F6;text-decoration:none">実行履歴 &rarr;</a> &nbsp;|&nbsp; <a href="weekly-review.html" style="color:#64B5F6;text-decoration:none">週次レビュー &rarr;</a> &nbsp;|&nbsp; <a href="{'../analysis.html' if profile_label else 'analysis.html'}" style="color:#64B5F6;text-decoration:none">AI分析 &rarr;</a></div>
 
 <div class="hero-card">
   <div class="label">総資産</div>
@@ -1470,8 +1470,21 @@ def build_weekly_review(trades: list, history: list, config: dict) -> dict:
     profit_take_trades = [t for t in weekly_closed if "利確" in t.get("reason", "")]
     profit_take_count = len(profit_take_trades)
 
+    # --- 保有ポジション ---
+    open_trades = [t for t in trades if t.get("status") == "open"]
+    open_count = len(open_trades)
+    open_tickers = []
+    for t in open_trades:
+        ticker = t["ticker"]
+        open_tickers.append({
+            "ticker": ticker,
+            "name": NIKKEI_225.get(ticker, ticker),
+            "entry_price": t["entry_price"],
+            "shares": t.get("shares", 0),
+        })
+
     # --- 来週のヒント ---
-    hint = _generate_weekly_hint(weekly_closed, weekly_win_rate, stop_count, profit_take_count, config)
+    hint = _generate_weekly_hint(weekly_closed, weekly_win_rate, stop_count, profit_take_count, config, open_count)
 
     return {
         "week_start": monday_str,
@@ -1498,13 +1511,17 @@ def build_weekly_review(trades: list, history: list, config: dict) -> dict:
         "profit_take_count": profit_take_count,
         "hint": hint,
         "weekly_closed": [enrich_trade(t) for t in weekly_closed],
+        "open_count": open_count,
+        "open_tickers": open_tickers,
     }
 
 
-def _generate_weekly_hint(weekly_closed, win_rate, stop_count, profit_take_count, config):
+def _generate_weekly_hint(weekly_closed, win_rate, stop_count, profit_take_count, config, open_count=0):
     """今週のパターンから1つ具体的改善案を生成する。"""
     if not weekly_closed:
-        return "今週はクローズしたトレードがありません。来週のシグナルを待ちましょう。"
+        if open_count > 0:
+            return f"今週はクローズしたトレードがありません。{open_count}銘柄を保有中です。ストップ・利確ルールに沿って継続ホールドしましょう。"
+        return "今週はトレードがありませんでした。次のBUYシグナルを待ちましょう。"
 
     # 全敗パターン
     if win_rate == 0 and len(weekly_closed) > 0:
@@ -1532,6 +1549,30 @@ def _generate_weekly_hint(weekly_closed, win_rate, stop_count, profit_take_count
     profit_take_pct = config.get("strategy", {}).get("profit_take_pct", 0.07)
     return (f"勝率{win_rate}%と安定しています。現在の利確ライン（+{int(profit_take_pct*100)}%）を"
             "維持しつつ、利益が伸びるトレードではトレーリングストップを活用して利益を伸ばしましょう。")
+
+
+def _generate_open_positions_section(data: dict) -> str:
+    """保有ポジション状況セクションのHTMLを生成する。"""
+    open_tickers = data.get("open_tickers", [])
+    open_count = data.get("open_count", 0)
+    if open_count == 0:
+        return ""
+    rows = ""
+    for t in open_tickers:
+        rows += f"""<tr>
+<td>{t['name']}<br><span class="ticker">{t['ticker'].replace('.T','')}</span></td>
+<td class="num">&yen;{t['entry_price']:,.0f}</td>
+<td class="num">{t['shares']}</td>
+</tr>"""
+    return f"""<div class="section">
+  <h2>保有ポジション状況（{open_count}銘柄）</h2>
+  <div style="overflow-x:auto">
+  <table>
+    <thead><tr><th>銘柄</th><th>取得価格</th><th>保有株数</th></tr></thead>
+    <tbody>{rows}</tbody>
+  </table>
+  </div>
+</div>"""
 
 
 def generate_weekly_review_html(data: dict) -> str:
@@ -1695,7 +1736,10 @@ td.num {{ text-align:right; font-variant-numeric:tabular-nums; }}
   </div>
 </div>
 
-<!-- 2. ベスト & ワースト -->
+<!-- 2. 保有ポジション状況 -->
+{_generate_open_positions_section(data)}
+
+<!-- 3. ベスト & ワースト -->
 <div class="section">
   <h2>ベスト &amp; ワースト</h2>
   <div class="bw-grid">
@@ -1704,7 +1748,7 @@ td.num {{ text-align:right; font-variant-numeric:tabular-nums; }}
   </div>
 </div>
 
-<!-- 3. 損切りレビュー -->
+<!-- 4. 損切りレビュー -->
 <div class="section">
   <h2>損切りレビュー</h2>
   <div class="stop-grid">
@@ -1732,7 +1776,7 @@ td.num {{ text-align:right; font-variant-numeric:tabular-nums; }}
   </div>
 </div>
 
-<!-- 4. 戦略の答え合わせ -->
+<!-- 5. 戦略の答え合わせ -->
 <div class="section">
   <h2>戦略の答え合わせ</h2>
   <div class="action-grid">
@@ -1765,7 +1809,7 @@ td.num {{ text-align:right; font-variant-numeric:tabular-nums; }}
   </div>
 </div>
 
-<!-- 5. 来週のヒント -->
+<!-- 6. 来週のヒント -->
 <div class="section">
   <h2>来週のヒント</h2>
   <div class="hint-box">
@@ -3042,7 +3086,7 @@ td.num {{ text-align:right; font-variant-numeric:tabular-nums; }}
 </head>
 <body>
 <h1>AI Valuation Analysis</h1>
-<div class="updated">最終更新: {now} &nbsp;|&nbsp; スキャン: {scan_time} &nbsp;|&nbsp; <a href="index.html">&larr; Dashboard</a> &nbsp;|&nbsp; <a href="strategy.html">戦略分析 &rarr;</a></div>
+<div class="updated">最終更新: {now} &nbsp;|&nbsp; スキャン: {scan_time} &nbsp;|&nbsp; <a href="index.html">&larr; Dashboard</a></div>
 
 <div class="summary-cards">
   <div class="summary-card">
@@ -3397,9 +3441,6 @@ def main():
         profile_config = copy.deepcopy(config)
         generate_for_profile(profile_name, profile_config)
 
-    # Generate strategy page when running all profiles or default
-    if args.profile in ("all", "default"):
-        generate_strategy_page(copy.deepcopy(config))
 
 
 if __name__ == "__main__":
