@@ -376,8 +376,8 @@
     "exit_price": null,
     "exit_date": null,
     "status": "open",
-    "high_price": 2666.5,
-    "stop_price": 2453.2
+    "high_price": 2674.5,
+    "stop_price": 2460.5
   },
   {
     "ticker": "5803.T",
