@@ -238,7 +238,7 @@
     "exit_date": null,
     "status": "open",
     "high_price": 2789.5,
-    "stop_price": 2566.3,
+    "stop_price": 2600.0,
     "original_shares": 11,
     "partial_exit_done": true
   },
@@ -514,10 +514,23 @@
     "shares": 5,
     "original_shares": 5,
     "entry_date": "2026-04-08",
+    "exit_price": 5307.0,
+    "exit_date": "2026-04-10",
+    "status": "closed",
+    "high_price": 5436.0,
+    "stop_price": 5001.1,
+    "pnl": -630.0
+  },
+  {
+    "ticker": "4911.T",
+    "entry_price": 3367.0,
+    "shares": 9,
+    "original_shares": 9,
+    "entry_date": "2026-04-10",
     "exit_price": null,
     "exit_date": null,
     "status": "open",
-    "high_price": 5436.0,
-    "stop_price": 5001.1
+    "high_price": 3367.0,
+    "stop_price": 3097.6
   }
 ]
