@@ -237,8 +237,8 @@
     "exit_price": null,
     "exit_date": null,
     "status": "open",
-    "high_price": 2833.0,
-    "stop_price": 2606.4,
+    "high_price": 2834.5,
+    "stop_price": 2607.7,
     "original_shares": 11,
     "partial_exit_done": true
   },
