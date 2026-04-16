@@ -755,6 +755,7 @@ def generate_policy_section(config: dict = None) -> str:
     rsi_period = strat.get("rsi_period", 14)
     risk_pct = int(acct.get("risk_per_trade", 0.02) * 100)
     max_alloc = int(acct.get("max_allocation", 0.10) * 100)
+    stop_loss_pct = int(strat.get("stop_loss_pct", 0.08) * 100)
     balance = acct.get("balance", 300000)
     max_pos = acct.get("max_positions", 10)
     mode_label = "ペーパー" if mode == "paper" else "リアル"
@@ -774,7 +775,7 @@ def generate_policy_section(config: dict = None) -> str:
     <div class="policy-card">
       <div class="policy-title">リスク管理</div>
       <div class="policy-body">
-        <div class="policy-item">損切り <span class="policy-val">-5%</span></div>
+        <div class="policy-item">損切り <span class="policy-val">-{stop_loss_pct}%</span></div>
         <div class="policy-item">1トレードリスク <span class="policy-val">{risk_pct}%</span></div>
         <div class="policy-item">1銘柄上限 <span class="policy-val">{max_alloc}%</span></div>
       </div>
@@ -1542,8 +1543,9 @@ def _generate_weekly_hint(weekly_closed, win_rate, stop_count, profit_take_count
     if win_rate < 40:
         losing = [t for t in weekly_closed if t.get("pnl", 0) < 0]
         avg_loss = abs(sum(t.get("pnl", 0) for t in losing) / len(losing)) if losing else 0
+        sl_pct = int(config.get("strategy", {}).get("stop_loss_pct", 0.08) * 100)
         return (f"勝率{win_rate}%。平均損失¥{avg_loss:,.0f}を抑えるため、"
-                "損切りラインを-5%→-4%に引き締めるか、ポジションサイズの見直しを検討してみてください。")
+                f"損切りラインを-{sl_pct}%→-{sl_pct-1}%に引き締めるか、ポジションサイズの見直しを検討してみてください。")
 
     # デフォルト
     profit_take_pct = config.get("strategy", {}).get("profit_take_pct", 0.07)
