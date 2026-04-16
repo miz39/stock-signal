@@ -720,8 +720,15 @@ def run(profile_name: str = "default"):
                     logger.info(f"  バリュエーション却下: {NIKKEI_225.get(sig['ticker'], sig['ticker'])} (score={val['total_score']:+.2f})")
                     continue
                 if sig.get("recommended_shares"):
+                    signal_meta = {
+                        "rsi": round(sig["rsi"], 1),
+                        "adx": sig.get("adx"),
+                        "sma_slope": sig.get("sma_slope"),
+                        "ichimoku_bullish": sig.get("ichimoku_bullish"),
+                        "market_regime": market_regime.get("regime"),
+                    }
                     record_entry(sig["ticker"], sig["price"], sig["recommended_shares"],
-                                 stop_pct=stop_loss_pct)
+                                 stop_pct=stop_loss_pct, signal_meta=signal_meta)
                     open_tickers.add(sig["ticker"])
                     sector_counts[sec] = sector_counts.get(sec, 0) + 1
                     daily_entries += 1

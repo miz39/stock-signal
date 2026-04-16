@@ -40,6 +40,44 @@ class TestRecordEntry:
         assert len(trades) == 1
         assert trades[0]["ticker"] == "1234.T"
 
+    def test_signal_meta_stored(self, temp_trades_file):
+        meta = {"rsi": 58.3, "adx": 28.1, "sma_slope": 1.2,
+                "ichimoku_bullish": True, "market_regime": "bull"}
+        trade = portfolio.record_entry(
+            "1234.T", 1000.0, 10, entry_date="2026-01-01", signal_meta=meta
+        )
+        assert trade["entry_meta"] == meta
+        with open(temp_trades_file) as f:
+            trades = json.load(f)
+        assert trades[0]["entry_meta"]["adx"] == 28.1
+        assert trades[0]["entry_meta"]["market_regime"] == "bull"
+
+    def test_no_meta_key_when_not_provided(self, temp_trades_file):
+        trade = portfolio.record_entry("1234.T", 1000.0, 10)
+        assert "entry_meta" not in trade
+
+
+class TestMonthlyPerformance:
+    def test_empty(self, temp_trades_file):
+        assert portfolio.get_monthly_performance() == []
+
+    def test_multiple_months(self, temp_trades_file):
+        portfolio.record_entry("1234.T", 1000.0, 10, entry_date="2026-01-01")
+        portfolio.record_exit("1234.T", 1100.0, exit_date="2026-01-10")
+        portfolio.record_entry("5678.T", 2000.0, 5, entry_date="2026-01-15")
+        portfolio.record_exit("5678.T", 1900.0, exit_date="2026-02-05")
+
+        result = portfolio.get_monthly_performance()
+        assert len(result) == 2
+        assert result[0]["month"] == "2026-01"
+        assert result[0]["trades"] == 1
+        assert result[0]["wins"] == 1
+        assert result[0]["win_rate"] == 100.0
+        assert result[0]["pnl"] == 1000.0
+        assert result[1]["month"] == "2026-02"
+        assert result[1]["wins"] == 0
+        assert result[1]["pnl"] == -500.0
+
 
 class TestRecordExit:
     def test_basic_exit(self, temp_trades_file):

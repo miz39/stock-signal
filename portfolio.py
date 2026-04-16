@@ -47,8 +47,20 @@ def _save_trades(trades: list) -> None:
         raise
 
 
-def record_entry(ticker: str, price: float, shares: int, entry_date: str = None, stop_pct: float = 0.08) -> dict:
-    """仮想エントリーを記録する。"""
+def record_entry(
+    ticker: str,
+    price: float,
+    shares: int,
+    entry_date: str = None,
+    stop_pct: float = 0.08,
+    signal_meta: Optional[dict] = None,
+) -> dict:
+    """仮想エントリーを記録する。
+
+    signal_meta: エントリー時点の指標値（後日分析用）。例:
+        {"rsi": 58.3, "adx": 28.1, "sma_slope": 1.2,
+         "ichimoku_bullish": True, "market_regime": "bull"}
+    """
     trades = _load_trades()
     stop_price = round(price * (1 - stop_pct), 1)
     trade = {
@@ -63,6 +75,8 @@ def record_entry(ticker: str, price: float, shares: int, entry_date: str = None,
         "high_price": price,
         "stop_price": stop_price,
     }
+    if signal_meta:
+        trade["entry_meta"] = signal_meta
     trades.append(trade)
     _save_trades(trades)
     return trade
@@ -272,6 +286,37 @@ def get_consecutive_loss_tickers(max_losses: int = 2) -> set:
         if consecutive >= max_losses:
             blocked.add(ticker)
     return blocked
+
+
+def get_monthly_performance() -> list:
+    """月次パフォーマンス（トレード数・勝率・損益）を返す。古→新の順。"""
+    trades = _load_trades()
+    from collections import OrderedDict
+    monthly = OrderedDict()
+    for t in trades:
+        if t.get("status") != "closed" or not t.get("exit_date"):
+            continue
+        month = t["exit_date"][:7]  # YYYY-MM
+        if month not in monthly:
+            monthly[month] = {"trades": 0, "wins": 0, "pnl": 0.0}
+        monthly[month]["trades"] += 1
+        if t.get("pnl", 0) > 0:
+            monthly[month]["wins"] += 1
+        monthly[month]["pnl"] += t.get("pnl", 0)
+
+    result = []
+    for month in sorted(monthly.keys()):
+        m = monthly[month]
+        win_rate = round(m["wins"] / m["trades"] * 100, 1) if m["trades"] > 0 else 0.0
+        result.append({
+            "month": month,
+            "trades": m["trades"],
+            "wins": m["wins"],
+            "losses": m["trades"] - m["wins"],
+            "win_rate": win_rate,
+            "pnl": round(m["pnl"], 1),
+        })
+    return result
 
 
 def get_weekly_report() -> dict:
