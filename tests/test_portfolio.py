@@ -207,6 +207,142 @@ class TestConsecutiveLossTickers:
         assert "1234.T" not in blocked
 
 
+class TestReadinessMetrics:
+    def test_empty_trades(self, temp_trades_file):
+        """No trades → all criteria fail except max_dd (0% ≤ 10%)."""
+        r = portfolio.get_readiness_metrics(initial_balance=300000)
+        assert r["total_count"] == 5
+        # Only max_dd passes (0 dd)
+        assert r["passed_count"] == 1
+        assert r["ready"] is False
+        assert r["score_pct"] == 20.0
+        names = [c["name"] for c in r["criteria"]]
+        assert "trade_count" in names
+        assert "profit_factor" in names
+        assert "max_dd_pct" in names
+        assert "consecutive_profitable_months" in names
+        assert "win_rate" in names
+
+    def test_trade_count_threshold(self, temp_trades_file):
+        """99 trades fails, 100 trades passes the count criterion."""
+        # Create 99 small winning trades
+        for i in range(99):
+            portfolio.record_entry(f"{1000+i}.T", 1000.0, 1,
+                                   entry_date=f"2026-01-01")
+            portfolio.record_exit(f"{1000+i}.T", 1100.0,
+                                  exit_date=f"2026-01-02")
+        r = portfolio.get_readiness_metrics()
+        tc = next(c for c in r["criteria"] if c["name"] == "trade_count")
+        assert tc["passed"] is False
+        assert tc["actual"] == 99
+
+    def test_profit_factor_pass(self, temp_trades_file):
+        """PF = 2.0 (gross_win 2000, gross_loss 1000) → pass."""
+        portfolio.record_entry("1111.T", 1000.0, 10, entry_date="2026-01-01")
+        portfolio.record_exit("1111.T", 1200.0, exit_date="2026-01-05")  # +2000
+        portfolio.record_entry("2222.T", 1000.0, 10, entry_date="2026-01-10")
+        portfolio.record_exit("2222.T", 900.0, exit_date="2026-01-15")   # -1000
+        r = portfolio.get_readiness_metrics()
+        pf = next(c for c in r["criteria"] if c["name"] == "profit_factor")
+        assert pf["passed"] is True
+        assert pf["actual"] == pytest.approx(2.0, abs=0.01)
+
+    def test_profit_factor_fail(self, temp_trades_file):
+        """PF = 1.0 → fail (needs ≥ 1.5)."""
+        portfolio.record_entry("1111.T", 1000.0, 10, entry_date="2026-01-01")
+        portfolio.record_exit("1111.T", 1100.0, exit_date="2026-01-05")  # +1000
+        portfolio.record_entry("2222.T", 1000.0, 10, entry_date="2026-01-10")
+        portfolio.record_exit("2222.T", 900.0, exit_date="2026-01-15")   # -1000
+        r = portfolio.get_readiness_metrics()
+        pf = next(c for c in r["criteria"] if c["name"] == "profit_factor")
+        assert pf["passed"] is False
+
+    def test_profit_factor_no_losses(self, temp_trades_file):
+        """All wins → PF = infinity → display ∞ and passes."""
+        portfolio.record_entry("1111.T", 1000.0, 10, entry_date="2026-01-01")
+        portfolio.record_exit("1111.T", 1100.0, exit_date="2026-01-05")
+        r = portfolio.get_readiness_metrics()
+        pf = next(c for c in r["criteria"] if c["name"] == "profit_factor")
+        assert pf["passed"] is True
+        assert "∞" in pf["display"]
+
+    def test_win_rate_boundary(self, temp_trades_file):
+        """Win rate 45% boundary passes, 44% fails."""
+        # 45/100 wins = 45%
+        for i in range(45):
+            portfolio.record_entry(f"{2000+i}.T", 1000.0, 1, entry_date="2026-01-01")
+            portfolio.record_exit(f"{2000+i}.T", 1100.0, exit_date="2026-01-02")
+        for i in range(55):
+            portfolio.record_entry(f"{3000+i}.T", 1000.0, 1, entry_date="2026-01-01")
+            portfolio.record_exit(f"{3000+i}.T", 900.0, exit_date="2026-01-02")
+        r = portfolio.get_readiness_metrics()
+        wr = next(c for c in r["criteria"] if c["name"] == "win_rate")
+        assert wr["actual"] == 45.0
+        assert wr["passed"] is True
+
+    def test_consecutive_profitable_months(self, temp_trades_file):
+        """3 consecutive profitable months at the tail → pass."""
+        # Jan: profit, Feb: profit, Mar: profit
+        portfolio.record_entry("1111.T", 1000.0, 10, entry_date="2026-01-01")
+        portfolio.record_exit("1111.T", 1100.0, exit_date="2026-01-15")
+        portfolio.record_entry("2222.T", 1000.0, 10, entry_date="2026-02-01")
+        portfolio.record_exit("2222.T", 1100.0, exit_date="2026-02-15")
+        portfolio.record_entry("3333.T", 1000.0, 10, entry_date="2026-03-01")
+        portfolio.record_exit("3333.T", 1100.0, exit_date="2026-03-15")
+        r = portfolio.get_readiness_metrics()
+        cm = next(c for c in r["criteria"] if c["name"] == "consecutive_profitable_months")
+        assert cm["actual"] == 3
+        assert cm["passed"] is True
+
+    def test_consecutive_profitable_months_breaks_on_loss(self, temp_trades_file):
+        """Recent month with net loss → streak resets."""
+        portfolio.record_entry("1111.T", 1000.0, 10, entry_date="2026-01-01")
+        portfolio.record_exit("1111.T", 1100.0, exit_date="2026-01-15")
+        portfolio.record_entry("2222.T", 1000.0, 10, entry_date="2026-02-01")
+        portfolio.record_exit("2222.T", 1100.0, exit_date="2026-02-15")
+        # March: loss
+        portfolio.record_entry("3333.T", 1000.0, 10, entry_date="2026-03-01")
+        portfolio.record_exit("3333.T", 800.0, exit_date="2026-03-15")
+        r = portfolio.get_readiness_metrics()
+        cm = next(c for c in r["criteria"] if c["name"] == "consecutive_profitable_months")
+        assert cm["actual"] == 0  # March loss breaks streak at tail
+
+    def test_max_dd_pct_calculation(self, temp_trades_file):
+        """10%超のDDは失敗、10%以下は通過。"""
+        # Big loss creates a 10% dd from initial balance 300000
+        # Trade loss of 30000 → peak 300000 → trough 270000 → 10% dd
+        portfolio.record_entry("1111.T", 10000.0, 3, entry_date="2026-01-01")
+        portfolio.record_exit("1111.T", 0.0, exit_date="2026-01-15")  # loss = -30000
+        r = portfolio.get_readiness_metrics(initial_balance=300000)
+        dd = next(c for c in r["criteria"] if c["name"] == "max_dd_pct")
+        assert dd["actual"] == pytest.approx(10.0, abs=0.1)
+        # 10% is the threshold (≤ 10), so passed
+        assert dd["passed"] is True
+
+    def test_max_dd_pct_exceeds_threshold(self, temp_trades_file):
+        """15%のDDは失敗。"""
+        portfolio.record_entry("1111.T", 15000.0, 3, entry_date="2026-01-01")
+        portfolio.record_exit("1111.T", 0.0, exit_date="2026-01-15")  # -45000
+        r = portfolio.get_readiness_metrics(initial_balance=300000)
+        dd = next(c for c in r["criteria"] if c["name"] == "max_dd_pct")
+        assert dd["actual"] == pytest.approx(15.0, abs=0.1)
+        assert dd["passed"] is False
+
+    def test_fully_ready(self, temp_trades_file):
+        """全基準クリアで ready=True."""
+        # 100 wins, no losses → trade_count=100, pf=inf, win_rate=100%,
+        # dd=0%, streak=100 (all wins in 1 month... need >=3 months)
+        for month in ["2026-01", "2026-02", "2026-03"]:
+            for i in range(34):  # 34*3 = 102 trades
+                t = f"{4000+i}.T"
+                portfolio.record_entry(t, 1000.0, 1, entry_date=f"{month}-01")
+                portfolio.record_exit(t, 1100.0, exit_date=f"{month}-15")
+        r = portfolio.get_readiness_metrics()
+        assert r["ready"] is True
+        assert r["score_pct"] == 100.0
+        assert r["passed_count"] == 5
+
+
 class TestPartialExit:
     def test_partial_exit(self, temp_trades_file):
         portfolio.record_entry("1234.T", 1000.0, 10, entry_date="2026-01-01")

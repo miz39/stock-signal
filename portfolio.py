@@ -319,6 +319,124 @@ def get_monthly_performance() -> list:
     return result
 
 
+def get_readiness_metrics(initial_balance: float = 300000) -> dict:
+    """ペーパー→リアル移行判定用メトリクスを返す。
+
+    基準（全5項目）:
+    - trade_count ≥ 100
+    - profit_factor ≥ 1.5
+    - max_dd_pct ≤ 10
+    - consecutive_profitable_months ≥ 3
+    - win_rate ≥ 45
+
+    Returns:
+        {
+            "criteria": [{"name", "label", "actual", "threshold",
+                          "passed", "display"}, ...],
+            "passed_count": int,
+            "total_count": int,
+            "score_pct": float,
+            "ready": bool,
+        }
+    """
+    trades = _load_trades()
+    closed = [t for t in trades if t.get("status") == "closed" and "pnl" in t]
+    trade_count = len(closed)
+
+    gross_profit = sum(t["pnl"] for t in closed if t["pnl"] > 0)
+    gross_loss = abs(sum(t["pnl"] for t in closed if t["pnl"] < 0))
+    if gross_loss > 0:
+        profit_factor = gross_profit / gross_loss
+        pf_display = f"{profit_factor:.2f} / 1.5"
+    elif gross_profit > 0:
+        profit_factor = float("inf")
+        pf_display = "∞ / 1.5"
+    else:
+        profit_factor = 0.0
+        pf_display = "0.00 / 1.5"
+
+    wins = sum(1 for t in closed if t["pnl"] > 0)
+    win_rate = (wins / trade_count * 100) if trade_count > 0 else 0.0
+
+    # Max drawdown as percentage of running equity peak
+    sorted_closed = sorted(closed, key=lambda t: t.get("exit_date", ""))
+    running = float(initial_balance)
+    peak = float(initial_balance)
+    max_dd_pct = 0.0
+    for t in sorted_closed:
+        running += t["pnl"]
+        if running > peak:
+            peak = running
+        if peak > 0:
+            dd_pct = (peak - running) / peak * 100
+            if dd_pct > max_dd_pct:
+                max_dd_pct = dd_pct
+
+    # Trailing consecutive profitable months
+    monthly = get_monthly_performance()
+    consecutive_months = 0
+    for m in reversed(monthly):
+        if m["pnl"] > 0:
+            consecutive_months += 1
+        else:
+            break
+
+    criteria = [
+        {
+            "name": "trade_count",
+            "label": "サンプル数",
+            "actual": trade_count,
+            "threshold": 100,
+            "passed": trade_count >= 100,
+            "display": f"{trade_count}/100",
+        },
+        {
+            "name": "profit_factor",
+            "label": "PF",
+            "actual": None if profit_factor == float("inf") else round(profit_factor, 2),
+            "threshold": 1.5,
+            "passed": profit_factor >= 1.5,
+            "display": pf_display,
+        },
+        {
+            "name": "max_dd_pct",
+            "label": "最大DD",
+            "actual": round(max_dd_pct, 1),
+            "threshold": 10,
+            "passed": max_dd_pct <= 10,
+            "display": f"{max_dd_pct:.1f}% / 10%",
+        },
+        {
+            "name": "consecutive_profitable_months",
+            "label": "連続黒字月",
+            "actual": consecutive_months,
+            "threshold": 3,
+            "passed": consecutive_months >= 3,
+            "display": f"{consecutive_months}/3ヶ月",
+        },
+        {
+            "name": "win_rate",
+            "label": "勝率",
+            "actual": round(win_rate, 1),
+            "threshold": 45,
+            "passed": win_rate >= 45,
+            "display": f"{win_rate:.1f}% / 45%",
+        },
+    ]
+
+    passed_count = sum(1 for c in criteria if c["passed"])
+    total = len(criteria)
+    score_pct = round(passed_count / total * 100, 1) if total else 0.0
+
+    return {
+        "criteria": criteria,
+        "passed_count": passed_count,
+        "total_count": total,
+        "score_pct": score_pct,
+        "ready": passed_count == total,
+    }
+
+
 def get_weekly_report() -> dict:
     """今週のトレード数、損益、累計を返す。"""
     trades = _load_trades()

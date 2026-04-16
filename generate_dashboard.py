@@ -23,7 +23,7 @@ REVIEW_OUTPUT = os.path.join(DOCS_DIR, "weekly-review.html")
 
 # 銘柄名マッピング
 from nikkei225 import NIKKEI_225, get_sector
-from portfolio import get_cash_balance, set_profile
+from portfolio import get_cash_balance, set_profile, get_readiness_metrics
 
 
 def load_config() -> dict:
@@ -315,6 +315,9 @@ def build_dashboard_data(trades: list, initial_balance: float = 300000, history:
             except Exception:
                 pass
 
+    # Paper→real trading readiness
+    readiness = get_readiness_metrics(initial_balance)
+
     # Signal accuracy (holding period buckets)
     signal_accuracy = _build_signal_accuracy(closed_trades)
 
@@ -375,6 +378,7 @@ def build_dashboard_data(trades: list, initial_balance: float = 300000, history:
         "signal_accuracy": signal_accuracy,
         "rsi_analysis": rsi_analysis,
         "latest_buy_candidates": latest_buy_candidates,
+        "readiness": readiness,
     }
 
 
@@ -881,6 +885,32 @@ def generate_html(data: dict, config: dict = None, profile_label: str = "") -> s
     else:
         closed_rows = '<tr><td colspan="6" class="empty">クローズドトレードはありません</td></tr>'
 
+    # リアル移行準備度
+    readiness = data.get("readiness") or {"criteria": [], "score_pct": 0, "passed_count": 0, "total_count": 0, "ready": False}
+    readiness_rows = ""
+    for c in readiness.get("criteria", []):
+        icon = "✓" if c["passed"] else "✗"
+        row_color = "#00C853" if c["passed"] else "#FF8A80"
+        readiness_rows += (
+            f'<div class="readiness-row" style="color:{row_color}">'
+            f'<span class="readiness-icon">{icon}</span>'
+            f'<span class="readiness-label">{c["label"]}</span>'
+            f'<span class="readiness-value">{c["display"]}</span>'
+            f'</div>'
+        )
+    ready_score = readiness.get("score_pct", 0)
+    ready_passed = readiness.get("passed_count", 0)
+    ready_total = readiness.get("total_count", 0)
+    if readiness.get("ready"):
+        ready_label = "🎉 リアル運用移行可能"
+        ready_color = "#00C853"
+    elif ready_score >= 60:
+        ready_label = "準備中（もう一歩）"
+        ready_color = "#FFA726"
+    else:
+        ready_label = "ペーパー継続"
+        ready_color = "#64B5F6"
+
     # Chart.js データ
     equity_labels_json = json.dumps(data["equity_labels"])
     equity_data_json = json.dumps(data["equity_data"])
@@ -931,6 +961,16 @@ td.num {{ text-align:right; font-variant-numeric:tabular-nums; }}
 .policy-val {{ color:#E0E0E0; font-weight:600; }}
 a.stock-link {{ color:#64B5F6; text-decoration:none; }}
 a.stock-link:hover {{ text-decoration:underline; }}
+.readiness-card {{ background:#1E1E1E; border-radius:10px; padding:14px; margin-bottom:20px; }}
+.readiness-head {{ display:flex; justify-content:space-between; align-items:baseline; margin-bottom:8px; }}
+.readiness-title {{ font-size:0.9rem; font-weight:600; color:#E0E0E0; }}
+.readiness-status {{ font-size:0.8rem; font-weight:600; }}
+.readiness-bar {{ background:#2A2A2A; height:6px; border-radius:3px; overflow:hidden; margin-bottom:10px; }}
+.readiness-bar-fill {{ height:100%; border-radius:3px; transition:width 0.3s; }}
+.readiness-row {{ display:flex; align-items:center; padding:4px 0; font-size:0.8rem; }}
+.readiness-icon {{ width:18px; font-weight:700; }}
+.readiness-label {{ flex:1; color:#BDBDBD; }}
+.readiness-value {{ font-variant-numeric:tabular-nums; color:#E0E0E0; }}
 @media(max-width:600px) {{
   .cards {{ grid-template-columns:repeat(2,1fr); }}
   .card .value {{ font-size:1.2rem; }}
@@ -979,6 +1019,15 @@ a.stock-link:hover {{ text-decoration:underline; }}
     <div class="label">最大DD</div>
     <div class="value red">&yen;{data['max_dd']:,.0f}</div>
   </div>
+</div>
+
+<div class="readiness-card">
+  <div class="readiness-head">
+    <div class="readiness-title">リアル移行準備度 {ready_score:.0f}% ({ready_passed}/{ready_total} 基準達成)</div>
+    <div class="readiness-status" style="color:{ready_color}">{ready_label}</div>
+  </div>
+  <div class="readiness-bar"><div class="readiness-bar-fill" style="width:{ready_score}%;background:{ready_color}"></div></div>
+  {readiness_rows}
 </div>
 
 <div class="chart-wrap">
