@@ -247,6 +247,46 @@ def detect_coch(df: pd.DataFrame, lookback: int = 3) -> dict:
     return result
 
 
+def detect_market_crash(nikkei_df: pd.DataFrame,
+                        warning_pct: float = -3.0,
+                        critical_pct: float = -5.0) -> dict:
+    """日経225の前日終値比で急落を検出する。
+
+    Args:
+        nikkei_df: 日経225の価格データ（Closeカラム必須、最低2日分）。
+        warning_pct: warning 閾値（%）。デフォルト -3.0。
+        critical_pct: critical 閾値（%）。デフォルト -5.0（エントリー停止）。
+
+    Returns:
+        {
+            "triggered": bool,       # warning 以下まで下落した場合 True
+            "daily_pct": float,      # 前日終値比（%）。データ不足時は 0.0
+            "severity": str | None,  # "critical" / "warning" / None
+        }
+    """
+    result = {"triggered": False, "daily_pct": 0.0, "severity": None}
+    close = nikkei_df.get("Close") if nikkei_df is not None else None
+    if close is None or len(close) < 2:
+        return result
+
+    prev = float(close.iloc[-2])
+    curr = float(close.iloc[-1])
+    if prev <= 0 or np.isnan(prev) or np.isnan(curr):
+        return result
+
+    daily_pct = (curr - prev) / prev * 100
+    result["daily_pct"] = round(daily_pct, 2)
+
+    if daily_pct <= critical_pct:
+        result["triggered"] = True
+        result["severity"] = "critical"
+    elif daily_pct <= warning_pct:
+        result["triggered"] = True
+        result["severity"] = "warning"
+
+    return result
+
+
 def detect_market_regime(nikkei_df: pd.DataFrame) -> dict:
     """日経225のSMA50/SMA200で相場環境を判定する。
 

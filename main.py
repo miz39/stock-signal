@@ -20,7 +20,7 @@ import yaml
 from datetime import datetime, date, timezone, timedelta
 
 from data import fetch_stock_data
-from strategy import generate_signal, detect_market_regime, compute_composite_score, fetch_tv_recommendation, detect_coch
+from strategy import generate_signal, detect_market_regime, compute_composite_score, fetch_tv_recommendation, detect_coch, detect_market_crash
 from llm_analyst import review_candidates
 from risk import calculate_stop_loss, calculate_position_size
 from portfolio import (
@@ -355,16 +355,40 @@ def run(profile_name: str = "default"):
 
     strat = config.get("strategy", {})
 
-    # 市場レジーム判定
+    # 市場レジーム判定 + クラッシュ検知
     market_regime = {"regime": "neutral", "sma50": None, "sma200": None, "price": 0}
-    if strat.get("market_regime_enabled", True):
+    crash_info = {"triggered": False, "severity": None, "daily_pct": 0.0}
+    regime_enabled = strat.get("market_regime_enabled", True)
+    crash_enabled = strat.get("crash_detection_enabled", True)
+    nikkei_df = None
+    if regime_enabled or crash_enabled:
         try:
             nikkei_df = fetch_stock_data("^N225")
+        except Exception as e:
+            logger.warning(f"日経225データ取得失敗: {e}")
+
+    if nikkei_df is not None and regime_enabled:
+        try:
             market_regime = detect_market_regime(nikkei_df)
             logger.info(f"市場レジーム: {market_regime['regime'].upper()} "
                         f"（日経={market_regime['price']:,.1f} / SMA50={market_regime['sma50']} / SMA200={market_regime['sma200']}）")
         except Exception as e:
-            logger.warning(f"日経225データ取得失敗（レジーム=neutral扱い）: {e}")
+            logger.warning(f"レジーム判定失敗: {e}")
+
+    if nikkei_df is not None and crash_enabled:
+        try:
+            crash_info = detect_market_crash(
+                nikkei_df,
+                warning_pct=strat.get("crash_warning_pct", -3.0),
+                critical_pct=strat.get("crash_critical_pct", -5.0),
+            )
+            if crash_info["triggered"]:
+                logger.warning(
+                    f"市場クラッシュ検知: {crash_info['severity'].upper()} "
+                    f"（日経 {crash_info['daily_pct']:+.2f}%）"
+                )
+        except Exception as e:
+            logger.warning(f"クラッシュ検知失敗: {e}")
 
     # 現金残高とポジションサイジング用の総資産を計算
     available_cash = max(get_cash_balance(balance), 0)
@@ -445,6 +469,13 @@ def run(profile_name: str = "default"):
             sig["composite_score"] = 0.0
 
     buy_signals.sort(key=lambda s: s.get("composite_score", 0), reverse=True)
+
+    # Market crash critical: block all new entries by clearing buy_signals
+    if crash_info.get("severity") == "critical" and buy_signals:
+        logger.warning(
+            f"市場クラッシュ critical → 新規エントリー全停止（{len(buy_signals)}件クリア）"
+        )
+        buy_signals = []
 
     # LLM review for BUY candidates
     llm_enabled = strat.get("llm_review_enabled", False)
@@ -818,6 +849,25 @@ def run(profile_name: str = "default"):
         "description": f"スキャン: {total}銘柄 → 買い: {len(buy_signals)}銘柄 / 売り: {len(sell_signals)}銘柄{regime_info}",
         "color": 0x607D8B,
     })
+
+    # 市場クラッシュアラート
+    if crash_info.get("triggered"):
+        sev = crash_info.get("severity", "warning")
+        if sev == "critical":
+            title = "🚨 市場クラッシュ（CRITICAL）"
+            desc = (
+                f"日経225 前日比 **{crash_info['daily_pct']:+.2f}%** の急落を検知。"
+                f"\n→ 新規エントリーを全停止しました。"
+            )
+            color = 0xD50000
+        else:
+            title = "⚠️ 市場クラッシュ警告"
+            desc = (
+                f"日経225 前日比 **{crash_info['daily_pct']:+.2f}%** の下落を検知。"
+                f"\n→ エントリーは継続しますが、慎重に判断してください。"
+            )
+            color = 0xFF8F00
+        embeds.append({"title": title, "description": desc, "color": color})
 
     # 買いシグナル上位5銘柄をコンパクトに1つのEmbedにまとめる
     if buy_signals:

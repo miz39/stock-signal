@@ -38,6 +38,10 @@ strategy:
   # CoCh Exit
   coch_exit_enabled: true
   coch_lookback: 3
+  # Market crash detection (日経225 前日終値比で急落時に新規エントリー停止/警告)
+  crash_detection_enabled: true
+  crash_warning_pct: -3.0       # この%以下で警告通知（エントリーは継続）
+  crash_critical_pct: -5.0      # この%以下で新規エントリー全停止
   score_weights:                  # 複合スコアの重み（合計1.0）
     volume_surge: 0.20
     rsi_sweet_spot: 0.10

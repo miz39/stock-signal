@@ -6,7 +6,7 @@ import numpy as np
 from strategy import (
     calculate_sma, calculate_rsi, generate_signal, detect_market_regime,
     compute_composite_score, fetch_tv_recommendation,
-    calculate_adx, calculate_ichimoku, detect_coch,
+    calculate_adx, calculate_ichimoku, detect_coch, detect_market_crash,
 )
 
 
@@ -228,6 +228,70 @@ class TestDetectMarketRegime:
         assert result["regime"] == "neutral"
         assert result["sma50"] is None
         assert result["sma200"] is None
+
+
+class TestDetectMarketCrash:
+    def test_no_crash_small_drop(self):
+        """-1% drop stays below warning threshold → not triggered."""
+        df = _make_df([30000.0, 29700.0])  # -1.0%
+        result = detect_market_crash(df)
+        assert result["triggered"] is False
+        assert result["severity"] is None
+        assert result["daily_pct"] == pytest.approx(-1.0, abs=0.01)
+
+    def test_warning_at_threshold(self):
+        """Exactly -3.0% → warning triggered."""
+        df = _make_df([30000.0, 29100.0])  # -3.0%
+        result = detect_market_crash(df, warning_pct=-3.0, critical_pct=-5.0)
+        assert result["triggered"] is True
+        assert result["severity"] == "warning"
+        assert result["daily_pct"] == pytest.approx(-3.0, abs=0.01)
+
+    def test_warning_just_above_threshold(self):
+        """-2.9% is above warning → not triggered."""
+        df = _make_df([30000.0, 29130.0])  # -2.9%
+        result = detect_market_crash(df)
+        assert result["triggered"] is False
+        assert result["severity"] is None
+
+    def test_critical_at_threshold(self):
+        """Exactly -5.0% → critical triggered."""
+        df = _make_df([30000.0, 28500.0])  # -5.0%
+        result = detect_market_crash(df, warning_pct=-3.0, critical_pct=-5.0)
+        assert result["triggered"] is True
+        assert result["severity"] == "critical"
+
+    def test_critical_deep_drop(self):
+        """-8% drop → critical."""
+        df = _make_df([30000.0, 27600.0])  # -8.0%
+        result = detect_market_crash(df)
+        assert result["severity"] == "critical"
+        assert result["daily_pct"] == pytest.approx(-8.0, abs=0.01)
+
+    def test_positive_return_not_triggered(self):
+        """Big up move → not triggered."""
+        df = _make_df([30000.0, 33000.0])  # +10%
+        result = detect_market_crash(df)
+        assert result["triggered"] is False
+        assert result["daily_pct"] == pytest.approx(10.0, abs=0.01)
+
+    def test_insufficient_data(self):
+        """Single-row dataframe returns default."""
+        df = _make_df([30000.0])
+        result = detect_market_crash(df)
+        assert result["triggered"] is False
+        assert result["severity"] is None
+        assert result["daily_pct"] == 0.0
+
+    def test_custom_thresholds(self):
+        """Custom thresholds: -2% warning, -4% critical."""
+        df = _make_df([30000.0, 29400.0])  # -2%
+        result = detect_market_crash(df, warning_pct=-2.0, critical_pct=-4.0)
+        assert result["severity"] == "warning"
+
+        df2 = _make_df([30000.0, 28800.0])  # -4%
+        result2 = detect_market_crash(df2, warning_pct=-2.0, critical_pct=-4.0)
+        assert result2["severity"] == "critical"
 
 
 class TestComputeCompositeScore:
