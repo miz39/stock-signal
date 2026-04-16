@@ -48,6 +48,7 @@ from notifier import (
     format_signal_mrkdwn,
     format_weekly_embed,
     format_weekly_mrkdwn,
+    format_daily_summary_mrkdwn,
     TICKER_NAMES,
 )
 from nikkei225 import NIKKEI_225, get_sector
@@ -1030,6 +1031,60 @@ def run(profile_name: str = "default"):
             weekly = get_weekly_report()
             slack_text += "\n\n" + format_weekly_mrkdwn(weekly, balance)
         send_slack(slack_webhook_url, slack_text)
+
+    # 日次サマリ Slack 通知（引け後のみ、defaultプロファイルのみ）
+    slack_cfg = config.get("slack", {})
+    daily_enabled = slack_cfg.get("daily_summary_enabled", True)
+    daily_hour = int(slack_cfg.get("daily_summary_hour", 15))
+    now_jst = datetime.now(timezone(timedelta(hours=9)))
+    if (
+        slack_webhook_url
+        and profile_name == "default"
+        and daily_enabled
+        and now_jst.hour >= daily_hour
+    ):
+        summary_positions = []
+        for p in open_positions:
+            ticker = p["ticker"]
+            entry = p["entry_price"]
+            current = p.get("current_price", entry)
+            pnl_pct = (current / entry - 1) * 100 if entry else 0.0
+            summary_positions.append({
+                "ticker": ticker,
+                "name": NIKKEI_225.get(ticker, ticker),
+                "entry_price": entry,
+                "current_price": current,
+                "shares": p["shares"],
+                "stop_price": p.get("stop_price"),
+                "pnl_pct": pnl_pct,
+            })
+        weekly_rep = get_weekly_report()
+        total_pnl = weekly_rep.get("total_pnl", 0)
+        total_pnl_pct = (total_pnl / balance * 100) if balance else 0.0
+        # Count distinct sells (matches exit_records dedupe against trailing_stop_exits)
+        ts_tickers_set = {ts["ticker"] for ts in trailing_stop_exits}
+        sell_count = (
+            len(full_profit_exits) + len(coch_exits) + len(trailing_stop_exits)
+            + sum(1 for s in sell_signals if s["ticker"] not in ts_tickers_set)
+        )
+        daily_text = format_daily_summary_mrkdwn(
+            positions=summary_positions,
+            summary={
+                "weekly_trades": weekly_rep.get("weekly_trades", 0),
+                "total_pnl": total_pnl,
+                "total_pnl_pct": total_pnl_pct,
+                "balance": balance,
+            },
+            cash=get_cash_balance(balance),
+            market_regime=market_regime,
+            actions={
+                "buy": len(executed_entries),
+                "sell": sell_count,
+                "topup": len(executed_topups),
+            },
+            today=now_jst.strftime("%Y-%m-%d"),
+        )
+        send_slack(slack_webhook_url, daily_text)
 
     # 実行履歴を保存
     JST = timezone(timedelta(hours=9))

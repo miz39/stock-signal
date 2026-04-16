@@ -103,6 +103,9 @@ discord:
 slack:
   # SLACK_WEBHOOK_URL 環境変数でも設定可能
   webhook_url: ""
+  # 日次サマリ通知（引け後のみ、Slackのみ）
+  daily_summary_enabled: true
+  daily_summary_hour: 15  # 現在時刻(JST hour) >= この値で送信
 
 profiles:
   conservative:

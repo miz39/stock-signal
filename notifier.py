@@ -249,6 +249,85 @@ def format_signal_mrkdwn(
     return "\n".join(lines).strip()
 
 
+def format_daily_summary_mrkdwn(
+    positions: list,
+    summary: dict,
+    cash: float,
+    market_regime: dict,
+    actions: dict,
+    today: str = None,
+) -> str:
+    """引け後の日次サマリ Slack mrkdwn を生成する。
+
+    Args:
+        positions: オープンポジション。各要素に ticker, name, current_price,
+                   entry_price, shares, stop_price, pnl_pct を含む。
+        summary: {"weekly_trades": int, "total_pnl": float,
+                  "total_pnl_pct": float, "balance": float}
+        cash: 現金残高
+        market_regime: {"regime": str, "price": float}
+        actions: {"buy": int, "sell": int, "topup": int}
+        today: YYYY-MM-DD（省略時は現在日付 JST）
+    """
+    from datetime import date as _date
+    from datetime import datetime as _dt
+    from datetime import timezone as _tz, timedelta as _td
+
+    if today is None:
+        today = _dt.now(_tz(_td(hours=9))).strftime("%Y-%m-%d")
+
+    lines = [f"*日次サマリ {today}*", ""]
+
+    lines.append(f"*保有状況* ({len(positions)}銘柄)")
+    if positions:
+        for p in positions:
+            ticker = p.get("ticker", "")
+            code = ticker.replace(".T", "")
+            name = p.get("name") or TICKER_NAMES.get(ticker, code)
+            current = p.get("current_price", p.get("entry_price", 0))
+            pnl_pct = p.get("pnl_pct")
+            if pnl_pct is None:
+                entry = p.get("entry_price", 0)
+                pnl_pct = (current / entry - 1) * 100 if entry else 0.0
+            sign = "+" if pnl_pct >= 0 else ""
+            stop = p.get("stop_price")
+            stop_str = f" / Stop ¥{stop:,.0f}" if stop else ""
+            lines.append(
+                f"• {name} ({code}): ¥{current:,.0f} {sign}{pnl_pct:.1f}%{stop_str}"
+            )
+    else:
+        lines.append("• なし")
+    lines.append("")
+
+    buy_n = actions.get("buy", 0)
+    sell_n = actions.get("sell", 0)
+    topup_n = actions.get("topup", 0)
+    lines.append("*本日のアクション*")
+    lines.append(f"• BUY: {buy_n}件  SELL: {sell_n}件  Topup: {topup_n}件")
+    lines.append("")
+
+    weekly_trades = summary.get("weekly_trades", 0)
+    total_pnl = summary.get("total_pnl", 0)
+    total_pnl_pct = summary.get("total_pnl_pct", 0.0)
+    t_sign = "+" if total_pnl >= 0 else ""
+    p_sign = "+" if total_pnl_pct >= 0 else ""
+    lines.append("*週次パフォーマンス*")
+    lines.append(
+        f"今週: {weekly_trades}トレード / 累計: ¥{t_sign}{total_pnl:,.0f} ({p_sign}{total_pnl_pct:.2f}%)"
+    )
+    lines.append("")
+
+    regime = (market_regime or {}).get("regime", "neutral")
+    nikkei_price = (market_regime or {}).get("price", 0)
+    cash_str = f" / 現金: ¥{cash:,.0f}"
+    if nikkei_price:
+        lines.append(f"*市場レジーム*: {regime}  (日経225 ¥{nikkei_price:,.0f}){cash_str}")
+    else:
+        lines.append(f"*市場レジーム*: {regime}{cash_str}")
+
+    return "\n".join(lines)
+
+
 def format_weekly_mrkdwn(weekly: dict, balance: float) -> str:
     """週次レポートのSlack mrkdwn版。"""
     total_pnl_pct = (weekly["total_pnl"] / balance) * 100 if balance else 0
