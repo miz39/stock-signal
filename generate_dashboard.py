@@ -785,39 +785,61 @@ def generate_policy_section(config: dict = None) -> str:
     mode_label = "ペーパー" if mode == "paper" else "リアル"
     wl_label = "日経225全銘柄" if watchlist == "nikkei225" else watchlist
 
+    # Additional strategy params for tooltip display
+    adx_thr = strat.get("adx_threshold", 25)
+    rsi_min = strat.get("rsi_entry_min", 50)
+    rsi_max = strat.get("rsi_entry_max", 65)
+    profit_tighten = int(strat.get("profit_tighten_pct", 0.06) * 100)
+    profit_half = int(strat.get("profit_take_pct", 0.08) * 100)
+    profit_full = int(strat.get("profit_take_full_pct", 0.15) * 100)
+    max_daily = acct.get("max_daily_entries", 3)
+    max_sector = acct.get("max_sector_positions", 2)
+    cooldown = acct.get("cooldown_days", 7)
+    bull_only = strat.get("bull_only_entry", False)
+    crash_en = strat.get("crash_detection_enabled", False)
+    crash_w = strat.get("crash_warning_pct", -3.0)
+    crash_c = strat.get("crash_critical_pct", -5.0)
+    earn_en = strat.get("earnings_blackout_enabled", False)
+    earn_d = strat.get("earnings_blackout_days", 3)
+
     return f"""<div class="section">
-  <h2>運用方針</h2>
+  <h2 data-tip="現在の config.yaml に基づく戦略・リスク管理・口座設定の一覧">運用方針</h2>
   <div class="policy-grid">
     <div class="policy-card">
-      <div class="policy-title">戦略</div>
+      <div class="policy-title" data-tip="エントリーとイグジットの判定ロジック">戦略</div>
       <div class="policy-body">
-        <div class="policy-name">ゴールデンクロス + RSI コンファーメーション</div>
-        <div class="policy-rule buy-rule">買い: SMA{sma_s} &gt; SMA{sma_l} &amp; RSI &lt; {rsi_ob} &amp; 株価 &gt; SMA{sma_t}</div>
-        <div class="policy-rule sell-rule">売り: SMA{sma_s} &lt; SMA{sma_l} or RSI &gt; 75</div>
+        <div class="policy-name" data-tip="短期移動平均線が長期を上回った（ゴールデンクロス）タイミングで、RSIが上昇モメンタムを確認している局面にエントリーする順張り戦略">ゴールデンクロス + RSI コンファーメーション</div>
+        <div class="policy-rule buy-rule" data-tip="SMA{sma_s}がSMA{sma_l}を上抜け（GC）、RSI {rsi_min}-{rsi_max} の上昇モメンタム帯、終値がSMA{sma_t}より上（長期上昇トレンド確認）、ADX≥{adx_thr}（トレンド強度）の全条件を満たす時にBUY">買い: SMA{sma_s} &gt; SMA{sma_l} &amp; RSI {rsi_min}-{rsi_max} &amp; 株価 &gt; SMA{sma_t} &amp; ADX≥{adx_thr}</div>
+        <div class="policy-rule sell-rule" data-tip="トレーリングストップ（-{stop_loss_pct}%）で損切り、+{profit_tighten}%でストップを建値に移動、+{profit_half}%で半分利確、+{profit_full}%で全利確。CoCh（トレンド構造崩壊）でも即イグジット">売り: ストップ -{stop_loss_pct}% / 建値移動 +{profit_tighten}% / 半分利確 +{profit_half}% / 全利確 +{profit_full}%</div>
       </div>
     </div>
     <div class="policy-card">
-      <div class="policy-title">リスク管理</div>
+      <div class="policy-title" data-tip="損失を限定し、資金を守るためのルール群">リスク管理</div>
       <div class="policy-body">
-        <div class="policy-item">損切り <span class="policy-val">-{stop_loss_pct}%</span></div>
-        <div class="policy-item">1トレードリスク <span class="policy-val">{risk_pct}%</span></div>
-        <div class="policy-item">1銘柄上限 <span class="policy-val">{max_alloc}%</span></div>
+        <div class="policy-item" data-tip="エントリー価格から-{stop_loss_pct}%下落で自動損切り。その後トレーリングで高値更新時にストップも引き上げ"><span>損切り</span> <span class="policy-val">-{stop_loss_pct}%</span></div>
+        <div class="policy-item" data-tip="1回のトレードで許容する最大損失額を総資産の{risk_pct}%に制限。ポジションサイズを自動計算"><span>1トレードリスク</span> <span class="policy-val">{risk_pct}%</span></div>
+        <div class="policy-item" data-tip="1銘柄に投入する金額の上限。集中リスクを防止"><span>1銘柄上限</span> <span class="policy-val">{max_alloc}%</span></div>
+        <div class="policy-item" data-tip="1日にエントリーできる新規銘柄数の上限"><span>日次上限</span> <span class="policy-val">{max_daily}件/日</span></div>
+        <div class="policy-item" data-tip="同一セクター（業種）で同時に保有できる銘柄数の上限。セクターリスク分散"><span>同一セクター</span> <span class="policy-val">最大{max_sector}銘柄</span></div>
+        <div class="policy-item" data-tip="損切りした銘柄に対して{cooldown}日間は再エントリーを禁止。感情的なリベンジトレードを防止"><span>クールダウン</span> <span class="policy-val">{cooldown}日</span></div>
       </div>
     </div>
     <div class="policy-card">
-      <div class="policy-title">口座</div>
+      <div class="policy-title" data-tip="エントリーを自動制限する安全機能">フィルター</div>
       <div class="policy-body">
-        <div class="policy-item">初期資金 <span class="policy-val">&yen;{balance:,.0f}</span></div>
-        <div class="policy-item">最大銘柄数 <span class="policy-val">{max_pos}銘柄</span></div>
-        <div class="policy-item">モード <span class="policy-val">{mode_label}</span></div>
+        <div class="policy-item" data-tip="{'ON: BULL局面（日経225 > SMA50 > SMA200）以外では新規エントリーを全停止。ストレステストでnon-bull局面の期待値がマイナスと判明したため導入' if bull_only else 'OFF: 全局面でエントリー可能。non-bull局面では損失リスクあり'}"><span>Bull Only</span> <span class="policy-val">{'ON' if bull_only else 'OFF'}</span></div>
+        <div class="policy-item" data-tip="{'ON: 日経225が前日比' + str(crash_w) + '%で警告、' + str(crash_c) + '%で新規エントリー全停止' if crash_en else 'OFF'}"><span>クラッシュ検知</span> <span class="policy-val">{'ON (' + str(crash_c) + '%)' if crash_en else 'OFF'}</span></div>
+        <div class="policy-item" data-tip="{'ON: 決算発表' + str(earn_d) + '日前から当日まで当該銘柄のBUYをスキップ。決算発表後の急変動リスクを回避' if earn_en else 'OFF'}"><span>決算ブラックアウト</span> <span class="policy-val">{'ON (' + str(earn_d) + '日前)' if earn_en else 'OFF'}</span></div>
       </div>
     </div>
     <div class="policy-card">
-      <div class="policy-title">スキャン</div>
+      <div class="policy-title" data-tip="口座設定とスキャンスケジュール">口座 / スキャン</div>
       <div class="policy-body">
-        <div class="policy-item">対象 <span class="policy-val">{wl_label}</span></div>
-        <div class="policy-item">実行 <span class="policy-val">1日3回</span></div>
-        <div class="policy-item">時刻 <span class="policy-val">8:50 / 12:35 / 15:10</span></div>
+        <div class="policy-item" data-tip="ペーパートレードの仮想初期資金"><span>初期資金</span> <span class="policy-val">&yen;{balance:,.0f}</span></div>
+        <div class="policy-item" data-tip="同時に保有できる銘柄数の上限。分散投資とリスク管理のバランス"><span>最大銘柄数</span> <span class="policy-val">{max_pos}銘柄</span></div>
+        <div class="policy-item" data-tip="{'ペーパー: 仮想資金で実際の売買は行わない。戦略の検証用' if mode == 'paper' else 'リアル: 実際の資金で売買を行う'}"><span>モード</span> <span class="policy-val">{mode_label}</span></div>
+        <div class="policy-item" data-tip="日経225構成銘柄225銘柄を自動スキャン対象として全件チェック"><span>対象</span> <span class="policy-val">{wl_label}</span></div>
+        <div class="policy-item" data-tip="寄り前(8:50)、昼休み(12:35)、引け後(15:10)の3回。cronで自動実行"><span>スキャン</span> <span class="policy-val">1日3回 (8:50/12:35/15:10)</span></div>
       </div>
     </div>
   </div>
