@@ -305,6 +305,38 @@ def fetch_financial_data(ticker: str) -> dict:
     return get_provider().fetch_financial_data(ticker)
 
 
+_earnings_date_cache: dict = {}
+
+
+def fetch_earnings_date(ticker: str):
+    """Fetch the next earnings date for a ticker.
+
+    Returns datetime.date or None if unknown / fetch failed.
+    Results are cached in-memory for the lifetime of the process.
+    """
+    from datetime import date as _date
+    if ticker in _earnings_date_cache:
+        return _earnings_date_cache[ticker]
+
+    result = None
+    try:
+        import yfinance as yf
+        cal = yf.Ticker(ticker).calendar
+        if isinstance(cal, dict):
+            edates = cal.get("Earnings Date") or []
+            if edates:
+                first = edates[0] if isinstance(edates, list) else edates
+                if isinstance(first, _date):
+                    result = first
+    except Exception as e:  # pragma: no cover - network dependent
+        logging.getLogger("data").warning(
+            f"fetch_earnings_date({ticker}) failed: {e}"
+        )
+
+    _earnings_date_cache[ticker] = result
+    return result
+
+
 def fetch_financial_statements(ticker: str) -> dict:
     """Fetch multi-year financial statements from yfinance.
 

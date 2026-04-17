@@ -19,7 +19,7 @@ import tempfile
 import yaml
 from datetime import datetime, date, timezone, timedelta
 
-from data import fetch_stock_data
+from data import fetch_stock_data, fetch_earnings_date
 from strategy import generate_signal, detect_market_regime, compute_composite_score, fetch_tv_recommendation, detect_coch, detect_market_crash
 from llm_analyst import review_candidates
 from risk import calculate_stop_loss, calculate_position_size
@@ -751,6 +751,18 @@ def run(profile_name: str = "default"):
                 if val and val.get("total_score", 0) < val_entry_threshold:
                     logger.info(f"  バリュエーション却下: {NIKKEI_225.get(sig['ticker'], sig['ticker'])} (score={val['total_score']:+.2f})")
                     continue
+                # Earnings blackout: skip if earnings within N days
+                if strat.get("earnings_blackout_enabled", False):
+                    blackout_days = int(strat.get("earnings_blackout_days", 3))
+                    edate = fetch_earnings_date(sig["ticker"])
+                    if edate is not None:
+                        days_until = (edate - date.today()).days
+                        if 0 <= days_until <= blackout_days:
+                            logger.info(
+                                f"  決算前スキップ: {NIKKEI_225.get(sig['ticker'], sig['ticker'])} "
+                                f"(発表まで{days_until}日 / {edate.isoformat()})"
+                            )
+                            continue
                 if sig.get("recommended_shares"):
                     signal_meta = {
                         "rsi": round(sig["rsi"], 1),

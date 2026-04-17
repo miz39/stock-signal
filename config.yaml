@@ -42,6 +42,9 @@ strategy:
   crash_detection_enabled: true
   crash_warning_pct: -3.0       # この%以下で警告通知（エントリーは継続）
   crash_critical_pct: -5.0      # この%以下で新規エントリー全停止
+  # Earnings blackout (決算発表前N日以内のBUYをスキップ)
+  earnings_blackout_enabled: true
+  earnings_blackout_days: 3     # 発表前 N 日以内ならスキップ
   score_weights:                  # 複合スコアの重み（合計1.0）
     volume_surge: 0.20
     rsi_sweet_spot: 0.10
