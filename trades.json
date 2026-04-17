@@ -527,10 +527,30 @@
     "shares": 9,
     "original_shares": 9,
     "entry_date": "2026-04-10",
+    "exit_price": 3093.0,
+    "exit_date": "2026-04-17",
+    "status": "closed",
+    "high_price": 3367.0,
+    "stop_price": 3097.6,
+    "pnl": -2466.0
+  },
+  {
+    "ticker": "4061.T",
+    "entry_price": 3690.0,
+    "shares": 8,
+    "original_shares": 8,
+    "entry_date": "2026-04-17",
     "exit_price": null,
     "exit_date": null,
     "status": "open",
-    "high_price": 3367.0,
-    "stop_price": 3097.6
+    "high_price": 3690.0,
+    "stop_price": 3394.8,
+    "entry_meta": {
+      "rsi": 54.6,
+      "adx": 27.0,
+      "sma_slope": 2.09,
+      "ichimoku_bullish": true,
+      "market_regime": "bull"
+    }
   }
 ]
