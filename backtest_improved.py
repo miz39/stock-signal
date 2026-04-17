@@ -8,6 +8,7 @@ Modes:
   python3 backtest_improved.py --mode sensitivity  # Parameter grid search
   python3 backtest_improved.py --mode stats     # Statistical analysis
   python3 backtest_improved.py --mode walkforward  # Walk-forward validation
+  python3 backtest_improved.py --mode stress    # Rolling-window stress test
 
 Compares strategy profiles with Nikkei 225 index benchmark.
 """
@@ -909,9 +910,169 @@ def run_walkforward(all_data, config, initial_balance=300000):
     print(f"\n{'=' * w}")
 
 
+def run_stress(all_data, config, initial_balance=300000,
+               window_months=3, step_months=3,
+               start="2024-09-01", end=None):
+    """ストレステスト: 全期間ローリング検証で戦略の安定性を可視化。
+
+    指定期間を window_months ごとに区切り、各窓で戦略を実行。
+    各窓の市場局面（bull/bear/neutral）を日経225 SMA50/SMA200 で分類し、
+    局面別の勝率/PF を集計する。
+    """
+    if end is None:
+        end = pd.Timestamp.today().strftime("%Y-%m-%d")
+
+    # Build window list
+    windows = []
+    cur = pd.Timestamp(start)
+    end_ts = pd.Timestamp(end)
+    while cur < end_ts:
+        win_end = cur + pd.DateOffset(months=window_months)
+        if win_end > end_ts:
+            win_end = end_ts
+        windows.append((cur.strftime("%Y-%m-%d"), win_end.strftime("%Y-%m-%d")))
+        cur = cur + pd.DateOffset(months=step_months)
+
+    # Profile: use default
+    sp = build_profile_strategy(config, "default")
+
+    # Make sure ^N225 is available for regime classification
+    nk225_df = all_data.get("^N225")
+    if nk225_df is None:
+        try:
+            nk225_df = yf.download("^N225", start="2024-03-01", progress=False)
+            if nk225_df is not None and not nk225_df.empty:
+                if isinstance(nk225_df.columns, pd.MultiIndex):
+                    nk225_df.columns = nk225_df.columns.get_level_values(0)
+                all_data["^N225"] = nk225_df
+        except Exception as e:
+            print(f"  日経225ダウンロード失敗: {e}")
+            nk225_df = None
+
+    def _classify_regime(start_d: str, end_d: str) -> str:
+        if nk225_df is None or nk225_df.empty:
+            return "unknown"
+        try:
+            sub = nk225_df.loc[start_d:end_d]
+            if len(sub) < 50:
+                return "unknown"
+            close = sub["Close"]
+            sma50 = close.rolling(50).mean().iloc[-1]
+            sma200 = nk225_df["Close"].rolling(200).mean().loc[:end_d].iloc[-1]
+            price = float(close.iloc[-1])
+            if pd.isna(sma50) or pd.isna(sma200):
+                return "unknown"
+            if price > sma50 > sma200:
+                return "bull"
+            if price < sma50 < sma200:
+                return "bear"
+            return "neutral"
+        except Exception:
+            return "unknown"
+
+    w = 100
+    print(f"\n{'=' * w}")
+    print(f"  ストレステスト  ({window_months}ヶ月窓 × ステップ{step_months}ヶ月)")
+    print(f"  期間: {start} 〜 {end}  /  窓数: {len(windows)}")
+    print(f"  プロファイル: default  /  スリッページ {SLIPPAGE*100:.1f}%")
+    print(f"{'=' * w}")
+    print(f"  {'窓':<22} {'局面':<8} {'件数':>4} {'勝率':>6} {'PF':>6} "
+          f"{'リターン':>9} {'最大DD':>8} {'日経':>9}")
+    print(f"  {'─' * (w - 4)}")
+
+    results = []
+    for win_start, win_end in windows:
+        r = run_strategy_backtest(
+            all_data, config, sp,
+            sim_start=win_start, initial_balance=initial_balance,
+            slippage=SLIPPAGE,
+        )
+        # Filter trades within window
+        win_trades = [t for t in r["trade_details"]
+                      if win_start <= t["exit_date"] < win_end]
+        gp = sum(t["pnl"] for t in win_trades if t["pnl"] > 0)
+        gl = abs(sum(t["pnl"] for t in win_trades if t["pnl"] <= 0))
+        pf = gp / gl if gl > 0 else (float("inf") if gp > 0 else 0.0)
+        wins = sum(1 for t in win_trades if t["pnl"] > 0)
+        wr = wins / len(win_trades) * 100 if win_trades else 0.0
+        pnl = sum(t["pnl"] for t in win_trades)
+        ret_pct = pnl / initial_balance * 100
+
+        # Window-only equity curve for max DD
+        win_equity = [initial_balance]
+        running = initial_balance
+        for t in sorted(win_trades, key=lambda t: t["exit_date"]):
+            running += t["pnl"]
+            win_equity.append(running)
+        peak = win_equity[0]
+        max_dd_win = 0.0
+        for eq in win_equity:
+            if eq > peak:
+                peak = eq
+            if peak > 0:
+                dd = (peak - eq) / peak * 100
+                if dd > max_dd_win:
+                    max_dd_win = dd
+
+        regime = _classify_regime(win_start, win_end)
+        nk_ret = fetch_benchmark("^N225", win_start, win_end)
+        nk_str = f"{nk_ret:+.2f}%" if nk_ret is not None else "  N/A"
+
+        pf_str = "∞" if pf == float("inf") else f"{pf:.2f}"
+        results.append({
+            "start": win_start, "end": win_end, "regime": regime,
+            "trades": len(win_trades), "wins": wins, "wr": wr,
+            "pf": pf, "pnl": pnl, "ret": ret_pct, "dd": max_dd_win,
+            "nk225": nk_ret,
+        })
+
+        print(f"  {win_start}〜{win_end[5:]}  {regime:<8} {len(win_trades):>4} "
+              f"{wr:>5.1f}% {pf_str:>6} {ret_pct:>+8.2f}% {max_dd_win:>7.2f}% {nk_str:>9}")
+
+    # Aggregate by regime
+    print(f"  {'─' * (w - 4)}")
+    print(f"  【局面別集計】")
+    by_regime = {}
+    for r in results:
+        by_regime.setdefault(r["regime"], []).append(r)
+
+    for regime in ["bull", "neutral", "bear", "unknown"]:
+        if regime not in by_regime:
+            continue
+        rs = by_regime[regime]
+        n = len(rs)
+        total_trades = sum(r["trades"] for r in rs)
+        total_wins = sum(r["wins"] for r in rs)
+        total_pnl = sum(r["pnl"] for r in rs)
+        wr = total_wins / total_trades * 100 if total_trades else 0.0
+        avg_ret = sum(r["ret"] for r in rs) / n
+        worst_dd = max(r["dd"] for r in rs)
+        positive = sum(1 for r in rs if r["pnl"] > 0)
+        print(f"  {regime:<8}: {n}窓  {total_trades}件  勝率{wr:.1f}%  "
+              f"平均リターン{avg_ret:+.2f}%  最大DD{worst_dd:.2f}%  "
+              f"プラス{positive}/{n}窓  累計¥{total_pnl:+,.0f}")
+
+    # Robustness assessment
+    print(f"  {'─' * (w - 4)}")
+    print(f"  【頑健性評価】")
+    valid = [r for r in results if r["trades"] >= 3]
+    if valid:
+        positive_windows = sum(1 for r in valid if r["pnl"] > 0)
+        print(f"  プラス窓: {positive_windows}/{len(valid)} "
+              f"({positive_windows/len(valid)*100:.0f}%)")
+        worst = min(valid, key=lambda r: r["ret"])
+        best = max(valid, key=lambda r: r["ret"])
+        print(f"  ワースト窓: {worst['start']}〜{worst['end'][5:]} "
+              f"({worst['regime']})  リターン{worst['ret']:+.2f}%  DD{worst['dd']:.2f}%")
+        print(f"  ベスト窓:   {best['start']}〜{best['end'][5:]} "
+              f"({best['regime']})  リターン{best['ret']:+.2f}%")
+    print(f"\n{'=' * w}")
+    return results
+
+
 def main():
     parser = argparse.ArgumentParser(description="Strategy backtest comparison tool")
-    parser.add_argument("--mode", choices=["compare", "sensitivity", "stats", "walkforward"],
+    parser.add_argument("--mode", choices=["compare", "sensitivity", "stats", "walkforward", "stress"],
                         default="compare")
     args = parser.parse_args()
 
@@ -929,6 +1090,10 @@ def main():
 
     if args.mode == "walkforward":
         run_walkforward(all_data, config)
+        return
+
+    if args.mode == "stress":
+        run_stress(all_data, config)
         return
 
     # Profile comparison mode
