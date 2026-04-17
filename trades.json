@@ -540,15 +540,35 @@
     "shares": 8,
     "original_shares": 8,
     "entry_date": "2026-04-17",
-    "exit_price": null,
-    "exit_date": null,
-    "status": "open",
+    "exit_price": 3677.0,
+    "exit_date": "2026-04-17",
+    "status": "closed",
     "high_price": 3690.0,
     "stop_price": 3394.8,
     "entry_meta": {
       "rsi": 54.6,
       "adx": 27.0,
       "sma_slope": 2.09,
+      "ichimoku_bullish": true,
+      "market_regime": "bull"
+    },
+    "pnl": -104.0
+  },
+  {
+    "ticker": "8766.T",
+    "entry_price": 6979.0,
+    "shares": 4,
+    "original_shares": 4,
+    "entry_date": "2026-04-17",
+    "exit_price": null,
+    "exit_date": null,
+    "status": "open",
+    "high_price": 6979.0,
+    "stop_price": 6420.7,
+    "entry_meta": {
+      "rsi": 53.4,
+      "adx": 26.3,
+      "sma_slope": 2.96,
       "ichimoku_bullish": true,
       "market_regime": "bull"
     }
