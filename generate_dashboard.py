@@ -914,14 +914,21 @@ def generate_html(data: dict, config: dict = None, profile_label: str = "") -> s
     bull_only_on = data.get("bull_only_entry", False)
     regime_colors = {"bull": "#00C853", "bear": "#FF1744", "neutral": "#FFA726", "unknown": "#9E9E9E"}
     regime_labels = {"bull": "BULL", "bear": "BEAR", "neutral": "NEUTRAL", "unknown": "UNKNOWN"}
+    regime_tooltips = {
+        "bull": "上昇トレンド: 日経225が50日移動平均線を上回り、50日線が200日線を上回っている状態。順張り戦略に最適な局面。",
+        "bear": "下降トレンド: 日経225が50日移動平均線を下回り、50日線が200日線を下回っている状態。新規エントリーは1日1件に制限。",
+        "neutral": "方向感なし: 日経225の50日線と200日線が交差付近にあり、明確なトレンドがない状態。ダマしシグナルが出やすい。",
+        "unknown": "判定不能: 移動平均線の計算に十分なデータがないか、判定条件を満たさない状態。",
+    }
     regime_color = regime_colors.get(regime_name, "#9E9E9E")
     regime_label = regime_labels.get(regime_name, "UNKNOWN")
+    regime_tooltip = regime_tooltips.get(regime_name, "")
     if bull_only_on and regime_name != "bull":
-        entry_status = '<span style="color:#FF1744;font-weight:600">新規エントリー停止中</span>'
+        entry_status = '<span title="bull_only_entry: ON のため、BULL以外の局面では新規エントリーを全停止" style="color:#FF1744;font-weight:600;cursor:help">新規エントリー停止中</span>'
     elif bull_only_on:
-        entry_status = '<span style="color:#00C853;font-weight:600">エントリー継続</span>'
+        entry_status = '<span title="bull_only_entry: ON — BULL局面のため通常通りエントリー可能" style="color:#00C853;font-weight:600;cursor:help">エントリー継続</span>'
     else:
-        entry_status = '<span style="color:#9E9E9E">bull_only_entry: OFF</span>'
+        entry_status = '<span title="bull_only_entry: OFF — 全局面でエントリー可能（non-bull局面では損失リスクあり）" style="color:#9E9E9E;cursor:help">bull_only_entry: OFF</span>'
 
     # リアル移行準備度
     readiness = data.get("readiness") or {"criteria": [], "score_pct": 0, "passed_count": 0, "total_count": 0, "ready": False}
@@ -1136,8 +1143,8 @@ a.stock-link:hover {{ text-decoration:underline; }}
 
 <div class="regime-banner" style="border-left:4px solid {regime_color}">
   <div class="regime-left">
-    <span class="regime-badge" style="background:{regime_color};color:#121212">{regime_label}</span>
-    <span class="regime-price">日経225 &yen;{regime_price:,.0f} &nbsp; SMA50 &yen;{regime_sma50:,.0f} &nbsp; SMA200 &yen;{regime_sma200:,.0f}</span>
+    <span class="regime-badge" style="background:{regime_color};color:#121212;cursor:help" title="{regime_tooltip}">{regime_label}</span>
+    <span class="regime-price" style="cursor:help" title="日経225の現在値と移動平均線。BULL判定: 現在値 > SMA50 > SMA200">日経225 &yen;{regime_price:,.0f} &nbsp; SMA50 &yen;{regime_sma50:,.0f} &nbsp; SMA200 &yen;{regime_sma200:,.0f}</span>
   </div>
   <div class="regime-right">{entry_status}</div>
 </div>
