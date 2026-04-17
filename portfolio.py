@@ -326,7 +326,7 @@ def get_readiness_metrics(initial_balance: float = 300000) -> dict:
     - trade_count ≥ 100
     - profit_factor ≥ 1.5
     - max_dd_pct ≤ 10
-    - consecutive_profitable_months ≥ 3
+    - profitable_month_rate ≥ 60 (トレードのあった月のうち黒字月の割合)
     - win_rate ≥ 45
 
     Returns:
@@ -372,14 +372,12 @@ def get_readiness_metrics(initial_balance: float = 300000) -> dict:
             if dd_pct > max_dd_pct:
                 max_dd_pct = dd_pct
 
-    # Trailing consecutive profitable months
+    # Profitable month rate (months with trades only)
     monthly = get_monthly_performance()
-    consecutive_months = 0
-    for m in reversed(monthly):
-        if m["pnl"] > 0:
-            consecutive_months += 1
-        else:
-            break
+    months_with_trades = [m for m in monthly if m.get("trades", 0) > 0]
+    profitable_months = sum(1 for m in months_with_trades if m["pnl"] > 0)
+    active_months = len(months_with_trades)
+    profitable_month_rate = (profitable_months / active_months * 100) if active_months > 0 else 0.0
 
     criteria = [
         {
@@ -407,12 +405,12 @@ def get_readiness_metrics(initial_balance: float = 300000) -> dict:
             "display": f"{max_dd_pct:.1f}% / 10%",
         },
         {
-            "name": "consecutive_profitable_months",
-            "label": "連続黒字月",
-            "actual": consecutive_months,
-            "threshold": 3,
-            "passed": consecutive_months >= 3,
-            "display": f"{consecutive_months}/3ヶ月",
+            "name": "profitable_month_rate",
+            "label": "黒字月率",
+            "actual": round(profitable_month_rate, 1),
+            "threshold": 60,
+            "passed": profitable_month_rate >= 60,
+            "display": f"{profitable_months}/{active_months}ヶ月 ({profitable_month_rate:.0f}%)",
         },
         {
             "name": "win_rate",

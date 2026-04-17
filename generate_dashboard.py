@@ -1202,7 +1202,7 @@ a.stock-link:hover {{ text-decoration:underline; }}
 
 <div class="readiness-card">
   <div class="readiness-head">
-    <div class="readiness-title" data-tip="ペーパートレードからリアル運用に移行するための5基準（サンプル数/PF/最大DD/勝率/連続黒字月）の達成度">リアル移行準備度 {ready_score:.0f}% ({ready_passed}/{ready_total} 基準達成)</div>
+    <div class="readiness-title" data-tip="ペーパートレードからリアル運用に移行するための5基準（サンプル数/PF/最大DD/黒字月率/勝率）の達成度">リアル移行準備度 {ready_score:.0f}% ({ready_passed}/{ready_total} 基準達成)</div>
     <div class="readiness-status" style="color:{ready_color}">{ready_label}</div>
   </div>
   <div class="readiness-bar"><div class="readiness-bar-fill" style="width:{ready_score}%;background:{ready_color}"></div></div>
