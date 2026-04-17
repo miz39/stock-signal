@@ -44,11 +44,19 @@ td.num { text-align:right; font-variant-numeric:tabular-nums; }
 .policy-val { color:#E0E0E0; font-weight:600; }
 a.stock-link { color:#64B5F6; text-decoration:none; }
 a.stock-link:hover { text-decoration:underline; }
-.regime-banner { background:#1E1E1E; border-radius:10px; padding:14px; margin-bottom:12px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; }
+[data-tip] { position:relative; cursor:help; }
+[data-tip]:hover::after { content:attr(data-tip); position:absolute; bottom:calc(100% + 6px); left:50%; transform:translateX(-50%); background:#333; color:#E0E0E0; font-size:0.72rem; font-weight:400; line-height:1.4; padding:8px 12px; border-radius:6px; white-space:normal; width:max-content; max-width:280px; z-index:100; box-shadow:0 2px 8px rgba(0,0,0,0.4); pointer-events:none; }
+[data-tip]:hover::before { content:''; position:absolute; bottom:calc(100% + 2px); left:50%; transform:translateX(-50%); border:5px solid transparent; border-top-color:#333; z-index:100; pointer-events:none; }
+.regime-banner { background:#1E1E1E; border-radius:10px; padding:14px; margin-bottom:12px; }
+.regime-top { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; }
 .regime-left { display:flex; align-items:center; gap:10px; }
 .regime-badge { font-size:0.85rem; font-weight:700; padding:4px 12px; border-radius:4px; }
 .regime-price { font-size:0.75rem; color:#BDBDBD; }
 .regime-right { font-size:0.8rem; }
+.regime-legend { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:6px; margin-top:10px; padding-top:10px; border-top:1px solid #2A2A2A; }
+.regime-legend-item { display:flex; align-items:flex-start; gap:8px; font-size:0.72rem; color:#9E9E9E; padding:4px 0; }
+.regime-legend-dot { width:8px; height:8px; border-radius:2px; flex-shrink:0; margin-top:3px; }
+.regime-legend-name { font-weight:600; color:#BDBDBD; }
 .readiness-card { background:#1E1E1E; border-radius:10px; padding:14px; margin-bottom:20px; }
 .readiness-head { display:flex; justify-content:space-between; align-items:baseline; margin-bottom:8px; }
 .readiness-title { font-size:0.9rem; font-weight:600; color:#E0E0E0; }
@@ -72,63 +80,85 @@ a.stock-link:hover { text-decoration:underline; }
   .cards { grid-template-columns:repeat(2,1fr); }
   .card .value { font-size:1.2rem; }
   .policy-grid { grid-template-columns:1fr; }
+  .regime-legend { grid-template-columns:1fr; }
   table { font-size:0.75rem; }
   td, th { padding:6px 4px; }
+  [data-tip]:hover::after { left:0; transform:none; max-width:220px; }
 }
 </style>
 </head>
 <body>
 <h1>Paper Trade Dashboard</h1>
-<div class="updated">最終更新: 2026-04-17 10:58 JST &nbsp;|&nbsp; <a href="history.html" style="color:#64B5F6;text-decoration:none">実行履歴 &rarr;</a> &nbsp;|&nbsp; <a href="weekly-review.html" style="color:#64B5F6;text-decoration:none">週次レビュー &rarr;</a> &nbsp;|&nbsp; <a href="strategy.html" style="color:#64B5F6;text-decoration:none">戦略分析 &rarr;</a> &nbsp;|&nbsp; <a href="analysis.html" style="color:#64B5F6;text-decoration:none">AI分析 &rarr;</a> &nbsp;|&nbsp; <a href="policy.html" style="color:#64B5F6;text-decoration:none">運用方針 &rarr;</a></div>
+<div class="updated">最終更新: 2026-04-17 11:11 JST &nbsp;|&nbsp; <a href="history.html" style="color:#64B5F6;text-decoration:none">実行履歴 &rarr;</a> &nbsp;|&nbsp; <a href="weekly-review.html" style="color:#64B5F6;text-decoration:none">週次レビュー &rarr;</a> &nbsp;|&nbsp; <a href="strategy.html" style="color:#64B5F6;text-decoration:none">戦略分析 &rarr;</a> &nbsp;|&nbsp; <a href="analysis.html" style="color:#64B5F6;text-decoration:none">AI分析 &rarr;</a> &nbsp;|&nbsp; <a href="policy.html" style="color:#64B5F6;text-decoration:none">運用方針 &rarr;</a></div>
 
 <div class="hero-card">
-  <div class="label">総資産</div>
-  <div class="hero-value">&yen;311,758</div>
-  <div class="hero-change" style="color:#00C853">+11,758（+3.92%）</div>
+  <div class="label" data-tip="現金 + 保有株式の時価評価額の合計">総資産</div>
+  <div class="hero-value">&yen;311,909</div>
+  <div class="hero-change" style="color:#00C853">+11,909（+3.97%）</div>
   <div class="sub">初期資金 &yen;300,000</div>
 </div>
 
 <div class="cards">
   <div class="card">
-    <div class="label">株時価</div>
-    <div class="value">&yen;253,945</div>
+    <div class="label" data-tip="保有中の全銘柄の現在時価の合計">株時価</div>
+    <div class="value">&yen;254,095</div>
     <div class="sub">10銘柄保有</div>
   </div>
   <div class="card">
-    <div class="label">現金</div>
+    <div class="label" data-tip="初期資金から売買損益を反映した現在の現金残高">現金</div>
     <div class="value">&yen;57,813</div>
   </div>
   <div class="card">
-    <div class="label">確定損益</div>
+    <div class="label" data-tip="決済済みトレードの実現損益の合計">確定損益</div>
     <div class="value" style="color:#00C853">&yen;+6,699</div>
     <div class="sub">34トレード</div>
   </div>
   <div class="card">
-    <div class="label">含み損益</div>
-    <div class="value" style="color:#00C853">&yen;+5,059</div>
+    <div class="label" data-tip="保有中銘柄の（現在価格 − 取得価格）× 株数の合計。未決済のため変動する">含み損益</div>
+    <div class="value" style="color:#00C853">&yen;+5,210</div>
   </div>
   <div class="card">
-    <div class="label">勝率</div>
+    <div class="label" data-tip="決済済みトレードのうちプラスで終わった割合。50%超なら勝ち越し">勝率</div>
     <div class="value">50.0%</div>
     <div class="sub">17勝17敗</div>
   </div>
   <div class="card">
-    <div class="label">最大DD</div>
+    <div class="label" data-tip="最大ドローダウン: 累計損益のピークからの最大下落幅。小さいほど安定">最大DD</div>
     <div class="value red">&yen;10,836</div>
   </div>
 </div>
 
 <div class="regime-banner" style="border-left:4px solid #00C853">
-  <div class="regime-left">
-    <span class="regime-badge" style="background:#00C853;color:#121212;cursor:help" title="上昇トレンド: 日経225が50日移動平均線を上回り、50日線が200日線を上回っている状態。順張り戦略に最適な局面。">BULL</span>
-    <span class="regime-price" style="cursor:help" title="日経225の現在値と移動平均線。BULL判定: 現在値 > SMA50 > SMA200">日経225 &yen;58,930 &nbsp; SMA50 &yen;55,376 &nbsp; SMA200 &yen;48,849</span>
+  <div class="regime-top">
+    <div class="regime-left">
+      <span class="regime-badge" style="background:#00C853;color:#121212">BULL</span>
+      <span class="regime-price">日経225 &yen;59,017 &nbsp; SMA50 &yen;55,378 &nbsp; SMA200 &yen;48,850</span>
+    </div>
+    <div class="regime-right"><span data-tip="bull_only_entry: ON — BULL局面のため通常通りエントリー可能" style="color:#00C853;font-weight:600">エントリー継続</span></div>
   </div>
-  <div class="regime-right"><span title="bull_only_entry: ON — BULL局面のため通常通りエントリー可能" style="color:#00C853;font-weight:600;cursor:help">エントリー継続</span></div>
+  <div class="regime-legend">
+    <div class="regime-legend-item style="opacity:1"">
+      <div class="regime-legend-dot" style="background:#00C853"></div>
+      <div><span class="regime-legend-name">BULL</span> — 上昇トレンド。現在値 &gt; SMA50 &gt; SMA200。順張り戦略に最適。</div>
+    </div>
+    <div class="regime-legend-item style="opacity:0.5"">
+      <div class="regime-legend-dot" style="background:#FFA726"></div>
+      <div><span class="regime-legend-name">NEUTRAL</span> — 方向感なし。SMA50/200が交差付近。ダマしが出やすい。</div>
+    </div>
+    <div class="regime-legend-item style="opacity:0.5"">
+      <div class="regime-legend-dot" style="background:#FF1744"></div>
+      <div><span class="regime-legend-name">BEAR</span> — 下降トレンド。現在値 &lt; SMA50 &lt; SMA200。新規は1日1件に制限。</div>
+    </div>
+    <div class="regime-legend-item style="opacity:0.5"">
+      <div class="regime-legend-dot" style="background:#9E9E9E"></div>
+      <div><span class="regime-legend-name">UNKNOWN</span> — 判定不能。十分なデータがないか判定条件外。</div>
+    </div>
+  </div>
 </div>
 
 <div class="readiness-card">
   <div class="readiness-head">
-    <div class="readiness-title">リアル移行準備度 40% (2/5 基準達成)</div>
+    <div class="readiness-title" data-tip="ペーパートレードからリアル運用に移行するための5基準（サンプル数/PF/最大DD/勝率/連続黒字月）の達成度">リアル移行準備度 40% (2/5 基準達成)</div>
     <div class="readiness-status" style="color:#64B5F6">ペーパー継続</div>
   </div>
   <div class="readiness-bar"><div class="readiness-bar-fill" style="width:40.0%;background:#64B5F6"></div></div>
@@ -138,12 +168,12 @@ a.stock-link:hover { text-decoration:underline; }
 <div class="section">
   <h2>トレード分析（34件のクローズドトレード）</h2>
   <div class="ta-summary">
-    <div class="ta-stat"><div class="ta-stat-label">勝率</div><div class="ta-stat-value">50.0%</div></div>
-    <div class="ta-stat"><div class="ta-stat-label">期待値/トレード</div><div class="ta-stat-value" style="color:#00C853">+&yen;197</div></div>
-    <div class="ta-stat"><div class="ta-stat-label">平均勝ち</div><div class="ta-stat-value green">+&yen;1,433</div></div>
-    <div class="ta-stat"><div class="ta-stat-label">平均負け</div><div class="ta-stat-value red">&yen;-1,039</div></div>
-    <div class="ta-stat"><div class="ta-stat-label">最大勝ち</div><div class="ta-stat-value green">+&yen;5,540</div></div>
-    <div class="ta-stat"><div class="ta-stat-label">最大負け</div><div class="ta-stat-value red">&yen;-2,466</div></div>
+    <div class="ta-stat"><div class="ta-stat-label" data-tip="決済済みトレードの勝率">勝率</div><div class="ta-stat-value">50.0%</div></div>
+    <div class="ta-stat"><div class="ta-stat-label" data-tip="1トレードあたりの期待利益。（平均勝ち × 勝率）−（平均負け × 敗率）">期待値/トレード</div><div class="ta-stat-value" style="color:#00C853">+&yen;197</div></div>
+    <div class="ta-stat"><div class="ta-stat-label" data-tip="勝ちトレードの平均利益額">平均勝ち</div><div class="ta-stat-value green">+&yen;1,433</div></div>
+    <div class="ta-stat"><div class="ta-stat-label" data-tip="負けトレードの平均損失額">平均負け</div><div class="ta-stat-value red">&yen;-1,039</div></div>
+    <div class="ta-stat"><div class="ta-stat-label" data-tip="単一トレードでの最大利益">最大勝ち</div><div class="ta-stat-value green">+&yen;5,540</div></div>
+    <div class="ta-stat"><div class="ta-stat-label" data-tip="単一トレードでの最大損失">最大負け</div><div class="ta-stat-value red">&yen;-2,466</div></div>
   </div>
 
   <div class="ta-grid">
@@ -233,20 +263,20 @@ a.stock-link:hover { text-decoration:underline; }
 </div>
 
 <div class="section">
-  <h2>シグナル精度（保有期間別）</h2>
+  <h2 data-tip="保有期間の長さ別に勝率・平均リターンを比較。短期決済と長期保有のどちらが有利か確認">シグナル精度（保有期間別）</h2>
   <div class="chart-wrap"><canvas id="sigAccChart" height="220"></canvas></div>
 </div>
 
 <div class="section">
-  <h2>RSI 有効性分析</h2>
+  <h2 data-tip="エントリー時のRSI値帯と最終損益の関係。RSI 50-65のスイートスポットが有効か検証">RSI 有効性分析</h2>
   <div class="chart-wrap"><canvas id="rsiChart" height="220"></canvas></div>
 </div>
 
 <div class="section">
-  <h2>直近の買い候補 TOP5</h2>
+  <h2 data-tip="直近スキャンでBUYシグナルが出た銘柄の上位5件。複合スコアの高い順">直近の買い候補 TOP5</h2>
   <div style="overflow-x:auto">
   <table>
-    <thead><tr><th>銘柄</th><th>株価</th><th>RSI</th><th>Score</th><th>TV推奨</th><th>推奨株数</th></tr></thead>
+    <thead><tr><th>銘柄</th><th>株価</th><th data-tip="相対力指数 (0-100)。50-65がエントリー好適帯。70超は過熱">RSI</th><th data-tip="7要素の加重スコア (0-1)。高いほどエントリー条件が整っている">Score</th><th data-tip="TradingViewテクニカル推奨 (BUY/NEUTRAL/SELL)">TV推奨</th><th>推奨株数</th></tr></thead>
     <tbody><tr>
 <td>レーザーテック<br><span class="ticker">6920</span></td>
 <td class="num">&yen;42,020</td>
@@ -291,76 +321,76 @@ a.stock-link:hover { text-decoration:underline; }
   <h2>保有中ポジション</h2>
   <div style="overflow-x:auto">
   <table>
-    <thead><tr><th>銘柄</th><th>取得</th><th>現在</th><th>株数</th><th>損益</th><th>保有</th></tr></thead>
+    <thead><tr><th>銘柄</th><th data-tip="エントリー時の約定価格">取得</th><th data-tip="最新の終値 or リアルタイム価格">現在</th><th>株数</th><th data-tip="（現在価格 − 取得価格）× 株数">損益</th><th data-tip="エントリーからの経過日数">保有</th></tr></thead>
     <tbody><tr>
 <td><a class="stock-link" href="stock/9502.html">中部電力</a><br><span class="ticker">9502</span></td>
 <td class="num">&yen;2,600</td>
-<td class="num">&yen;2,908</td>
+<td class="num">&yen;2,910</td>
 <td class="num">11</td>
-<td class="num" style="color:#00C853">+3,382<br><span class="small">(+11.8%)</span></td>
+<td class="num" style="color:#00C853">+3,410<br><span class="small">(+11.9%)</span></td>
 <td class="num">25日</td>
 </tr><tr>
 <td><a class="stock-link" href="stock/9107.html">川崎汽船</a><br><span class="ticker">9107</span></td>
 <td class="num">&yen;2,572</td>
-<td class="num">&yen;2,656</td>
+<td class="num">&yen;2,660</td>
 <td class="num">11</td>
-<td class="num" style="color:#00C853">+930<br><span class="small">(+3.3%)</span></td>
+<td class="num" style="color:#00C853">+968<br><span class="small">(+3.4%)</span></td>
 <td class="num">25日</td>
 </tr><tr>
 <td><a class="stock-link" href="stock/2282.html">日本ハム</a><br><span class="ticker">2282</span></td>
 <td class="num">&yen;6,851</td>
-<td class="num">&yen;6,905</td>
+<td class="num">&yen;6,899</td>
 <td class="num">2</td>
-<td class="num" style="color:#00C853">+108<br><span class="small">(+0.8%)</span></td>
+<td class="num" style="color:#00C853">+96<br><span class="small">(+0.7%)</span></td>
 <td class="num">24日</td>
 </tr><tr>
 <td><a class="stock-link" href="stock/3086.html">J.フロント リテイリング</a><br><span class="ticker">3086</span></td>
 <td class="num">&yen;2,495</td>
-<td class="num">&yen;2,482</td>
+<td class="num">&yen;2,478</td>
 <td class="num">12</td>
-<td class="num" style="color:#FF1744">-150<br><span class="small">(-0.5%)</span></td>
+<td class="num" style="color:#FF1744">-210<br><span class="small">(-0.7%)</span></td>
 <td class="num">21日</td>
 </tr><tr>
 <td><a class="stock-link" href="stock/3099.html">三越伊勢丹ホールディングス</a><br><span class="ticker">3099</span></td>
 <td class="num">&yen;2,931</td>
-<td class="num">&yen;3,168</td>
+<td class="num">&yen;3,173</td>
 <td class="num">5</td>
-<td class="num" style="color:#00C853">+1,184<br><span class="small">(+8.1%)</span></td>
+<td class="num" style="color:#00C853">+1,208<br><span class="small">(+8.2%)</span></td>
 <td class="num">17日</td>
 </tr><tr>
 <td><a class="stock-link" href="stock/2503.html">キリンホールディングス</a><br><span class="ticker">2503</span></td>
 <td class="num">&yen;2,568</td>
-<td class="num">&yen;2,596</td>
+<td class="num">&yen;2,598</td>
 <td class="num">11</td>
-<td class="num" style="color:#00C853">+299<br><span class="small">(+1.1%)</span></td>
+<td class="num" style="color:#00C853">+321<br><span class="small">(+1.1%)</span></td>
 <td class="num">17日</td>
 </tr><tr>
 <td><a class="stock-link" href="stock/4005.html">住友化学</a><br><span class="ticker">4005</span></td>
 <td class="num">&yen;512</td>
-<td class="num">&yen;530</td>
+<td class="num">&yen;531</td>
 <td class="num">29</td>
-<td class="num" style="color:#00C853">+531<br><span class="small">(+3.6%)</span></td>
+<td class="num" style="color:#00C853">+554<br><span class="small">(+3.7%)</span></td>
 <td class="num">17日</td>
 </tr><tr>
 <td><a class="stock-link" href="stock/7186.html">コンコルディア・フィナンシャルグループ</a><br><span class="ticker">7186</span></td>
 <td class="num">&yen;1,468</td>
-<td class="num">&yen;1,508</td>
+<td class="num">&yen;1,505</td>
 <td class="num">20</td>
-<td class="num" style="color:#00C853">+820<br><span class="small">(+2.8%)</span></td>
+<td class="num" style="color:#00C853">+750<br><span class="small">(+2.6%)</span></td>
 <td class="num">16日</td>
 </tr><tr>
 <td><a class="stock-link" href="stock/5019.html">出光興産</a><br><span class="ticker">5019</span></td>
 <td class="num">&yen;1,586</td>
-<td class="num">&yen;1,497</td>
+<td class="num">&yen;1,498</td>
 <td class="num">20</td>
-<td class="num" style="color:#FF1744">-1,780<br><span class="small">(-5.6%)</span></td>
+<td class="num" style="color:#FF1744">-1,760<br><span class="small">(-5.5%)</span></td>
 <td class="num">9日</td>
 </tr><tr>
 <td><a class="stock-link" href="stock/4061.html">デンカ</a><br><span class="ticker">4061</span></td>
 <td class="num">&yen;3,690</td>
-<td class="num">&yen;3,657</td>
+<td class="num">&yen;3,674</td>
 <td class="num">8</td>
-<td class="num" style="color:#FF1744">-264<br><span class="small">(-0.9%)</span></td>
+<td class="num" style="color:#FF1744">-128<br><span class="small">(-0.4%)</span></td>
 <td class="num">0日</td>
 </tr></tbody>
   </table>
@@ -368,10 +398,10 @@ a.stock-link:hover { text-decoration:underline; }
 </div>
 
 <div class="section">
-  <h2>直近クローズドトレード</h2>
+  <h2 data-tip="決済済みの直近20トレード。利確・損切り・トレーリングストップ等で終了したもの">直近クローズドトレード</h2>
   <div style="overflow-x:auto">
   <table>
-    <thead><tr><th>銘柄</th><th>取得</th><th>売却</th><th>株数</th><th>損益</th><th>期間</th></tr></thead>
+    <thead><tr><th>銘柄</th><th>取得</th><th data-tip="イグジット時の約定価格">売却</th><th>株数</th><th data-tip="実現損益 =（売却価格 − 取得価格）× 株数">損益</th><th>期間</th></tr></thead>
     <tbody><tr>
 <td>資生堂<br><span class="ticker">4911</span></td>
 <td class="num">&yen;3,367</td>
@@ -519,7 +549,7 @@ a.stock-link:hover { text-decoration:underline; }
 
 <script>
 const labels = ["2026-03-04", "2026-03-05", "2026-03-06", "2026-03-07", "2026-03-08", "2026-03-09", "2026-03-10", "2026-03-11", "2026-03-12", "2026-03-13", "2026-03-14", "2026-03-15", "2026-03-16", "2026-03-17", "2026-03-18", "2026-03-19", "2026-03-20", "2026-03-21", "2026-03-22", "2026-03-23", "2026-03-24", "2026-03-25", "2026-03-26", "2026-03-27", "2026-03-28", "2026-03-29", "2026-03-30", "2026-03-31", "2026-04-01", "2026-04-02", "2026-04-03", "2026-04-04", "2026-04-05", "2026-04-06", "2026-04-07", "2026-04-08", "2026-04-09", "2026-04-10", "2026-04-11", "2026-04-12", "2026-04-13", "2026-04-14", "2026-04-15", "2026-04-16", "2026-04-17"];
-const data = [300000, 300000, 300000, 300000, 300000, 293542.0, 293542.0, 293542.0, 294766.0, 293630.8, 293630.8, 293630.8, 292423.3, 292423.3, 292423.3, 292423.3, 292423.3, 292423.3, 292423.3, 289696.0, 288174.1, 288174.1, 294722.1, 294778.1, 294778.1, 294778.1, 294778.1, 297920.3, 298942.8, 300042.8, 301112.9, 301112.9, 301112.9, 301112.9, 301112.9, 309795.0, 309795.0, 309165.0, 309165.0, 309165.0, 309165.0, 309165.0, 309165.0, 309165.0, 311758.4];
+const data = [300000, 300000, 300000, 300000, 300000, 293542.0, 293542.0, 293542.0, 294766.0, 293630.8, 293630.8, 293630.8, 292423.3, 292423.3, 292423.3, 292423.3, 292423.3, 292423.3, 292423.3, 289696.0, 288174.1, 288174.1, 294722.1, 294778.1, 294778.1, 294778.1, 294778.1, 297920.3, 298942.8, 300042.8, 301112.9, 301112.9, 301112.9, 301112.9, 301112.9, 309795.0, 309795.0, 309165.0, 309165.0, 309165.0, 309165.0, 309165.0, 309165.0, 309165.0, 311908.6];
 if (labels.length > 0) {
   const ctx = document.getElementById('equityChart').getContext('2d');
   const gradient = ctx.createLinearGradient(0,0,0,200);
@@ -583,7 +613,7 @@ if (labels.length > 0) {
 
 // Sector Pie Chart
 const sectorLabels = ["\u904b\u8f38\u30fb\u901a\u4fe1\u30fb\u30b5\u30fc\u30d3\u30b9", "\u98df\u54c1", "\u4e0d\u52d5\u7523\u30fb\u5009\u5eab", "\u5316\u5b66\u30fb\u533b\u85ac", "\u81ea\u52d5\u8eca\u30fb\u7cbe\u5bc6", "\u9244\u92fc\u30fb\u91d1\u5c5e", "\u73fe\u91d1"];
-const sectorValues = [61204, 42360, 45630, 44640, 30170, 29940, 57813];
+const sectorValues = [61270, 42370, 45595, 44800, 30100, 29960, 57813];
 if (sectorLabels.length > 0) {
   const colors = ['#2196F3','#00C853','#FF9800','#9C27B0','#F44336','#00BCD4','#FF5722','#795548','#607D8B','#E91E63','#8BC34A','#FFC107'];
   new Chart(document.getElementById('sectorChart'), {
