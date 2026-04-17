@@ -809,8 +809,8 @@ def generate_policy_section(config: dict = None) -> str:
       <div class="policy-title" data-tip="エントリーとイグジットの判定ロジック">戦略</div>
       <div class="policy-body">
         <div class="policy-name" data-tip="短期移動平均線が長期を上回った（ゴールデンクロス）タイミングで、RSIが上昇モメンタムを確認している局面にエントリーする順張り戦略">ゴールデンクロス + RSI コンファーメーション</div>
-        <div class="policy-rule buy-rule" data-tip="SMA{sma_s}がSMA{sma_l}を上抜け（GC）、RSI {rsi_min}-{rsi_max} の上昇モメンタム帯、終値がSMA{sma_t}より上（長期上昇トレンド確認）、ADX≥{adx_thr}（トレンド強度）の全条件を満たす時にBUY">買い: SMA{sma_s} &gt; SMA{sma_l} &amp; RSI {rsi_min}-{rsi_max} &amp; 株価 &gt; SMA{sma_t} &amp; ADX≥{adx_thr}</div>
-        <div class="policy-rule sell-rule" data-tip="トレーリングストップ（-{stop_loss_pct}%）で損切り、+{profit_tighten}%でストップを建値に移動、+{profit_half}%で半分利確、+{profit_full}%で全利確。CoCh（トレンド構造崩壊）でも即イグジット">売り: ストップ -{stop_loss_pct}% / 建値移動 +{profit_tighten}% / 半分利確 +{profit_half}% / 全利確 +{profit_full}%</div>
+        <div class="policy-rule buy-rule" data-tip="SMA = Simple Moving Average（単純移動平均線）。SMA{sma_s}がSMA{sma_l}を上抜け（Golden Cross）、RSI（Relative Strength Index）{rsi_min}-{rsi_max} の上昇モメンタム帯、終値がSMA{sma_t}より上（長期上昇トレンド確認）、ADX（Average Directional Index）≥{adx_thr}（トレンド強度）の全条件を満たす時にBUY">買い: SMA{sma_s} &gt; SMA{sma_l} &amp; RSI {rsi_min}-{rsi_max} &amp; 株価 &gt; SMA{sma_t} &amp; ADX≥{adx_thr}</div>
+        <div class="policy-rule sell-rule" data-tip="Trailing Stop（トレーリングストップ: -{stop_loss_pct}%）で損切り、+{profit_tighten}%でストップを建値に移動、+{profit_half}%で半分利確、+{profit_full}%で全利確。CoCh = Change of Character（トレンド構造崩壊: 直近の高値安値パターンが崩れた時）でも即イグジット">売り: ストップ -{stop_loss_pct}% / 建値移動 +{profit_tighten}% / 半分利確 +{profit_half}% / 全利確 +{profit_full}%</div>
       </div>
     </div>
     <div class="policy-card">
@@ -953,14 +953,23 @@ def generate_html(data: dict, config: dict = None, profile_label: str = "") -> s
 
     # リアル移行準備度
     readiness = data.get("readiness") or {"criteria": [], "score_pct": 0, "passed_count": 0, "total_count": 0, "ready": False}
+    readiness_tips = {
+        "trade_count": "Trade Count — 統計的に有意な結果を得るために必要な最低トレード数",
+        "profit_factor": "Profit Factor — 総利益 ÷ 総損失。1.0超で利益が損失を上回る。1.5以上が目標",
+        "max_dd_pct": "Maximum Drawdown — 累計損益のピークからの最大下落率。資金管理の安定性を測る",
+        "profitable_month_rate": "Profitable Month Rate — トレードのあった月のうち黒字で終わった月の割合。トレードゼロ月は除外",
+        "win_rate": "Win Rate — 決済済みトレードのうちプラスで終了した割合",
+    }
     readiness_rows = ""
     for c in readiness.get("criteria", []):
         icon = "✓" if c["passed"] else "✗"
         row_color = "#00C853" if c["passed"] else "#FF8A80"
+        tip = readiness_tips.get(c["name"], "")
+        tip_attr = f' data-tip="{tip}"' if tip else ""
         readiness_rows += (
             f'<div class="readiness-row" style="color:{row_color}">'
             f'<span class="readiness-icon">{icon}</span>'
-            f'<span class="readiness-label">{c["label"]}</span>'
+            f'<span class="readiness-label"{tip_attr}>{c["label"]}</span>'
             f'<span class="readiness-value">{c["display"]}</span>'
             f'</div>'
         )
@@ -1153,21 +1162,21 @@ a.stock-link:hover {{ text-decoration:underline; }}
     <div class="value">&yen;{cash:,.0f}</div>
   </div>
   <div class="card">
-    <div class="label" data-tip="決済済みトレードの実現損益の合計">確定損益</div>
+    <div class="label" data-tip="Realized PnL（実現損益）: 決済済みトレードの利益と損失の合計">確定損益</div>
     <div class="value" style="color:{pnl_color(total_pnl)}">&yen;{pnl_sign(total_pnl)}</div>
     <div class="sub">{data['trade_count']}トレード</div>
   </div>
   <div class="card">
-    <div class="label" data-tip="保有中銘柄の（現在価格 − 取得価格）× 株数の合計。未決済のため変動する">含み損益</div>
+    <div class="label" data-tip="Unrealized PnL（含み損益）: 保有中銘柄の（現在価格 − 取得価格）× 株数の合計。未決済のため変動する">含み損益</div>
     <div class="value" style="color:{pnl_color(unrealized_pnl)}">&yen;{pnl_sign(unrealized_pnl)}</div>
   </div>
   <div class="card">
-    <div class="label" data-tip="決済済みトレードのうちプラスで終わった割合。50%超なら勝ち越し">勝率</div>
+    <div class="label" data-tip="Win Rate（勝率）: 決済済みトレードのうちプラスで終わった割合。50%超なら勝ち越し">勝率</div>
     <div class="value">{data['win_rate']}%</div>
     <div class="sub">{data['wins']}勝{data['losses']}敗</div>
   </div>
   <div class="card">
-    <div class="label" data-tip="最大ドローダウン: 累計損益のピークからの最大下落幅。小さいほど安定">最大DD</div>
+    <div class="label" data-tip="Maximum Drawdown（最大ドローダウン）: 累計損益のピークからの最大下落幅。小さいほど安定">最大DD</div>
     <div class="value red">&yen;{data['max_dd']:,.0f}</div>
   </div>
 </div>
@@ -1212,12 +1221,12 @@ a.stock-link:hover {{ text-decoration:underline; }}
 <div class="section">
   <h2>トレード分析（{ta_summary['trade_count']}件のクローズドトレード）</h2>
   <div class="ta-summary">
-    <div class="ta-stat"><div class="ta-stat-label" data-tip="決済済みトレードの勝率">勝率</div><div class="ta-stat-value">{ta_summary['win_rate']:.1f}%</div></div>
-    <div class="ta-stat"><div class="ta-stat-label" data-tip="1トレードあたりの期待利益。（平均勝ち × 勝率）−（平均負け × 敗率）">期待値/トレード</div><div class="ta-stat-value" style="color:{ta_exp_color}">{ta_exp_sign}&yen;{ta_summary['expectancy']:,.0f}</div></div>
-    <div class="ta-stat"><div class="ta-stat-label" data-tip="勝ちトレードの平均利益額">平均勝ち</div><div class="ta-stat-value green">+&yen;{ta_summary['avg_win']:,.0f}</div></div>
-    <div class="ta-stat"><div class="ta-stat-label" data-tip="負けトレードの平均損失額">平均負け</div><div class="ta-stat-value red">&yen;{ta_summary['avg_loss']:,.0f}</div></div>
-    <div class="ta-stat"><div class="ta-stat-label" data-tip="単一トレードでの最大利益">最大勝ち</div><div class="ta-stat-value green">+&yen;{ta_summary['best_trade']:,.0f}</div></div>
-    <div class="ta-stat"><div class="ta-stat-label" data-tip="単一トレードでの最大損失">最大負け</div><div class="ta-stat-value red">&yen;{ta_summary['worst_trade']:,.0f}</div></div>
+    <div class="ta-stat"><div class="ta-stat-label" data-tip="Win Rate（勝率）: 決済済みトレードのうちプラスで終了した割合">勝率</div><div class="ta-stat-value">{ta_summary['win_rate']:.1f}%</div></div>
+    <div class="ta-stat"><div class="ta-stat-label" data-tip="Expected Value（期待値）: 1トレードあたりの期待利益。（平均勝ち × 勝率）−（平均負け × 敗率）">期待値/トレード</div><div class="ta-stat-value" style="color:{ta_exp_color}">{ta_exp_sign}&yen;{ta_summary['expectancy']:,.0f}</div></div>
+    <div class="ta-stat"><div class="ta-stat-label" data-tip="Average Win（平均勝ち）: 勝ちトレードの平均利益額">平均勝ち</div><div class="ta-stat-value green">+&yen;{ta_summary['avg_win']:,.0f}</div></div>
+    <div class="ta-stat"><div class="ta-stat-label" data-tip="Average Loss（平均負け）: 負けトレードの平均損失額">平均負け</div><div class="ta-stat-value red">&yen;{ta_summary['avg_loss']:,.0f}</div></div>
+    <div class="ta-stat"><div class="ta-stat-label" data-tip="Best Trade（最大勝ち）: 単一トレードでの最大利益">最大勝ち</div><div class="ta-stat-value green">+&yen;{ta_summary['best_trade']:,.0f}</div></div>
+    <div class="ta-stat"><div class="ta-stat-label" data-tip="Worst Trade（最大負け）: 単一トレードでの最大損失">最大負け</div><div class="ta-stat-value red">&yen;{ta_summary['worst_trade']:,.0f}</div></div>
   </div>
 
   <div class="ta-grid">
@@ -1270,12 +1279,12 @@ a.stock-link:hover {{ text-decoration:underline; }}
 </div>
 
 <div class="section">
-  <h2 data-tip="保有期間の長さ別に勝率・平均リターンを比較。短期決済と長期保有のどちらが有利か確認">シグナル精度（保有期間別）</h2>
+  <h2 data-tip="Signal Accuracy by Holding Period: 保有期間の長さ別に勝率・平均リターンを比較。短期決済と長期保有のどちらが有利か確認">シグナル精度（保有期間別）</h2>
   <div class="chart-wrap"><canvas id="sigAccChart" height="220"></canvas></div>
 </div>
 
 <div class="section">
-  <h2 data-tip="エントリー時のRSI値帯と最終損益の関係。RSI 50-65のスイートスポットが有効か検証">RSI 有効性分析</h2>
+  <h2 data-tip="RSI Effectiveness Analysis: エントリー時のRSI（Relative Strength Index）値帯と最終損益の関係。RSI 50-65のスイートスポットが有効か検証">RSI 有効性分析</h2>
   <div class="chart-wrap"><canvas id="rsiChart" height="220"></canvas></div>
 </div>
 
@@ -1283,7 +1292,7 @@ a.stock-link:hover {{ text-decoration:underline; }}
   <h2 data-tip="直近スキャンでBUYシグナルが出た銘柄の上位5件。複合スコアの高い順">直近の買い候補 TOP5</h2>
   <div style="overflow-x:auto">
   <table>
-    <thead><tr><th>銘柄</th><th>株価</th><th data-tip="相対力指数 (0-100)。50-65がエントリー好適帯。70超は過熱">RSI</th><th data-tip="7要素の加重スコア (0-1)。高いほどエントリー条件が整っている">Score</th><th data-tip="TradingViewテクニカル推奨 (BUY/NEUTRAL/SELL)">TV推奨</th><th>推奨株数</th></tr></thead>
+    <thead><tr><th>銘柄</th><th>株価</th><th data-tip="Relative Strength Index（相対力指数）: 0-100の値。50-65がエントリー好適帯。70超は過熱">RSI</th><th data-tip="Composite Score（複合スコア）: 7要素の加重スコア (0-1)。高いほどエントリー条件が整っている">Score</th><th data-tip="TradingView Recommendation: TradingViewのテクニカル分析に基づく売買推奨 (BUY/NEUTRAL/SELL)">TV推奨</th><th>推奨株数</th></tr></thead>
     <tbody>{buy_candidate_rows}</tbody>
   </table>
   </div>
