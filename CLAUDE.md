@@ -26,9 +26,18 @@
 - Discord通知にプロファイル名ラベルが付く（default以外）
 
 ## エントリー条件（共通）
-- SMA25 > SMA75（ゴールデンクロス）+ RSI 50-65 + 終値 > SMA200
+- SMA25 > SMA100（ゴールデンクロス）+ RSI 50-65 + 終値 > SMA200 + ADX≥25
 - 1日最大3エントリー / 同一セクター最大2銘柄
 - 損切り後7日間は同一銘柄再エントリー禁止
+- 決算発表前 N 日（既定3日）はBUYスキップ（`earnings_blackout_enabled`）
+- `bull_only_entry: true` で neutral/bear/unknown 局面の新規エントリーを全停止
+- 日経225 前日比 -5% 以下で新規エントリー全停止（`crash_detection_enabled`）
+
+## 自動通知 / ダッシュボード
+- **日次サマリ通知**: 引け後（JST 15時以降）に Slack に保有・アクション・週次パフォーマンス・レジームを投稿（`daily_summary_enabled`）
+- **市場クラッシュ警告**: 日経225 前日比 ≤ -3% で警告、≤ -5% で critical + 新規エントリー全停止
+- **リアル移行準備度**: ダッシュボード上部に5基準（trade_count/PF/max_dd/win_rate/連続黒字月）の進捗バー表示
+- **トレード分析**: ダッシュボードに exit_reason / 保有日数 / セクター / 銘柄別の集計テーブルを表示
 
 ## MCP トレーディングワークフロー
 
@@ -125,7 +134,7 @@ LLM API コスト不要（Claude Code Max プラン定額内）。
 |----------|------|
 | `backtest.py` | bot.py の `!backtest` コマンド用（単一銘柄シミュレーション） |
 | `backtest_multi.py` | bot.py の `!simulate` コマンド用（マルチエージェント判断） |
-| `backtest_improved.py` | スタンドアロン戦略比較ツール（`python3 backtest_improved.py` で直接実行） |
+| `backtest_improved.py` | スタンドアロン戦略比較ツール（モード: profile / sensitivity / stats / walkforward / **stress**） |
 
 ## データファイル（git管理対象）
 | ファイル | 内容 |
@@ -182,6 +191,7 @@ python3 backtest_improved.py                     # プロファイル比較（de
 python3 backtest_improved.py --mode sensitivity  # パラメータ感度分析
 python3 backtest_improved.py --mode stats        # 統計分析（ブートストラップCI等）
 python3 backtest_improved.py --mode walkforward  # ウォークフォワード検証
+python3 backtest_improved.py --mode stress       # ローリング3ヶ月窓×レジーム別集計
 
 # CLI（Slack Bot から利用、JSON出力）
 python3 cli.py rule
