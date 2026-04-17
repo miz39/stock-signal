@@ -24,6 +24,8 @@ REVIEW_OUTPUT = os.path.join(DOCS_DIR, "weekly-review.html")
 # 銘柄名マッピング
 from nikkei225 import NIKKEI_225, get_sector
 from portfolio import get_cash_balance, set_profile, get_readiness_metrics, get_trade_analysis
+from strategy import detect_market_regime
+from data import fetch_stock_data
 
 
 def load_config() -> dict:
@@ -321,6 +323,18 @@ def build_dashboard_data(trades: list, initial_balance: float = 300000, history:
     # Trade analysis (exit reason, holding period, sector, ticker breakdowns)
     trade_analysis = get_trade_analysis()
 
+    # Market regime
+    regime_info = {"regime": "unknown", "price": 0, "sma50": 0, "sma200": 0}
+    bull_only = False
+    try:
+        cfg = load_config()
+        bull_only = cfg.get("strategy", {}).get("bull_only_entry", False)
+        nk_data = fetch_stock_data("^N225", period="1y")
+        if nk_data is not None and not nk_data.empty:
+            regime_info = detect_market_regime(nk_data)
+    except Exception:
+        pass
+
     # Signal accuracy (holding period buckets)
     signal_accuracy = _build_signal_accuracy(closed_trades)
 
@@ -383,6 +397,8 @@ def build_dashboard_data(trades: list, initial_balance: float = 300000, history:
         "latest_buy_candidates": latest_buy_candidates,
         "readiness": readiness,
         "trade_analysis": trade_analysis,
+        "regime": regime_info,
+        "bull_only_entry": bull_only,
     }
 
 
@@ -889,6 +905,24 @@ def generate_html(data: dict, config: dict = None, profile_label: str = "") -> s
     else:
         closed_rows = '<tr><td colspan="6" class="empty">クローズドトレードはありません</td></tr>'
 
+    # Market regime banner
+    regime = data.get("regime", {})
+    regime_name = regime.get("regime", "unknown")
+    regime_price = regime.get("price", 0)
+    regime_sma50 = regime.get("sma50", 0)
+    regime_sma200 = regime.get("sma200", 0)
+    bull_only_on = data.get("bull_only_entry", False)
+    regime_colors = {"bull": "#00C853", "bear": "#FF1744", "neutral": "#FFA726", "unknown": "#9E9E9E"}
+    regime_labels = {"bull": "BULL", "bear": "BEAR", "neutral": "NEUTRAL", "unknown": "UNKNOWN"}
+    regime_color = regime_colors.get(regime_name, "#9E9E9E")
+    regime_label = regime_labels.get(regime_name, "UNKNOWN")
+    if bull_only_on and regime_name != "bull":
+        entry_status = '<span style="color:#FF1744;font-weight:600">新規エントリー停止中</span>'
+    elif bull_only_on:
+        entry_status = '<span style="color:#00C853;font-weight:600">エントリー継続</span>'
+    else:
+        entry_status = '<span style="color:#9E9E9E">bull_only_entry: OFF</span>'
+
     # リアル移行準備度
     readiness = data.get("readiness") or {"criteria": [], "score_pct": 0, "passed_count": 0, "total_count": 0, "ready": False}
     readiness_rows = ""
@@ -1026,6 +1060,11 @@ td.num {{ text-align:right; font-variant-numeric:tabular-nums; }}
 .policy-val {{ color:#E0E0E0; font-weight:600; }}
 a.stock-link {{ color:#64B5F6; text-decoration:none; }}
 a.stock-link:hover {{ text-decoration:underline; }}
+.regime-banner {{ background:#1E1E1E; border-radius:10px; padding:14px; margin-bottom:12px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; }}
+.regime-left {{ display:flex; align-items:center; gap:10px; }}
+.regime-badge {{ font-size:0.85rem; font-weight:700; padding:4px 12px; border-radius:4px; }}
+.regime-price {{ font-size:0.75rem; color:#BDBDBD; }}
+.regime-right {{ font-size:0.8rem; }}
 .readiness-card {{ background:#1E1E1E; border-radius:10px; padding:14px; margin-bottom:20px; }}
 .readiness-head {{ display:flex; justify-content:space-between; align-items:baseline; margin-bottom:8px; }}
 .readiness-title {{ font-size:0.9rem; font-weight:600; color:#E0E0E0; }}
@@ -1093,6 +1132,14 @@ a.stock-link:hover {{ text-decoration:underline; }}
     <div class="label">最大DD</div>
     <div class="value red">&yen;{data['max_dd']:,.0f}</div>
   </div>
+</div>
+
+<div class="regime-banner" style="border-left:4px solid {regime_color}">
+  <div class="regime-left">
+    <span class="regime-badge" style="background:{regime_color};color:#121212">{regime_label}</span>
+    <span class="regime-price">日経225 &yen;{regime_price:,.0f} &nbsp; SMA50 &yen;{regime_sma50:,.0f} &nbsp; SMA200 &yen;{regime_sma200:,.0f}</span>
+  </div>
+  <div class="regime-right">{entry_status}</div>
 </div>
 
 <div class="readiness-card">

@@ -111,7 +111,8 @@ def run_strategy_backtest(all_data, config, strategy_params,
                           score_weights=None, score_threshold=0.0,
                           bull_max_daily=None,
                           use_adx_filter=False, adx_threshold=25,
-                          use_coch_exit=False, coch_lookback=3):
+                          use_coch_exit=False, coch_lookback=3,
+                          bull_only_entry=False):
     """Run backtest with given strategy parameters."""
     strat = config["strategy"]
     account = config["account"]
@@ -302,6 +303,8 @@ def run_strategy_backtest(all_data, config, strategy_params,
                     else:
                         cur_regime = "neutral"
                         regime_max_daily = min(regime_max_daily, 1)
+            if bull_only_entry and cur_regime != "bull":
+                regime_max_daily = 0
 
         # === Buy signal scan ===
         buy_candidates = []
@@ -912,7 +915,8 @@ def run_walkforward(all_data, config, initial_balance=300000):
 
 def run_stress(all_data, config, initial_balance=300000,
                window_months=3, step_months=3,
-               start="2024-09-01", end=None):
+               start="2024-09-01", end=None,
+               bull_only_entry=False):
     """ストレステスト: 全期間ローリング検証で戦略の安定性を可視化。
 
     指定期間を window_months ごとに区切り、各窓で戦略を実行。
@@ -974,7 +978,8 @@ def run_stress(all_data, config, initial_balance=300000,
     print(f"\n{'=' * w}")
     print(f"  ストレステスト  ({window_months}ヶ月窓 × ステップ{step_months}ヶ月)")
     print(f"  期間: {start} 〜 {end}  /  窓数: {len(windows)}")
-    print(f"  プロファイル: default  /  スリッページ {SLIPPAGE*100:.1f}%")
+    bull_tag = "  /  bull_only_entry: ON" if bull_only_entry else ""
+    print(f"  プロファイル: default  /  スリッページ {SLIPPAGE*100:.1f}%{bull_tag}")
     print(f"{'=' * w}")
     print(f"  {'窓':<22} {'局面':<8} {'件数':>4} {'勝率':>6} {'PF':>6} "
           f"{'リターン':>9} {'最大DD':>8} {'日経':>9}")
@@ -986,6 +991,7 @@ def run_stress(all_data, config, initial_balance=300000,
             all_data, config, sp,
             sim_start=win_start, initial_balance=initial_balance,
             slippage=SLIPPAGE,
+            use_regime=bull_only_entry, bull_only_entry=bull_only_entry,
         )
         # Filter trades within window
         win_trades = [t for t in r["trade_details"]
@@ -1074,6 +1080,8 @@ def main():
     parser = argparse.ArgumentParser(description="Strategy backtest comparison tool")
     parser.add_argument("--mode", choices=["compare", "sensitivity", "stats", "walkforward", "stress"],
                         default="compare")
+    parser.add_argument("--bull-only", action="store_true",
+                        help="Block entries in non-bull regimes (requires regime detection)")
     args = parser.parse_args()
 
     config = load_config()
@@ -1093,7 +1101,7 @@ def main():
         return
 
     if args.mode == "stress":
-        run_stress(all_data, config)
+        run_stress(all_data, config, bull_only_entry=args.bull_only)
         return
 
     # Profile comparison mode
@@ -1197,6 +1205,7 @@ def main():
             all_data, config, sp, sim_start=sim_start, slippage=SLIPPAGE,
             use_regime=True, use_composite_score=True, score_weights=best_w,
             score_threshold=best_thr, bull_max_daily=best_bd,
+            bull_only_entry=args.bull_only,
         )
         r_new["label"] = "新戦略（最適化済み）"
 
