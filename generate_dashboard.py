@@ -23,7 +23,7 @@ REVIEW_OUTPUT = os.path.join(DOCS_DIR, "weekly-review.html")
 
 # 銘柄名マッピング
 from nikkei225 import NIKKEI_225, get_sector
-from portfolio import get_cash_balance, set_profile, get_readiness_metrics
+from portfolio import get_cash_balance, set_profile, get_readiness_metrics, get_trade_analysis
 
 
 def load_config() -> dict:
@@ -318,6 +318,9 @@ def build_dashboard_data(trades: list, initial_balance: float = 300000, history:
     # Paper→real trading readiness
     readiness = get_readiness_metrics(initial_balance)
 
+    # Trade analysis (exit reason, holding period, sector, ticker breakdowns)
+    trade_analysis = get_trade_analysis()
+
     # Signal accuracy (holding period buckets)
     signal_accuracy = _build_signal_accuracy(closed_trades)
 
@@ -379,6 +382,7 @@ def build_dashboard_data(trades: list, initial_balance: float = 300000, history:
         "rsi_analysis": rsi_analysis,
         "latest_buy_candidates": latest_buy_candidates,
         "readiness": readiness,
+        "trade_analysis": trade_analysis,
     }
 
 
@@ -911,6 +915,67 @@ def generate_html(data: dict, config: dict = None, profile_label: str = "") -> s
         ready_label = "ペーパー継続"
         ready_color = "#64B5F6"
 
+    # トレード分析（exit_reason / 保有日数 / セクター / 銘柄）
+    ta = data.get("trade_analysis") or {
+        "exit_reasons": [], "holding_buckets": [], "sectors": [], "tickers": [],
+        "summary": {"trade_count": 0, "win_rate": 0, "avg_win": 0, "avg_loss": 0,
+                    "expectancy": 0, "best_trade": 0, "worst_trade": 0},
+    }
+    ta_summary = ta["summary"]
+
+    def _ta_row(label_html: str, count: int, wins: int, losses: int,
+                win_rate: float, total_pnl: float, avg_pnl: float) -> str:
+        wr_color = "#00C853" if win_rate >= 50 else "#FF8A80"
+        pnl_c = "#00C853" if total_pnl >= 0 else "#FF8A80"
+        avg_c = "#00C853" if avg_pnl >= 0 else "#FF8A80"
+        sign_t = "+" if total_pnl >= 0 else ""
+        sign_a = "+" if avg_pnl >= 0 else ""
+        return (
+            f"<tr><td>{label_html}</td>"
+            f"<td class=\"num\">{count}</td>"
+            f"<td class=\"num\" style=\"color:{wr_color}\">{win_rate:.1f}%</td>"
+            f"<td class=\"num small\">{wins}勝 {losses}負</td>"
+            f"<td class=\"num\" style=\"color:{pnl_c}\">{sign_t}&yen;{total_pnl:,.0f}</td>"
+            f"<td class=\"num\" style=\"color:{avg_c}\">{sign_a}&yen;{avg_pnl:,.0f}</td></tr>"
+        )
+
+    ta_reason_rows = "".join(
+        _ta_row(r["reason"], r["count"], r["wins"], r["losses"],
+                r["win_rate"], r["total_pnl"], r["avg_pnl"])
+        for r in ta["exit_reasons"]
+    ) or '<tr><td colspan="6" class="empty">データなし</td></tr>'
+
+    ta_holding_rows = "".join(
+        _ta_row(r["bucket"], r["count"], r["wins"], r["losses"],
+                r["win_rate"], r["total_pnl"], r["avg_pnl"])
+        for r in ta["holding_buckets"]
+    ) or '<tr><td colspan="6" class="empty">データなし</td></tr>'
+
+    ta_sector_rows = "".join(
+        _ta_row(r["sector"], r["count"], r["wins"], r["losses"],
+                r["win_rate"], r["total_pnl"], r["avg_pnl"])
+        for r in ta["sectors"]
+    ) or '<tr><td colspan="6" class="empty">データなし</td></tr>'
+
+    ta_ticker_rows = ""
+    for r in ta["tickers"]:
+        wr_color = "#00C853" if r["win_rate"] >= 50 else "#FF8A80"
+        pnl_c = "#00C853" if r["total_pnl"] >= 0 else "#FF8A80"
+        sign_t = "+" if r["total_pnl"] >= 0 else ""
+        code = r["ticker"].replace(".T", "")
+        ta_ticker_rows += (
+            f"<tr><td>{r['name']}<br><span class=\"ticker\">{code}</span></td>"
+            f"<td class=\"num\">{r['count']}</td>"
+            f"<td class=\"num\" style=\"color:{wr_color}\">{r['win_rate']:.1f}%</td>"
+            f"<td class=\"num small\">{r['wins']}勝 {r['losses']}負</td>"
+            f"<td class=\"num\" style=\"color:{pnl_c}\">{sign_t}&yen;{r['total_pnl']:,.0f}</td></tr>"
+        )
+    if not ta_ticker_rows:
+        ta_ticker_rows = '<tr><td colspan="5" class="empty">データなし</td></tr>'
+
+    ta_exp_color = "#00C853" if ta_summary["expectancy"] >= 0 else "#FF8A80"
+    ta_exp_sign = "+" if ta_summary["expectancy"] >= 0 else ""
+
     # Chart.js データ
     equity_labels_json = json.dumps(data["equity_labels"])
     equity_data_json = json.dumps(data["equity_data"])
@@ -971,7 +1036,16 @@ a.stock-link:hover {{ text-decoration:underline; }}
 .readiness-icon {{ width:18px; font-weight:700; }}
 .readiness-label {{ flex:1; color:#BDBDBD; }}
 .readiness-value {{ font-variant-numeric:tabular-nums; color:#E0E0E0; }}
+.ta-summary {{ display:grid; grid-template-columns:repeat(auto-fit,minmax(120px,1fr)); gap:8px; margin-bottom:14px; }}
+.ta-stat {{ background:#1E1E1E; border-radius:8px; padding:10px; text-align:center; }}
+.ta-stat-label {{ font-size:0.65rem; color:#9E9E9E; text-transform:uppercase; margin-bottom:4px; }}
+.ta-stat-value {{ font-size:1.05rem; font-weight:700; font-variant-numeric:tabular-nums; }}
+.ta-grid {{ display:grid; grid-template-columns:1fr 1fr; gap:12px; }}
+.ta-block {{ background:#1E1E1E; border-radius:10px; padding:12px; }}
+.ta-block h3 {{ font-size:0.85rem; color:#BDBDBD; margin-bottom:8px; }}
+.ta-block table th {{ position:static; background:transparent; }}
 @media(max-width:600px) {{
+  .ta-grid {{ grid-template-columns:1fr; }}
   .cards {{ grid-template-columns:repeat(2,1fr); }}
   .card .value {{ font-size:1.2rem; }}
   .policy-grid {{ grid-template-columns:1fr; }}
@@ -1028,6 +1102,49 @@ a.stock-link:hover {{ text-decoration:underline; }}
   </div>
   <div class="readiness-bar"><div class="readiness-bar-fill" style="width:{ready_score}%;background:{ready_color}"></div></div>
   {readiness_rows}
+</div>
+
+<div class="section">
+  <h2>トレード分析（{ta_summary['trade_count']}件のクローズドトレード）</h2>
+  <div class="ta-summary">
+    <div class="ta-stat"><div class="ta-stat-label">勝率</div><div class="ta-stat-value">{ta_summary['win_rate']:.1f}%</div></div>
+    <div class="ta-stat"><div class="ta-stat-label">期待値/トレード</div><div class="ta-stat-value" style="color:{ta_exp_color}">{ta_exp_sign}&yen;{ta_summary['expectancy']:,.0f}</div></div>
+    <div class="ta-stat"><div class="ta-stat-label">平均勝ち</div><div class="ta-stat-value green">+&yen;{ta_summary['avg_win']:,.0f}</div></div>
+    <div class="ta-stat"><div class="ta-stat-label">平均負け</div><div class="ta-stat-value red">&yen;{ta_summary['avg_loss']:,.0f}</div></div>
+    <div class="ta-stat"><div class="ta-stat-label">最大勝ち</div><div class="ta-stat-value green">+&yen;{ta_summary['best_trade']:,.0f}</div></div>
+    <div class="ta-stat"><div class="ta-stat-label">最大負け</div><div class="ta-stat-value red">&yen;{ta_summary['worst_trade']:,.0f}</div></div>
+  </div>
+
+  <div class="ta-grid">
+    <div class="ta-block">
+      <h3>イグジット理由別</h3>
+      <div style="overflow-x:auto"><table>
+        <thead><tr><th>理由</th><th>件数</th><th>勝率</th><th>勝負</th><th>合計</th><th>平均</th></tr></thead>
+        <tbody>{ta_reason_rows}</tbody>
+      </table></div>
+    </div>
+    <div class="ta-block">
+      <h3>保有日数別</h3>
+      <div style="overflow-x:auto"><table>
+        <thead><tr><th>期間</th><th>件数</th><th>勝率</th><th>勝負</th><th>合計</th><th>平均</th></tr></thead>
+        <tbody>{ta_holding_rows}</tbody>
+      </table></div>
+    </div>
+    <div class="ta-block">
+      <h3>セクター別</h3>
+      <div style="overflow-x:auto"><table>
+        <thead><tr><th>セクター</th><th>件数</th><th>勝率</th><th>勝負</th><th>合計</th><th>平均</th></tr></thead>
+        <tbody>{ta_sector_rows}</tbody>
+      </table></div>
+    </div>
+    <div class="ta-block">
+      <h3>銘柄別 TOP10（取引回数順）</h3>
+      <div style="overflow-x:auto"><table>
+        <thead><tr><th>銘柄</th><th>件数</th><th>勝率</th><th>勝負</th><th>合計</th></tr></thead>
+        <tbody>{ta_ticker_rows}</tbody>
+      </table></div>
+    </div>
+  </div>
 </div>
 
 <div class="chart-wrap">

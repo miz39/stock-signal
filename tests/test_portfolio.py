@@ -343,6 +343,138 @@ class TestReadinessMetrics:
         assert r["passed_count"] == 5
 
 
+class TestTradeAnalysis:
+    def _write(self, path, trades):
+        with open(path, "w") as f:
+            json.dump(trades, f)
+
+    def test_empty_trades(self, temp_trades_file):
+        self._write(temp_trades_file, [])
+        r = portfolio.get_trade_analysis()
+        assert r["summary"]["trade_count"] == 0
+        assert r["summary"]["win_rate"] == 0.0
+        assert r["exit_reasons"] == []
+        assert r["holding_buckets"] == []
+        assert r["sectors"] == []
+        assert r["tickers"] == []
+
+    def test_summary_basic(self, temp_trades_file):
+        self._write(temp_trades_file, [
+            {"ticker": "1111.T", "status": "closed", "pnl": 1000.0,
+             "entry_date": "2026-01-01", "exit_date": "2026-01-05",
+             "entry_price": 1000.0, "exit_price": 1100.0, "stop_price": 920.0,
+             "shares": 10},
+            {"ticker": "2222.T", "status": "closed", "pnl": -500.0,
+             "entry_date": "2026-01-02", "exit_date": "2026-01-04",
+             "entry_price": 2000.0, "exit_price": 1900.0, "stop_price": 1900.0,
+             "shares": 5},
+        ])
+        r = portfolio.get_trade_analysis()
+        s = r["summary"]
+        assert s["trade_count"] == 2
+        assert s["win_rate"] == 50.0
+        assert s["avg_win"] == 1000.0
+        assert s["avg_loss"] == -500.0
+        assert s["best_trade"] == 1000.0
+        assert s["worst_trade"] == -500.0
+        # Expectancy = 0.5 * 1000 + 0.5 * -500 = 250
+        assert s["expectancy"] == 250.0
+
+    def test_open_trades_excluded(self, temp_trades_file):
+        self._write(temp_trades_file, [
+            {"ticker": "1111.T", "status": "open",
+             "entry_date": "2026-01-01", "entry_price": 1000.0,
+             "stop_price": 920.0, "shares": 10},
+            {"ticker": "2222.T", "status": "closed", "pnl": 100.0,
+             "entry_date": "2026-01-02", "exit_date": "2026-01-04",
+             "entry_price": 2000.0, "exit_price": 2050.0, "stop_price": 1840.0,
+             "shares": 1},
+        ])
+        r = portfolio.get_trade_analysis()
+        assert r["summary"]["trade_count"] == 1
+
+    def test_exit_reason_classification(self, temp_trades_file):
+        # Stop loss: pnl < 0 and exit near stop
+        # Trailing stop (profit): pnl > 0 and exit near stop
+        # Full profit: exit_price >= entry * 1.14
+        self._write(temp_trades_file, [
+            # Stop loss
+            {"ticker": "1.T", "status": "closed", "pnl": -800.0,
+             "entry_date": "2026-01-01", "exit_date": "2026-01-03",
+             "entry_price": 1000.0, "exit_price": 920.0, "stop_price": 920.0,
+             "shares": 10},
+            # Full profit (+15% range)
+            {"ticker": "2.T", "status": "closed", "pnl": 1500.0,
+             "entry_date": "2026-01-02", "exit_date": "2026-01-10",
+             "entry_price": 1000.0, "exit_price": 1150.0, "stop_price": 920.0,
+             "shares": 10},
+            # Trailing stop with profit (exit ≈ stop, pnl > 0)
+            {"ticker": "3.T", "status": "closed", "pnl": 600.0,
+             "entry_date": "2026-01-03", "exit_date": "2026-01-08",
+             "entry_price": 1000.0, "exit_price": 1060.0, "stop_price": 1060.0,
+             "shares": 10},
+        ])
+        r = portfolio.get_trade_analysis()
+        reasons = {row["reason"]: row for row in r["exit_reasons"]}
+        assert "ストップロス" in reasons
+        assert "全部利確 (+15%)" in reasons
+        assert "トレーリングストップ (利)" in reasons
+        assert reasons["ストップロス"]["count"] == 1
+        assert reasons["全部利確 (+15%)"]["count"] == 1
+
+    def test_holding_buckets(self, temp_trades_file):
+        # 2 days (0-3), 5 days (4-7), 20 days (15-30)
+        self._write(temp_trades_file, [
+            {"ticker": "1.T", "status": "closed", "pnl": 100.0,
+             "entry_date": "2026-01-01", "exit_date": "2026-01-03",
+             "entry_price": 1000.0, "exit_price": 1010.0, "stop_price": 920.0,
+             "shares": 10},
+            {"ticker": "2.T", "status": "closed", "pnl": -50.0,
+             "entry_date": "2026-01-01", "exit_date": "2026-01-06",
+             "entry_price": 1000.0, "exit_price": 995.0, "stop_price": 990.0,
+             "shares": 10},
+            {"ticker": "3.T", "status": "closed", "pnl": 200.0,
+             "entry_date": "2026-01-01", "exit_date": "2026-01-21",
+             "entry_price": 1000.0, "exit_price": 1020.0, "stop_price": 920.0,
+             "shares": 10},
+        ])
+        r = portfolio.get_trade_analysis()
+        buckets = {b["bucket"]: b for b in r["holding_buckets"]}
+        assert "0-3日" in buckets and buckets["0-3日"]["count"] == 1
+        assert "4-7日" in buckets and buckets["4-7日"]["count"] == 1
+        assert "15-30日" in buckets and buckets["15-30日"]["count"] == 1
+
+    def test_holding_buckets_ordered(self, temp_trades_file):
+        self._write(temp_trades_file, [
+            {"ticker": "1.T", "status": "closed", "pnl": 100.0,
+             "entry_date": "2026-01-01", "exit_date": "2026-01-21",
+             "entry_price": 1000.0, "exit_price": 1010.0, "stop_price": 920.0,
+             "shares": 10},
+            {"ticker": "2.T", "status": "closed", "pnl": 100.0,
+             "entry_date": "2026-01-01", "exit_date": "2026-01-03",
+             "entry_price": 1000.0, "exit_price": 1010.0, "stop_price": 920.0,
+             "shares": 10},
+        ])
+        r = portfolio.get_trade_analysis()
+        order = [b["bucket"] for b in r["holding_buckets"]]
+        # 0-3日 must come before 15-30日 regardless of trade order
+        assert order.index("0-3日") < order.index("15-30日")
+
+    def test_ticker_aggregation_top10(self, temp_trades_file):
+        # 12 distinct tickers, only top 10 returned
+        trades = []
+        for i in range(12):
+            trades.append({
+                "ticker": f"{1000+i}.T", "status": "closed", "pnl": float(i),
+                "entry_date": "2026-01-01", "exit_date": "2026-01-05",
+                "entry_price": 1000.0, "exit_price": 1010.0, "stop_price": 920.0,
+                "shares": 1,
+            })
+        self._write(temp_trades_file, trades)
+        r = portfolio.get_trade_analysis()
+        assert len(r["tickers"]) == 10
+
+
 class TestPartialExit:
     def test_partial_exit(self, temp_trades_file):
         portfolio.record_entry("1234.T", 1000.0, 10, entry_date="2026-01-01")

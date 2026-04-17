@@ -437,6 +437,168 @@ def get_readiness_metrics(initial_balance: float = 300000) -> dict:
     }
 
 
+def get_trade_analysis() -> dict:
+    """クローズドトレードの多角分析を返す。
+
+    Returns:
+        {
+            "exit_reasons": [{"reason", "count", "wins", "win_rate",
+                              "total_pnl", "avg_pnl"}, ...],
+            "holding_buckets": [{"bucket", "count", "wins", "win_rate",
+                                 "total_pnl", "avg_pnl"}, ...],
+            "sectors": [{"sector", "count", "wins", "win_rate",
+                         "total_pnl", "avg_pnl"}, ...],
+            "tickers": [{"ticker", "name", "count", "wins", "win_rate",
+                         "total_pnl"}, ...],  # 上位10件 (count desc)
+            "summary": {"trade_count", "win_rate", "avg_win", "avg_loss",
+                        "expectancy", "best_trade", "worst_trade"},
+        }
+
+    exit_reason 推定ロジック（trades.json に exit_reason が無いため）:
+    - exit_price >= entry_price * 1.14 → "全部利確 (+15%)"
+    - pnl > 0 かつ exit_price <= stop_price * 1.005 → "トレーリングストップ"
+    - pnl > 0 → "利確 (その他)"
+    - pnl <= 0 かつ exit_price <= stop_price * 1.01 → "ストップロス"
+    - pnl <= 0 → "損切り (その他)"
+    """
+    from collections import defaultdict
+    from datetime import date as _date
+
+    try:
+        from nikkei225 import NIKKEI_225, get_sector
+    except Exception:
+        NIKKEI_225 = {}
+        def get_sector(_t):
+            return "その他"
+
+    trades = _load_trades()
+    closed = [t for t in trades if t.get("status") == "closed" and "pnl" in t]
+
+    def _classify_exit(t: dict) -> str:
+        pnl = t.get("pnl", 0)
+        entry = t.get("entry_price", 0)
+        exit_p = t.get("exit_price", 0)
+        stop = t.get("stop_price", 0)
+        if entry > 0 and exit_p >= entry * 1.14:
+            return "全部利確 (+15%)"
+        if pnl > 0 and stop > 0 and exit_p <= stop * 1.005:
+            return "トレーリングストップ (利)"
+        if pnl > 0:
+            return "利確 (その他)"
+        if stop > 0 and exit_p <= stop * 1.01:
+            return "ストップロス"
+        return "損切り (その他)"
+
+    def _holding_bucket(days: int) -> str:
+        if days <= 3:
+            return "0-3日"
+        if days <= 7:
+            return "4-7日"
+        if days <= 14:
+            return "8-14日"
+        if days <= 30:
+            return "15-30日"
+        return "31日+"
+
+    # Exit reason buckets
+    reason_groups = defaultdict(list)
+    holding_groups = defaultdict(list)
+    sector_groups = defaultdict(list)
+    ticker_groups = defaultdict(list)
+
+    for t in closed:
+        pnl = t.get("pnl", 0)
+        ticker = t.get("ticker", "")
+
+        reason = _classify_exit(t)
+        reason_groups[reason].append(pnl)
+
+        if t.get("entry_date") and t.get("exit_date"):
+            d1 = _date.fromisoformat(t["entry_date"])
+            d2 = _date.fromisoformat(t["exit_date"])
+            holding_groups[_holding_bucket((d2 - d1).days)].append(pnl)
+
+        sector_groups[get_sector(ticker) or "その他"].append(pnl)
+        ticker_groups[ticker].append(pnl)
+
+    def _aggregate(group: dict, key_label: str) -> list:
+        result = []
+        for key, pnls in group.items():
+            wins = sum(1 for p in pnls if p > 0)
+            count = len(pnls)
+            total = sum(pnls)
+            result.append({
+                key_label: key,
+                "count": count,
+                "wins": wins,
+                "losses": count - wins,
+                "win_rate": round(wins / count * 100, 1) if count else 0.0,
+                "total_pnl": round(total, 1),
+                "avg_pnl": round(total / count, 1) if count else 0.0,
+            })
+        return result
+
+    # Holding buckets in fixed order
+    bucket_order = ["0-3日", "4-7日", "8-14日", "15-30日", "31日+"]
+    holding_rows = _aggregate(holding_groups, "bucket")
+    holding_rows.sort(key=lambda r: bucket_order.index(r["bucket"])
+                      if r["bucket"] in bucket_order else 99)
+
+    # Reasons sorted by count desc
+    reason_rows = _aggregate(reason_groups, "reason")
+    reason_rows.sort(key=lambda r: r["count"], reverse=True)
+
+    # Sectors sorted by count desc
+    sector_rows = _aggregate(sector_groups, "sector")
+    sector_rows.sort(key=lambda r: r["count"], reverse=True)
+
+    # Tickers: top 10 by count, then total_pnl
+    ticker_rows = []
+    for tk, pnls in ticker_groups.items():
+        wins = sum(1 for p in pnls if p > 0)
+        count = len(pnls)
+        total = sum(pnls)
+        ticker_rows.append({
+            "ticker": tk,
+            "name": NIKKEI_225.get(tk, tk),
+            "count": count,
+            "wins": wins,
+            "losses": count - wins,
+            "win_rate": round(wins / count * 100, 1) if count else 0.0,
+            "total_pnl": round(total, 1),
+        })
+    ticker_rows.sort(key=lambda r: (r["count"], r["total_pnl"]), reverse=True)
+    ticker_rows = ticker_rows[:10]
+
+    # Summary
+    pnls = [t["pnl"] for t in closed]
+    wins_pnl = [p for p in pnls if p > 0]
+    losses_pnl = [p for p in pnls if p <= 0]
+    win_rate = round(len(wins_pnl) / len(pnls) * 100, 1) if pnls else 0.0
+    avg_win = round(sum(wins_pnl) / len(wins_pnl), 1) if wins_pnl else 0.0
+    avg_loss = round(sum(losses_pnl) / len(losses_pnl), 1) if losses_pnl else 0.0
+    # Expectancy = win_rate * avg_win + (1 - win_rate) * avg_loss
+    p_win = (len(wins_pnl) / len(pnls)) if pnls else 0
+    expectancy = round(p_win * avg_win + (1 - p_win) * avg_loss, 1)
+    summary = {
+        "trade_count": len(closed),
+        "win_rate": win_rate,
+        "avg_win": avg_win,
+        "avg_loss": avg_loss,
+        "expectancy": expectancy,
+        "best_trade": round(max(pnls), 1) if pnls else 0.0,
+        "worst_trade": round(min(pnls), 1) if pnls else 0.0,
+    }
+
+    return {
+        "exit_reasons": reason_rows,
+        "holding_buckets": holding_rows,
+        "sectors": sector_rows,
+        "tickers": ticker_rows,
+        "summary": summary,
+    }
+
+
 def get_weekly_report() -> dict:
     """今週のトレード数、損益、累計を返す。"""
     trades = _load_trades()
