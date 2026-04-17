@@ -47,7 +47,7 @@ strategy:
   earnings_blackout_days: 3     # 発表前 N 日以内ならスキップ
   # Bull-only entry: stress test shows neutral/bear regimes are unprofitable.
   # Set to true to block all new entries unless market_regime == "bull".
-  bull_only_entry: false
+  bull_only_entry: true
   score_weights:                  # 複合スコアの重み（合計1.0）
     volume_surge: 0.20
     rsi_sweet_spot: 0.10
