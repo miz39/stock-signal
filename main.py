@@ -708,7 +708,13 @@ def run(profile_name: str = "default"):
 
         # エントリー制限パラメータ（レジームに応じて調整）
         max_daily = account.get("max_daily_entries", 3)
-        if market_regime["regime"] == "bear":
+        bull_only = strat.get("bull_only_entry", False)
+        regime_name = market_regime["regime"]
+        if bull_only and regime_name != "bull":
+            # Stress-test backed: strategy is unprofitable outside bull regime
+            logger.info(f"  bull_only_entry: {regime_name.upper()}局面のため新規エントリー全停止")
+            max_daily = 0
+        elif market_regime["regime"] == "bear":
             max_daily = min(max_daily, 1)
             logger.info(f"  Bear市場: 新規エントリー上限={max_daily}")
         elif market_regime["regime"] == "neutral":
