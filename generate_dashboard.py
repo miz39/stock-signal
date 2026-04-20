@@ -46,7 +46,7 @@ def fetch_current_prices(tickers: list) -> dict:
         return {}
     try:
         import yfinance as yf
-        data = yf.download(tickers, period="1d", progress=False)
+        data = yf.download(tickers, period="5d", progress=False)
         prices = {}
         if len(tickers) == 1:
             close = data["Close"]
