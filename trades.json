@@ -234,13 +234,14 @@
     "entry_price": 2600.0,
     "shares": 11,
     "entry_date": "2026-03-23",
-    "exit_price": null,
-    "exit_date": null,
-    "status": "open",
+    "exit_price": 2684.0,
+    "exit_date": "2026-04-21",
+    "status": "closed",
     "high_price": 2936.5,
     "stop_price": 2701.6,
     "original_shares": 11,
-    "partial_exit_done": true
+    "partial_exit_done": true,
+    "pnl": 924.0
   },
   {
     "ticker": "9107.T",
@@ -585,8 +586,8 @@
     "exit_price": null,
     "exit_date": null,
     "status": "open",
-    "high_price": 4088.0,
-    "stop_price": 3761.0,
+    "high_price": 4108.0,
+    "stop_price": 3779.4,
     "entry_meta": {
       "rsi": 64.4,
       "adx": 28.4,
@@ -604,8 +605,8 @@
     "exit_price": null,
     "exit_date": null,
     "status": "open",
-    "high_price": 3742.0,
-    "stop_price": 3625.9,
+    "high_price": 3744.0,
+    "stop_price": 3444.5,
     "entry_meta": {
       "rsi": 64.4,
       "adx": 32.5,
@@ -629,6 +630,25 @@
       "rsi": 64.7,
       "adx": 31.7,
       "sma_slope": 4.26,
+      "ichimoku_bullish": true,
+      "market_regime": "bull"
+    }
+  },
+  {
+    "ticker": "7004.T",
+    "entry_price": 1198.0,
+    "shares": 25,
+    "original_shares": 25,
+    "entry_date": "2026-04-21",
+    "exit_price": null,
+    "exit_date": null,
+    "status": "open",
+    "high_price": 1198.0,
+    "stop_price": 1102.2,
+    "entry_meta": {
+      "rsi": 62.7,
+      "adx": 31.4,
+      "sma_slope": 4.14,
       "ichimoku_bullish": true,
       "market_regime": "bull"
     }
