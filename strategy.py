@@ -305,8 +305,8 @@ def detect_market_regime(nikkei_df: pd.DataFrame) -> dict:
     latest_sma50 = float(sma50.iloc[-1])
     latest_sma200 = float(sma200.iloc[-1])
 
-    if np.isnan(latest_sma50) or np.isnan(latest_sma200):
-        regime = "neutral"
+    if np.isnan(latest_close) or np.isnan(latest_sma50) or np.isnan(latest_sma200):
+        regime = "unknown"
     elif latest_close > latest_sma50 > latest_sma200:
         regime = "bull"
     elif latest_close < latest_sma50 < latest_sma200:

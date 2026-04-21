@@ -555,10 +555,13 @@ def run(profile_name: str = "default"):
     coch_lookback = strat.get("coch_lookback", 3)
     coch_exits = []
     if coch_enabled and mode == "paper":
+        min_coch_bars = coch_lookback * 2 + 2
         for pos in open_positions:
             ticker = pos["ticker"]
             try:
                 df_pos = fetch_stock_data(ticker, period="3mo")
+                if df_pos is None or len(df_pos) < min_coch_bars:
+                    continue
                 coch = detect_coch(df_pos, lookback=coch_lookback)
                 if coch["triggered"] and coch["type"] == "bearish":
                     current = float(df_pos["Close"].iloc[-1])

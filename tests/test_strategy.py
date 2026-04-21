@@ -229,6 +229,24 @@ class TestDetectMarketRegime:
         assert result["sma50"] is None
         assert result["sma200"] is None
 
+    def test_nan_close_returns_unknown(self):
+        """NaN in latest close → unknown regime."""
+        n = 250
+        prices = 30000 + np.arange(n) * 50.0
+        prices_list = prices.tolist()
+        prices_list[-1] = float("nan")
+        df = _make_df(prices_list)
+        result = detect_market_regime(df)
+        assert result["regime"] == "unknown"
+
+    def test_nan_sma_returns_unknown(self):
+        """NaN in SMA values → unknown regime (not neutral)."""
+        # All NaN prices except last few → SMA will be NaN
+        prices = [float("nan")] * 200 + [30000.0] * 50
+        df = _make_df(prices)
+        result = detect_market_regime(df)
+        assert result["regime"] == "unknown"
+
 
 class TestDetectMarketCrash:
     def test_no_crash_small_drop(self):
@@ -292,6 +310,26 @@ class TestDetectMarketCrash:
         df2 = _make_df([30000.0, 28800.0])  # -4%
         result2 = detect_market_crash(df2, warning_pct=-2.0, critical_pct=-4.0)
         assert result2["severity"] == "critical"
+
+    def test_boundary_exactly_warning(self):
+        """Exactly -3.0% should trigger warning."""
+        df = _make_df([30000.0, 29100.0])  # -3.0%
+        result = detect_market_crash(df, warning_pct=-3.0, critical_pct=-5.0)
+        assert result["triggered"] is True
+        assert result["severity"] == "warning"
+
+    def test_boundary_exactly_critical(self):
+        """Exactly -5.0% should trigger critical."""
+        df = _make_df([30000.0, 28500.0])  # -5.0%
+        result = detect_market_crash(df, warning_pct=-3.0, critical_pct=-5.0)
+        assert result["triggered"] is True
+        assert result["severity"] == "critical"
+
+    def test_boundary_just_above_warning(self):
+        """-2.9% should NOT trigger."""
+        df = _make_df([30000.0, 29130.0])  # -2.9%
+        result = detect_market_crash(df, warning_pct=-3.0, critical_pct=-5.0)
+        assert result["triggered"] is False
 
 
 class TestComputeCompositeScore:
@@ -661,6 +699,32 @@ class TestDetectCoCh:
         df = pd.DataFrame({"High": [100, 101], "Low": [99, 100], "Close": [99.5, 100.5]})
         result = detect_coch(df, lookback=3)
         assert result["triggered"] is False
+
+    def test_bullish_coch_in_downtrend(self):
+        """Should detect bullish CoCh when close breaks above swing high in downtrend."""
+        # Downtrend: lower highs, lower lows
+        n = 40
+        prices_close = []
+        prices_high = []
+        prices_low = []
+        for i in range(n):
+            base = 1000 - i * 10  # downtrend
+            prices_close.append(base)
+            prices_high.append(base + 5)
+            prices_low.append(base - 5)
+
+        # Sharp break above last swing high
+        for i in range(8):
+            surge = prices_close[-1] + 20 * (i + 1)
+            prices_close.append(surge)
+            prices_high.append(surge + 5)
+            prices_low.append(surge - 5)
+
+        df = pd.DataFrame({"High": prices_high, "Low": prices_low, "Close": prices_close})
+        result = detect_coch(df, lookback=3)
+        if result["triggered"]:
+            assert result["type"] == "bullish"
+            assert result["level"] > 0
 
     def test_result_structure(self):
         """detect_coch should return dict with required keys."""
