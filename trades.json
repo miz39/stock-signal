@@ -247,11 +247,12 @@
     "entry_price": 2572.0,
     "shares": 11,
     "entry_date": "2026-03-23",
-    "exit_price": null,
-    "exit_date": null,
-    "status": "open",
+    "exit_price": 2553.5,
+    "exit_date": "2026-04-21",
+    "status": "closed",
     "high_price": 2768.0,
-    "stop_price": 2572.0
+    "stop_price": 2572.0,
+    "pnl": -203.5
   },
   {
     "ticker": "8031.T",
@@ -308,13 +309,14 @@
     "entry_price": 6851.0,
     "shares": 2,
     "entry_date": "2026-03-24",
-    "exit_price": null,
-    "exit_date": null,
-    "status": "open",
+    "exit_price": 6776.0,
+    "exit_date": "2026-04-21",
+    "status": "closed",
     "high_price": 7417.0,
     "stop_price": 6851.0,
     "original_shares": 4,
-    "partial_exit_done": true
+    "partial_exit_done": true,
+    "pnl": -150.0
   },
   {
     "ticker": "5214.T",
@@ -502,11 +504,12 @@
     "shares": 20,
     "original_shares": 20,
     "entry_date": "2026-04-08",
-    "exit_price": null,
-    "exit_date": null,
-    "status": "open",
+    "exit_price": 1419.5,
+    "exit_date": "2026-04-21",
+    "status": "closed",
     "high_price": 1588.0,
-    "stop_price": 1461.0
+    "stop_price": 1461.0,
+    "pnl": -3330.0
   },
   {
     "ticker": "8058.T",
@@ -563,12 +566,69 @@
     "exit_price": null,
     "exit_date": null,
     "status": "open",
-    "high_price": 6976.0,
-    "stop_price": 6417.9,
+    "high_price": 7253.0,
+    "stop_price": 6672.8,
     "entry_meta": {
       "rsi": 53.3,
       "adx": 26.3,
       "sma_slope": 2.96,
+      "ichimoku_bullish": true,
+      "market_regime": "bull"
+    }
+  },
+  {
+    "ticker": "4385.T",
+    "entry_price": 4063.0,
+    "shares": 7,
+    "original_shares": 7,
+    "entry_date": "2026-04-21",
+    "exit_price": null,
+    "exit_date": null,
+    "status": "open",
+    "high_price": 4063.0,
+    "stop_price": 3738.0,
+    "entry_meta": {
+      "rsi": 64.4,
+      "adx": 28.4,
+      "sma_slope": 2.48,
+      "ichimoku_bullish": true,
+      "market_regime": "bull"
+    }
+  },
+  {
+    "ticker": "6963.T",
+    "entry_price": 3742.0,
+    "shares": 8,
+    "original_shares": 8,
+    "entry_date": "2026-04-21",
+    "exit_price": null,
+    "exit_date": null,
+    "status": "open",
+    "high_price": 3742.0,
+    "stop_price": 3442.6,
+    "entry_meta": {
+      "rsi": 64.4,
+      "adx": 32.5,
+      "sma_slope": 2.76,
+      "ichimoku_bullish": true,
+      "market_regime": "bull"
+    }
+  },
+  {
+    "ticker": "6952.T",
+    "entry_price": 1707.0,
+    "shares": 17,
+    "original_shares": 17,
+    "entry_date": "2026-04-21",
+    "exit_price": null,
+    "exit_date": null,
+    "status": "open",
+    "high_price": 1707.0,
+    "stop_price": 1570.4,
+    "entry_meta": {
+      "rsi": 64.7,
+      "adx": 31.7,
+      "sma_slope": 4.26,
       "ichimoku_bullish": true,
       "market_regime": "bull"
     }
