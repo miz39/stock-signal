@@ -20,6 +20,7 @@ from portfolio import (
     get_weekly_report,
     get_cash_balance,
     get_performance_summary,
+    get_readiness_metrics,
     record_entry,
     record_exit,
     set_profile,
@@ -309,6 +310,76 @@ def cmd_compare(args):
     _output({"profiles": results})
 
 
+def cmd_review(args):
+    import glob as globmod
+
+    config = load_config(args.profile)
+    balance = config["account"]["balance"]
+
+    perf = get_performance_summary()
+
+    # Profit factor
+    from portfolio import _load_trades
+    trades = _load_trades()
+    closed = [t for t in trades if t.get("status") == "closed" and "pnl" in t]
+    gross_profit = sum(t["pnl"] for t in closed if t["pnl"] > 0)
+    gross_loss = abs(sum(t["pnl"] for t in closed if t["pnl"] < 0))
+    profit_factor = round(gross_profit / gross_loss, 2) if gross_loss > 0 else 0
+
+    # Unrealized PnL from open positions
+    open_pos = get_open_positions()
+    unrealized_pnl = 0
+    for pos in open_pos:
+        try:
+            df = fetch_stock_data(pos["ticker"], period="5d")
+            current = float(df["Close"].iloc[-1])
+            unrealized_pnl += (current - pos["entry_price"]) * pos["shares"]
+        except Exception:
+            pass
+    unrealized_pnl = round(unrealized_pnl)
+
+    readiness = get_readiness_metrics(balance)
+
+    # Latest review file
+    review_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "docs", "reviews")
+    review_files = sorted(globmod.glob(os.path.join(review_dir, "*.md")))
+    latest_review = None
+    if review_files:
+        latest_file = review_files[-1]
+        filename = os.path.basename(latest_file).replace(".md", "")
+        parts = filename.split("_", 1)
+        review_date = parts[0] if len(parts) >= 1 else ""
+        review_title = parts[1] if len(parts) >= 2 else filename
+        with open(latest_file, "r") as f:
+            content = f.read()[:500]
+        latest_review = {
+            "date": review_date,
+            "title": review_title,
+            "content": content,
+        }
+
+    _output({
+        "performance": {
+            "trade_count": perf["trade_count"],
+            "win_rate": perf["win_rate"],
+            "total_pnl": perf["total_pnl"],
+            "profit_factor": profit_factor,
+            "max_drawdown": perf["max_drawdown"],
+        },
+        "unrealized": {
+            "pnl": unrealized_pnl,
+            "count": len(open_pos),
+        },
+        "readiness": {
+            "score_pct": readiness["score_pct"],
+            "ready": readiness["ready"],
+            "criteria": readiness["criteria"],
+        },
+        "latest_review": latest_review,
+        "dashboard_url": "https://miz39.github.io/stock-signal/",
+    })
+
+
 def cmd_status(args):
     config = load_config(args.profile)
     balance = config["account"]["balance"]
@@ -352,6 +423,7 @@ def main():
     sub.add_parser("watchlist")
     sub.add_parser("rule")
     sub.add_parser("status")
+    sub.add_parser("review")
 
     p_risk = sub.add_parser("risk")
     p_risk.add_argument("--quick", action="store_true", help="Skip correlation analysis")
@@ -378,6 +450,7 @@ def main():
         "watchlist": cmd_watchlist,
         "rule": cmd_rule,
         "status": cmd_status,
+        "review": cmd_review,
         "risk": cmd_risk,
         "performance": cmd_performance,
         "compare": cmd_compare,
