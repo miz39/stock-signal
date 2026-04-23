@@ -673,5 +673,24 @@
       "ichimoku_bullish": true,
       "market_regime": "bull"
     }
+  },
+  {
+    "ticker": "5801.T",
+    "entry_price": 42590.0,
+    "shares": 1,
+    "original_shares": 1,
+    "entry_date": "2026-04-23",
+    "exit_price": null,
+    "exit_date": null,
+    "status": "open",
+    "high_price": 42590.0,
+    "stop_price": 39182.8,
+    "entry_meta": {
+      "rsi": 60.7,
+      "adx": 43.2,
+      "sma_slope": 8.54,
+      "ichimoku_bullish": true,
+      "market_regime": "bull"
+    }
   }
 ]
