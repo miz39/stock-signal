@@ -402,13 +402,13 @@
     "shares": 29,
     "original_shares": 57,
     "entry_date": "2026-03-31",
-    "exit_price": 507.3999938964844,
-    "exit_date": "2026-04-22",
+    "exit_price": 509.20001220703125,
+    "exit_date": "2026-04-23",
     "status": "closed",
     "high_price": 557.2999877929688,
     "stop_price": 512.7,
     "partial_exit_done": true,
-    "pnl": -139.2
+    "pnl": -87.0
   },
   {
     "ticker": "5711.T",
@@ -607,7 +607,7 @@
     "exit_date": null,
     "status": "open",
     "high_price": 3744.0,
-    "stop_price": 3613.2,
+    "stop_price": 3580.3,
     "entry_meta": {
       "rsi": 64.4,
       "adx": 32.5,
@@ -656,19 +656,19 @@
   },
   {
     "ticker": "4063.T",
-    "entry_price": 6684.0,
+    "entry_price": 6642.0,
     "shares": 4,
     "original_shares": 4,
-    "entry_date": "2026-04-22",
+    "entry_date": "2026-04-23",
     "exit_price": null,
     "exit_date": null,
     "status": "open",
-    "high_price": 6684.0,
-    "stop_price": 6149.3,
+    "high_price": 6642.0,
+    "stop_price": 6110.6,
     "entry_meta": {
-      "rsi": 57.9,
-      "adx": 25.8,
-      "sma_slope": 1.42,
+      "rsi": 56.1,
+      "adx": 25.6,
+      "sma_slope": 0.86,
       "ichimoku_bullish": true,
       "market_regime": "bull"
     }

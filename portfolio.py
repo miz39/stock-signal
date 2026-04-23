@@ -47,6 +47,13 @@ def _save_trades(trades: list) -> None:
         raise
 
 
+def get_today_entry_count() -> int:
+    """当日のエントリー数を返す。"""
+    trades = _load_trades()
+    today = date.today().isoformat()
+    return sum(1 for t in trades if t.get("entry_date") == today)
+
+
 def record_entry(
     ticker: str,
     price: float,
@@ -54,13 +61,19 @@ def record_entry(
     entry_date: str = None,
     stop_pct: float = 0.08,
     signal_meta: Optional[dict] = None,
+    max_daily_entries: int = 0,
 ) -> dict:
     """仮想エントリーを記録する。
 
+    max_daily_entries: 1日あたりの新規エントリー上限（0=チェックなし）。
     signal_meta: エントリー時点の指標値（後日分析用）。例:
         {"rsi": 58.3, "adx": 28.1, "sma_slope": 1.2,
          "ichimoku_bullish": True, "market_regime": "bull"}
     """
+    if max_daily_entries > 0:
+        today_count = get_today_entry_count()
+        if today_count >= max_daily_entries:
+            raise ValueError(f"日次エントリー上限（{max_daily_entries}）に達しています")
     trades = _load_trades()
     stop_price = round(price * (1 - stop_pct), 1)
     trade = {

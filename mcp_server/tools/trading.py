@@ -51,7 +51,8 @@ def register_tools(mcp: FastMCP):
 
         from portfolio import record_entry, set_profile
         set_profile("default")
-        trade = record_entry(ticker, price, shares, stop_pct=stop_pct)
+        max_daily = config["account"].get("max_daily_entries", 3)
+        trade = record_entry(ticker, price, shares, stop_pct=stop_pct, max_daily_entries=max_daily)
         preview["status"] = "EXECUTED"
         preview["trade"] = trade
         return json.dumps(preview, ensure_ascii=False, default=str)

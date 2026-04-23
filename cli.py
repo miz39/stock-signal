@@ -98,7 +98,8 @@ def cmd_buy(args):
 
     strat = config.get("strategy", {})
     stop_pct = strat.get("stop_loss_pct", 0.08)
-    trade = record_entry(t, price, shares, stop_pct=stop_pct)
+    max_daily = config["account"].get("max_daily_entries", 3)
+    trade = record_entry(t, price, shares, stop_pct=stop_pct, max_daily_entries=max_daily)
     name = NIKKEI_225.get(t, t.replace(".T", ""))
     _output({
         "ticker": t,

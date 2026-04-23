@@ -733,5 +733,236 @@
       "cash": 12271.9,
       "total_assets": 292865.0
     }
+  },
+  {
+    "timestamp": "2026-03-23T13:20:35.210153+09:00",
+    "date": "2026-03-23",
+    "session": "12:35 昼",
+    "mode": "paper",
+    "scan": {
+      "total": 225,
+      "buy_count": 9,
+      "sell_count": 3,
+      "error_count": 0
+    },
+    "buy_signals": [
+      {
+        "ticker": "6752.T",
+        "name": "パナソニック ホールディングス",
+        "price": 2492.5,
+        "rsi": 50.1,
+        "reason": "ゴールデンクロス（SMA25 > SMA75）+ RSI適正（50.1）+ 上昇トレンド",
+        "stop_loss": 2367.9,
+        "shares": 12
+      },
+      {
+        "ticker": "9502.T",
+        "name": "中部電力",
+        "price": 2514.5,
+        "rsi": 50.3,
+        "reason": "ゴールデンクロス（SMA25 > SMA75）+ RSI適正（50.3）+ 上昇トレンド",
+        "stop_loss": 2388.8,
+        "shares": 11
+      },
+      {
+        "ticker": "9107.T",
+        "name": "川崎汽船",
+        "price": 2572.0,
+        "rsi": 50.6,
+        "reason": "ゴールデンクロス（SMA25 > SMA75）+ RSI適正（50.6）+ 上昇トレンド",
+        "stop_loss": 2443.4,
+        "shares": 11
+      },
+      {
+        "ticker": "8031.T",
+        "name": "三井物産",
+        "price": 5886.0,
+        "rsi": 51.8,
+        "reason": "ゴールデンクロス（SMA25 > SMA75）+ RSI適正（51.8）+ 上昇トレンド",
+        "stop_loss": 5591.7,
+        "shares": 5
+      },
+      {
+        "ticker": "8058.T",
+        "name": "三菱商事",
+        "price": 5217.0,
+        "rsi": 54.3,
+        "reason": "ゴールデンクロス（SMA25 > SMA75）+ RSI適正（54.3）+ 上昇トレンド",
+        "stop_loss": 4956.1,
+        "shares": 5
+      },
+      {
+        "ticker": "6963.T",
+        "name": "ローム",
+        "price": 3110.0,
+        "rsi": 55.2,
+        "reason": "ゴールデンクロス（SMA25 > SMA75）+ RSI適正（55.2）+ 上昇トレンド",
+        "stop_loss": 2954.5,
+        "shares": 9
+      },
+      {
+        "ticker": "9101.T",
+        "name": "日本郵船",
+        "price": 5716.0,
+        "rsi": 55.6,
+        "reason": "ゴールデンクロス（SMA25 > SMA75）+ RSI適正（55.6）+ 上昇トレンド",
+        "stop_loss": 5430.2,
+        "shares": 5
+      },
+      {
+        "ticker": "5801.T",
+        "name": "古河電気工業",
+        "price": 27890.0,
+        "rsi": 56.9,
+        "reason": "ゴールデンクロス（SMA25 > SMA75）+ RSI適正（56.9）+ 上昇トレンド",
+        "stop_loss": 26495.5,
+        "shares": 1
+      },
+      {
+        "ticker": "9104.T",
+        "name": "商船三井",
+        "price": 6405.0,
+        "rsi": 61.2,
+        "reason": "ゴールデンクロス（SMA25 > SMA75）+ RSI適正（61.2）+ 上昇トレンド",
+        "stop_loss": 6084.8,
+        "shares": 4
+      }
+    ],
+    "sell_signals": [
+      {
+        "ticker": "5401.T",
+        "name": "日本製鉄",
+        "price": 582.5,
+        "reason": "デッドクロス（SMA25 < SMA75）"
+      },
+      {
+        "ticker": "7751.T",
+        "name": "キヤノン",
+        "price": 4279.0,
+        "reason": "デッドクロス（SMA25 < SMA75）"
+      },
+      {
+        "ticker": "8604.T",
+        "name": "野村ホールディングス",
+        "price": 1213.0,
+        "reason": "デッドクロス（SMA25 < SMA75）"
+      }
+    ],
+    "executions": {
+      "entries": [
+        {
+          "ticker": "9502.T",
+          "name": "中部電力",
+          "price": 2514.5,
+          "shares": 11,
+          "stop_loss": 2388.8,
+          "rsi": 50.3,
+          "reason": "ゴールデンクロス（SMA25 > SMA75）+ RSI適正（50.3）+ 上昇トレンド"
+        },
+        {
+          "ticker": "9107.T",
+          "name": "川崎汽船",
+          "price": 2572.0,
+          "shares": 11,
+          "stop_loss": 2443.4,
+          "rsi": 50.6,
+          "reason": "ゴールデンクロス（SMA25 > SMA75）+ RSI適正（50.6）+ 上昇トレンド"
+        },
+        {
+          "ticker": "8031.T",
+          "name": "三井物産",
+          "price": 5886.0,
+          "shares": 5,
+          "stop_loss": 5591.7,
+          "rsi": 51.8,
+          "reason": "ゴールデンクロス（SMA25 > SMA75）+ RSI適正（51.8）+ 上昇トレンド"
+        }
+      ],
+      "exits": [
+        {
+          "ticker": "7751.T",
+          "name": "キヤノン",
+          "price": 4280.0,
+          "reason": "トレーリングストップ発動",
+          "entry_price": 4495.0,
+          "shares": 6,
+          "pnl": -1290.0,
+          "pnl_pct": -4.8
+        },
+        {
+          "ticker": "9022.T",
+          "name": "東海旅客鉄道",
+          "price": 4110.0,
+          "reason": "トレーリングストップ発動",
+          "entry_price": 4178.0,
+          "shares": 7,
+          "pnl": -476.0,
+          "pnl_pct": -1.6
+        },
+        {
+          "ticker": "6506.T",
+          "name": "安川電機",
+          "price": 4211.0,
+          "reason": "トレーリングストップ発動",
+          "entry_price": 4267.0,
+          "shares": 4,
+          "pnl": -224.0,
+          "pnl_pct": -1.3
+        },
+        {
+          "ticker": "5406.T",
+          "name": "神戸製鋼所",
+          "price": 1944.0,
+          "reason": "トレーリングストップ発動",
+          "entry_price": 1989.0,
+          "shares": 15,
+          "pnl": -675.0,
+          "pnl_pct": -2.3
+        },
+        {
+          "ticker": "5401.T",
+          "name": "日本製鉄",
+          "price": 582.5,
+          "reason": "デッドクロス（SMA25 < SMA75）",
+          "entry_price": 605.2000122070312,
+          "shares": 49,
+          "pnl": -1112.3,
+          "pnl_pct": -3.8
+        },
+        {
+          "ticker": "8604.T",
+          "name": "野村ホールディングス",
+          "price": 1213.0,
+          "reason": "デッドクロス（SMA25 < SMA75）",
+          "entry_price": 1171.0,
+          "shares": 25,
+          "pnl": 1050.0,
+          "pnl_pct": 3.6
+        }
+      ],
+      "partial_exits": [],
+      "trailing_stop_updates": [
+        {
+          "ticker": "8604.T",
+          "name": "野村ホールディングス",
+          "new_stop": 1168.3,
+          "current_price": 1213.5,
+          "gain_pct": 3.6
+        },
+        {
+          "ticker": "6952.T",
+          "name": "カシオ計算機",
+          "new_stop": 1370.9,
+          "current_price": 1417.0,
+          "gain_pct": 4.5
+        }
+      ]
+    },
+    "portfolio_snapshot": {
+      "open_count": 7,
+      "stock_value": 202242.0,
+      "cash": 86211.9,
+      "total_assets": 288454.0
+    }
   }
 ]

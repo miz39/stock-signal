@@ -781,7 +781,8 @@ def run(profile_name: str = "default"):
                         "market_regime": market_regime.get("regime"),
                     }
                     record_entry(sig["ticker"], sig["price"], sig["recommended_shares"],
-                                 stop_pct=stop_loss_pct, signal_meta=signal_meta)
+                                 stop_pct=stop_loss_pct, signal_meta=signal_meta,
+                                 max_daily_entries=max_daily)
                     open_tickers.add(sig["ticker"])
                     sector_counts[sec] = sector_counts.get(sec, 0) + 1
                     daily_entries += 1
