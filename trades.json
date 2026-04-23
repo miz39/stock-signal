@@ -351,11 +351,12 @@
     "shares": 12,
     "original_shares": 12,
     "entry_date": "2026-03-27",
-    "exit_price": null,
-    "exit_date": null,
-    "status": "open",
+    "exit_price": 2365.5,
+    "exit_date": "2026-04-23",
+    "status": "closed",
     "high_price": 2588.0,
-    "stop_price": 2381.0
+    "stop_price": 2381.0,
+    "pnl": -1554.0
   },
   {
     "ticker": "3099.T",
@@ -607,7 +608,7 @@
     "exit_date": null,
     "status": "open",
     "high_price": 3744.0,
-    "stop_price": 3580.3,
+    "stop_price": 3593.8,
     "entry_meta": {
       "rsi": 64.4,
       "adx": 32.5,
@@ -618,9 +619,9 @@
   },
   {
     "ticker": "6952.T",
-    "entry_price": 1707.0,
-    "shares": 17,
-    "original_shares": 17,
+    "entry_price": 1704.6,
+    "shares": 18,
+    "original_shares": 18,
     "entry_date": "2026-04-21",
     "exit_price": null,
     "exit_date": null,
@@ -663,8 +664,8 @@
     "exit_price": null,
     "exit_date": null,
     "status": "open",
-    "high_price": 6642.0,
-    "stop_price": 6110.6,
+    "high_price": 6774.0,
+    "stop_price": 6232.1,
     "entry_meta": {
       "rsi": 56.1,
       "adx": 25.6,
