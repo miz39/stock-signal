@@ -667,8 +667,8 @@
     "exit_price": null,
     "exit_date": null,
     "status": "open",
-    "high_price": 7081.0,
-    "stop_price": 6514.5,
+    "high_price": 7233.0,
+    "stop_price": 6654.4,
     "entry_meta": {
       "rsi": 56.1,
       "adx": 25.6,
@@ -712,6 +712,25 @@
       "adx": 35.5,
       "sma_slope": 10.92,
       "ichimoku_bullish": true,
+      "market_regime": "bull"
+    }
+  },
+  {
+    "ticker": "9502.T",
+    "entry_price": 2678.0,
+    "shares": 11,
+    "original_shares": 11,
+    "entry_date": "2026-04-30",
+    "exit_price": null,
+    "exit_date": null,
+    "status": "open",
+    "high_price": 2678.0,
+    "stop_price": 2463.8,
+    "entry_meta": {
+      "rsi": 50.8,
+      "adx": 25.4,
+      "sma_slope": 0.45,
+      "ichimoku_bullish": false,
       "market_regime": "bull"
     }
   }
