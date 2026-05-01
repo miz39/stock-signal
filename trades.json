@@ -627,9 +627,9 @@
     "shares": 18,
     "original_shares": 18,
     "entry_date": "2026-04-21",
-    "exit_price": null,
-    "exit_date": null,
-    "status": "open",
+    "exit_price": 1568.5,
+    "exit_date": "2026-05-01",
+    "status": "closed",
     "high_price": 1717.0,
     "stop_price": 1579.6,
     "entry_meta": {
@@ -638,7 +638,8 @@
       "sma_slope": 4.26,
       "ichimoku_bullish": true,
       "market_regime": "bull"
-    }
+    },
+    "pnl": -2408.4
   },
   {
     "ticker": "7004.T",
@@ -706,8 +707,8 @@
     "exit_price": null,
     "exit_date": null,
     "status": "open",
-    "high_price": 5301.0,
-    "stop_price": 4876.9,
+    "high_price": 5406.0,
+    "stop_price": 4973.5,
     "entry_meta": {
       "rsi": 62.5,
       "adx": 35.5,
