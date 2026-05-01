@@ -707,8 +707,8 @@
     "exit_price": null,
     "exit_date": null,
     "status": "open",
-    "high_price": 5406.0,
-    "stop_price": 4973.5,
+    "high_price": 5424.0,
+    "stop_price": 4990.1,
     "entry_meta": {
       "rsi": 62.5,
       "adx": 35.5,
@@ -770,6 +770,25 @@
       "rsi": 64.0,
       "adx": 29.0,
       "sma_slope": 5.18,
+      "ichimoku_bullish": true,
+      "market_regime": "bull"
+    }
+  },
+  {
+    "ticker": "5803.T",
+    "entry_price": 5808.0,
+    "shares": 4,
+    "original_shares": 4,
+    "entry_date": "2026-05-01",
+    "exit_price": null,
+    "exit_date": null,
+    "status": "open",
+    "high_price": 5808.0,
+    "stop_price": 5343.4,
+    "entry_meta": {
+      "rsi": 57.1,
+      "adx": 31.1,
+      "sma_slope": 6.98,
       "ichimoku_bullish": true,
       "market_regime": "bull"
     }
