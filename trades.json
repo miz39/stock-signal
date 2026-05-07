@@ -650,8 +650,8 @@
     "exit_price": null,
     "exit_date": null,
     "status": "open",
-    "high_price": 1225.0,
-    "stop_price": 1127.0,
+    "high_price": 1243.0,
+    "stop_price": 1143.6,
     "entry_meta": {
       "rsi": 62.7,
       "adx": 31.4,
@@ -728,8 +728,8 @@
     "exit_price": null,
     "exit_date": null,
     "status": "open",
-    "high_price": 2723.5,
-    "stop_price": 2505.6,
+    "high_price": 2770.0,
+    "stop_price": 2548.4,
     "entry_meta": {
       "rsi": 50.8,
       "adx": 25.4,
@@ -767,8 +767,8 @@
     "exit_price": null,
     "exit_date": null,
     "status": "open",
-    "high_price": 15340.0,
-    "stop_price": 14112.8,
+    "high_price": 15495.0,
+    "stop_price": 14255.4,
     "entry_meta": {
       "rsi": 64.0,
       "adx": 29.0,
@@ -786,8 +786,8 @@
     "exit_price": null,
     "exit_date": null,
     "status": "open",
-    "high_price": 6301.0,
-    "stop_price": 5796.9,
+    "high_price": 6473.0,
+    "stop_price": 5955.2,
     "entry_meta": {
       "rsi": 57.1,
       "adx": 31.1,
