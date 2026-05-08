@@ -650,8 +650,8 @@
     "exit_price": null,
     "exit_date": null,
     "status": "open",
-    "high_price": 1263.0,
-    "stop_price": 1162.0,
+    "high_price": 1278.0,
+    "stop_price": 1175.8,
     "entry_meta": {
       "rsi": 62.7,
       "adx": 31.4,
@@ -761,21 +761,22 @@
   {
     "ticker": "4004.T",
     "entry_price": 14215.0,
-    "shares": 2,
+    "shares": 1,
     "original_shares": 2,
     "entry_date": "2026-04-30",
     "exit_price": null,
     "exit_date": null,
     "status": "open",
-    "high_price": 15595.0,
-    "stop_price": 14347.4,
+    "high_price": 15900.0,
+    "stop_price": 14628.0,
     "entry_meta": {
       "rsi": 64.0,
       "adx": 29.0,
       "sma_slope": 5.18,
       "ichimoku_bullish": true,
       "market_regime": "bull"
-    }
+    },
+    "partial_exit_done": true
   },
   {
     "ticker": "5803.T",
@@ -838,8 +839,8 @@
     "exit_price": null,
     "exit_date": null,
     "status": "open",
-    "high_price": 5664.0,
-    "stop_price": 5210.9,
+    "high_price": 5784.0,
+    "stop_price": 5321.3,
     "entry_meta": {
       "rsi": 59.9,
       "adx": 26.0,
@@ -847,5 +848,18 @@
       "ichimoku_bullish": true,
       "market_regime": "bull"
     }
+  },
+  {
+    "ticker": "4004.T",
+    "entry_price": 14215.0,
+    "shares": 1,
+    "entry_date": "2026-04-30",
+    "exit_price": 15900.0,
+    "exit_date": "2026-05-08",
+    "status": "closed",
+    "pnl": 1685.0,
+    "high_price": 15900.0,
+    "stop_price": 14628.0,
+    "reason": "利確（+8%）"
   }
 ]
