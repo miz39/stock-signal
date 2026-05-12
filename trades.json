@@ -839,9 +839,9 @@
     "shares": 5,
     "original_shares": 5,
     "entry_date": "2026-05-08",
-    "exit_price": null,
-    "exit_date": null,
-    "status": "open",
+    "exit_price": 5401.0,
+    "exit_date": "2026-05-12",
+    "status": "closed",
     "high_price": 5948.0,
     "stop_price": 5664.0,
     "entry_meta": {
@@ -850,7 +850,8 @@
       "sma_slope": 2.48,
       "ichimoku_bullish": true,
       "market_regime": "bull"
-    }
+    },
+    "pnl": -1315.0
   },
   {
     "ticker": "4004.T",
