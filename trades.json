@@ -728,8 +728,8 @@
     "exit_price": null,
     "exit_date": null,
     "status": "open",
-    "high_price": 2770.0,
-    "stop_price": 2548.4,
+    "high_price": 2775.0,
+    "stop_price": 2553.0,
     "entry_meta": {
       "rsi": 50.8,
       "adx": 25.4,
@@ -819,18 +819,19 @@
     "shares": 1,
     "original_shares": 1,
     "entry_date": "2026-05-08",
-    "exit_price": null,
-    "exit_date": null,
-    "status": "open",
-    "high_price": 45730.0,
-    "stop_price": 42071.6,
+    "exit_price": 50430.0,
+    "exit_date": "2026-05-12",
+    "status": "closed",
+    "high_price": 50430.0,
+    "stop_price": 46395.6,
     "entry_meta": {
       "rsi": 64.0,
       "adx": 32.5,
       "sma_slope": 6.74,
       "ichimoku_bullish": true,
       "market_regime": "bull"
-    }
+    },
+    "pnl": 4700.0
   },
   {
     "ticker": "1721.T",
