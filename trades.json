@@ -647,18 +647,19 @@
     "shares": 25,
     "original_shares": 25,
     "entry_date": "2026-04-21",
-    "exit_price": null,
-    "exit_date": null,
-    "status": "open",
-    "high_price": 1278.0,
-    "stop_price": 1198.0,
+    "exit_price": 1384.0,
+    "exit_date": "2026-05-13",
+    "status": "closed",
+    "high_price": 1384.0,
+    "stop_price": 1273.3,
     "entry_meta": {
       "rsi": 62.7,
       "adx": 31.4,
       "sma_slope": 4.14,
       "ichimoku_bullish": true,
       "market_regime": "bull"
-    }
+    },
+    "pnl": 4650.0
   },
   {
     "ticker": "4063.T",
@@ -865,5 +866,62 @@
     "high_price": 15900.0,
     "stop_price": 14628.0,
     "reason": "利確（+8%）"
+  },
+  {
+    "ticker": "4063.T",
+    "entry_price": 7379.0,
+    "shares": 4,
+    "original_shares": 4,
+    "entry_date": "2026-05-13",
+    "exit_price": null,
+    "exit_date": null,
+    "status": "open",
+    "high_price": 7379.0,
+    "stop_price": 6788.7,
+    "entry_meta": {
+      "rsi": 62.3,
+      "adx": 37.0,
+      "sma_slope": 3.71,
+      "ichimoku_bullish": true,
+      "market_regime": "bull"
+    }
+  },
+  {
+    "ticker": "6723.T",
+    "entry_price": 3581.0,
+    "shares": 8,
+    "original_shares": 8,
+    "entry_date": "2026-05-13",
+    "exit_price": null,
+    "exit_date": null,
+    "status": "open",
+    "high_price": 3581.0,
+    "stop_price": 3294.5,
+    "entry_meta": {
+      "rsi": 64.8,
+      "adx": 36.3,
+      "sma_slope": 9.79,
+      "ichimoku_bullish": true,
+      "market_regime": "bull"
+    }
+  },
+  {
+    "ticker": "1803.T",
+    "entry_price": 3227.0,
+    "shares": 9,
+    "original_shares": 9,
+    "entry_date": "2026-05-13",
+    "exit_price": null,
+    "exit_date": null,
+    "status": "open",
+    "high_price": 3227.0,
+    "stop_price": 2968.8,
+    "entry_meta": {
+      "rsi": 58.3,
+      "adx": 25.0,
+      "sma_slope": 2.42,
+      "ichimoku_bullish": true,
+      "market_regime": "bull"
+    }
   }
 ]
