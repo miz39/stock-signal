@@ -957,7 +957,7 @@ def generate_html(data: dict, config: dict = None, profile_label: str = "") -> s
         "trade_count": "Trade Count — 統計的に有意な結果を得るために必要な最低トレード数",
         "profit_factor": "Profit Factor — 総利益 ÷ 総損失。1.0超で利益が損失を上回る。1.5以上が目標",
         "max_dd_pct": "Maximum Drawdown — 累計損益のピークからの最大下落率。資金管理の安定性を測る",
-        "profitable_month_rate": "Profitable Month Rate — トレードのあった月のうち黒字で終わった月の割合。トレードゼロ月は除外",
+        "recent_pf": "直近30件PF — 直近30トレードのプロフィットファクター。戦略の劣化を検知する",
         "win_rate": "Win Rate — 決済済みトレードのうちプラスで終了した割合",
     }
     readiness_rows = ""
@@ -1211,7 +1211,7 @@ a.stock-link:hover {{ text-decoration:underline; }}
 
 <div class="readiness-card">
   <div class="readiness-head">
-    <div class="readiness-title" data-tip="ペーパートレードからリアル運用に移行するための5基準（サンプル数/PF/最大DD/黒字月率/勝率）の達成度">リアル移行準備度 {ready_score:.0f}% ({ready_passed}/{ready_total} 基準達成)</div>
+    <div class="readiness-title" data-tip="ペーパートレードからリアル運用に移行するための5基準（サンプル数/PF/最大DD/直近30件PF/勝率）の達成度">リアル移行準備度 {ready_score:.0f}% ({ready_passed}/{ready_total} 基準達成)</div>
     <div class="readiness-status" style="color:{ready_color}">{ready_label}</div>
   </div>
   <div class="readiness-bar"><div class="readiness-bar-fill" style="width:{ready_score}%;background:{ready_color}"></div></div>

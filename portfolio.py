@@ -339,7 +339,7 @@ def get_readiness_metrics(initial_balance: float = 300000) -> dict:
     - trade_count ≥ 100
     - profit_factor ≥ 1.5
     - max_dd_pct ≤ 10
-    - profitable_month_rate ≥ 60 (トレードのあった月のうち黒字月の割合)
+    - recent_pf ≥ 1.0 (直近30件のプロフィットファクター)
     - win_rate ≥ 45
 
     Returns:
@@ -385,12 +385,20 @@ def get_readiness_metrics(initial_balance: float = 300000) -> dict:
             if dd_pct > max_dd_pct:
                 max_dd_pct = dd_pct
 
-    # Profitable month rate (months with trades only)
-    monthly = get_monthly_performance()
-    months_with_trades = [m for m in monthly if m.get("trades", 0) > 0]
-    profitable_months = sum(1 for m in months_with_trades if m["pnl"] > 0)
-    active_months = len(months_with_trades)
-    profitable_month_rate = (profitable_months / active_months * 100) if active_months > 0 else 0.0
+    # Recent 30 trades profit factor
+    sorted_closed = sorted(closed, key=lambda t: t.get("exit_date", ""))
+    recent_pnls = [t["pnl"] for t in sorted_closed[-30:]]
+    recent_gross_profit = sum(p for p in recent_pnls if p > 0)
+    recent_gross_loss = abs(sum(p for p in recent_pnls if p < 0))
+    if recent_gross_loss > 0:
+        recent_pf = recent_gross_profit / recent_gross_loss
+        recent_pf_display = f"{recent_pf:.2f} / 1.0"
+    elif recent_gross_profit > 0:
+        recent_pf = float("inf")
+        recent_pf_display = "∞ / 1.0"
+    else:
+        recent_pf = 0.0
+        recent_pf_display = "0.00 / 1.0"
 
     criteria = [
         {
@@ -418,12 +426,12 @@ def get_readiness_metrics(initial_balance: float = 300000) -> dict:
             "display": f"{max_dd_pct:.1f}% / 10%",
         },
         {
-            "name": "profitable_month_rate",
-            "label": "黒字月率",
-            "actual": round(profitable_month_rate, 1),
-            "threshold": 60,
-            "passed": profitable_month_rate >= 60,
-            "display": f"{profitable_months}/{active_months}ヶ月 ({profitable_month_rate:.0f}%)",
+            "name": "recent_pf",
+            "label": "直近30件PF",
+            "actual": None if recent_pf == float("inf") else round(recent_pf, 2),
+            "threshold": 1.0,
+            "passed": recent_pf >= 1.0,
+            "display": recent_pf_display,
         },
         {
             "name": "win_rate",
