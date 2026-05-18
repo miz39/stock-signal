@@ -6,7 +6,7 @@ account:
   max_allocation: 0.10  # 1銘柄あたり資産の10%まで
   max_positions: 10     # 上限10銘柄
   unit: 1
-  max_daily_entries: 3     # 1日あたりの新規エントリー上限
+  max_daily_entries: 0     # 1日あたりの新規エントリー上限（0=無制限、キャッシュ残高・max_positionsで自然制限）
   max_sector_positions: 2  # 同一セクターの同時保有上限
   cooldown_days: 7         # 損切り後の再エントリー禁止日数
   max_consecutive_losses: 2  # N回連続損切りで当該銘柄エントリー禁止
