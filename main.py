@@ -1361,6 +1361,9 @@ def main():
         logger.info(f"=== プロファイル: {profile_name} ===")
         try:
             run(profile_name)
+        except ValueError as e:
+            # 日次エントリー上限など想定内の制限は INFO として記録し正常終了
+            logger.info(f"[{profile_name}]: {e}")
         except Exception as e:
             logger.error(f"致命的エラー [{profile_name}]: {e}")
             try:
