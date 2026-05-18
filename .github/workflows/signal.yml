@@ -4,8 +4,6 @@ on:
   schedule:
     # JST 8:50 (UTC 23:50 前日) 月-金JST = 日-木UTC
     - cron: '50 23 * * 0-4'
-    # JST 12:35 (UTC 3:35)
-    - cron: '35 3 * * 1-5'
     # JST 15:10 (UTC 6:10)
     - cron: '10 6 * * 1-5'
   workflow_dispatch: # 手動実行用
