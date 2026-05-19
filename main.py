@@ -507,7 +507,7 @@ def run(profile_name: str = "default"):
     if valuation_enabled:
         from agents.coordinator import analyze_valuation
         # Analyze top buy candidates
-        val_top_n = min(5, len(buy_signals))
+        val_top_n = min(val_cfg.get("max_candidates", 5), len(buy_signals))
         for sig in buy_signals[:val_top_n]:
             ticker = sig["ticker"]
             try:

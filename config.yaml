@@ -72,6 +72,7 @@ agents:
 
 valuation:
   enabled: true
+  max_candidates: 10    # 買い候補のバリュエーション評価件数（多いほど精度↑、時間↑）
   wacc_defaults:
     建設・資源: 0.09
     食品: 0.08
