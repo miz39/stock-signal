@@ -768,7 +768,7 @@ def run(profile_name: str = "default"):
         consecutive_loss_tickers = get_consecutive_loss_tickers(max_consecutive_losses)
 
         for sig in buy_signals:
-            if daily_entries >= max_daily:
+            if max_daily > 0 and daily_entries >= max_daily:
                 break
             if sig["ticker"] not in open_tickers and len(open_tickers) < account["max_positions"]:
                 # 再エントリー禁止チェック
@@ -800,7 +800,8 @@ def run(profile_name: str = "default"):
                                 f"(発表まで{days_until}日 / {edate.isoformat()})"
                             )
                             continue
-                if sig.get("recommended_shares"):
+                entry_shares = sig.get("recommended_shares") or sig.get("shares")
+                if entry_shares:
                     signal_meta = {
                         "rsi": round(sig["rsi"], 1),
                         "adx": sig.get("adx"),
@@ -808,7 +809,7 @@ def run(profile_name: str = "default"):
                         "ichimoku_bullish": sig.get("ichimoku_bullish"),
                         "market_regime": market_regime.get("regime"),
                     }
-                    record_entry(sig["ticker"], sig["price"], sig["recommended_shares"],
+                    record_entry(sig["ticker"], sig["price"], entry_shares,
                                  stop_pct=stop_loss_pct, signal_meta=signal_meta,
                                  max_daily_entries=max_daily)
                     open_tickers.add(sig["ticker"])
@@ -818,7 +819,7 @@ def run(profile_name: str = "default"):
                         "ticker": sig["ticker"],
                         "name": NIKKEI_225.get(sig["ticker"], sig["ticker"]),
                         "price": sig["price"],
-                        "shares": sig["recommended_shares"],
+                        "shares": entry_shares,
                         "stop_loss": sig.get("stop_loss"),
                         "rsi": round(sig["rsi"], 1),
                         "reason": sig.get("reason", ""),
