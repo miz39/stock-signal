@@ -89,19 +89,19 @@ a.stock-link:hover { text-decoration:underline; }
 </head>
 <body>
 <h1>Paper Trade Dashboard</h1>
-<div class="updated">最終更新: 2026-05-19 14:26 JST &nbsp;|&nbsp; <a href="history.html" style="color:#64B5F6;text-decoration:none">実行履歴 &rarr;</a> &nbsp;|&nbsp; <a href="weekly-review.html" style="color:#64B5F6;text-decoration:none">週次レビュー &rarr;</a> &nbsp;|&nbsp; <a href="strategy.html" style="color:#64B5F6;text-decoration:none">戦略分析 &rarr;</a> &nbsp;|&nbsp; <a href="analysis.html" style="color:#64B5F6;text-decoration:none">AI分析 &rarr;</a> &nbsp;|&nbsp; <a href="policy.html" style="color:#64B5F6;text-decoration:none">運用方針 &rarr;</a></div>
+<div class="updated">最終更新: 2026-05-19 14:28 JST &nbsp;|&nbsp; <a href="history.html" style="color:#64B5F6;text-decoration:none">実行履歴 &rarr;</a> &nbsp;|&nbsp; <a href="weekly-review.html" style="color:#64B5F6;text-decoration:none">週次レビュー &rarr;</a> &nbsp;|&nbsp; <a href="strategy.html" style="color:#64B5F6;text-decoration:none">戦略分析 &rarr;</a> &nbsp;|&nbsp; <a href="analysis.html" style="color:#64B5F6;text-decoration:none">AI分析 &rarr;</a> &nbsp;|&nbsp; <a href="policy.html" style="color:#64B5F6;text-decoration:none">運用方針 &rarr;</a></div>
 
 <div class="hero-card">
   <div class="label" data-tip="現金 + 保有株式の時価評価額の合計">総資産</div>
-  <div class="hero-value">&yen;308,333</div>
-  <div class="hero-change" style="color:#00C853">+8,333（+2.78%）</div>
+  <div class="hero-value">&yen;308,242</div>
+  <div class="hero-change" style="color:#00C853">+8,242（+2.75%）</div>
   <div class="sub">初期資金 &yen;300,000</div>
 </div>
 
 <div class="cards">
   <div class="card">
     <div class="label" data-tip="保有中の全銘柄の現在時価の合計">株時価</div>
-    <div class="value">&yen;315,018</div>
+    <div class="value">&yen;314,926</div>
     <div class="sub">10銘柄保有</div>
   </div>
   <div class="card">
@@ -115,7 +115,7 @@ a.stock-link:hover { text-decoration:underline; }
   </div>
   <div class="card">
     <div class="label" data-tip="Unrealized PnL（含み損益）: 保有中銘柄の（現在価格 − 取得価格）× 株数の合計。未決済のため変動する">含み損益</div>
-    <div class="value" style="color:#FF1744">&yen;-3,698</div>
+    <div class="value" style="color:#FF1744">&yen;-3,790</div>
   </div>
   <div class="card">
     <div class="label" data-tip="Win Rate（勝率）: 決済済みトレードのうちプラスで終わった割合。50%超なら勝ち越し">勝率</div>
@@ -132,7 +132,7 @@ a.stock-link:hover { text-decoration:underline; }
   <div class="regime-top">
     <div class="regime-left">
       <span class="regime-badge" style="background:#00C853;color:#121212">BULL</span>
-      <span class="regime-price">日経225 &yen;60,558 &nbsp; SMA50 &yen;56,800 &nbsp; SMA200 &yen;50,752</span>
+      <span class="regime-price">日経225 &yen;60,545 &nbsp; SMA50 &yen;56,800 &nbsp; SMA200 &yen;50,752</span>
     </div>
     <div class="regime-right"><span data-tip="bull_only_entry: ON — BULL局面のため通常通りエントリー可能" style="color:#00C853;font-weight:600">エントリー継続</span></div>
   </div>
@@ -283,40 +283,40 @@ a.stock-link:hover { text-decoration:underline; }
   <table>
     <thead><tr><th>銘柄</th><th>株価</th><th data-tip="Relative Strength Index（相対力指数）: 0-100の値。50-65がエントリー好適帯。70超は過熱">RSI</th><th data-tip="Composite Score（複合スコア）: 7要素の加重スコア (0-1)。高いほどエントリー条件が整っている">Score</th><th data-tip="TradingView Recommendation: TradingViewのテクニカル分析に基づく売買推奨 (BUY/NEUTRAL/SELL)">TV推奨</th><th>推奨株数</th></tr></thead>
     <tbody><tr>
-<td>イビデン<br><span class="ticker">4062</span></td>
-<td class="num">&yen;15,160</td>
-<td class="num">63.4</td>
-<td class="num">0.62</td>
-<td class="num"><span style="color:#FFC107;font-weight:600">TV:NEUTRAL</span></td>
-<td class="num">2</td>
-</tr><tr>
 <td>日産化学<br><span class="ticker">4021</span></td>
-<td class="num">&yen;7,181</td>
-<td class="num">63.3</td>
+<td class="num">&yen;7,186</td>
+<td class="num">63.5</td>
 <td class="num">0.62</td>
 <td class="num"><span style="color:#FFC107;font-weight:600">TV:NEUTRAL</span></td>
-<td class="num">4</td>
+<td class="num">-</td>
 </tr><tr>
 <td>味の素<br><span class="ticker">2802</span></td>
-<td class="num">&yen;5,252</td>
+<td class="num">&yen;5,251</td>
 <td class="num">59.4</td>
-<td class="num">0.62</td>
+<td class="num">0.61</td>
 <td class="num"><span style="color:#FFC107;font-weight:600">TV:NEUTRAL</span></td>
-<td class="num">5</td>
+<td class="num">-</td>
+</tr><tr>
+<td>TDK<br><span class="ticker">6762</span></td>
+<td class="num">&yen;2,956</td>
+<td class="num">65.0</td>
+<td class="num">0.60</td>
+<td class="num"><span style="color:#FFC107;font-weight:600">TV:NEUTRAL</span></td>
+<td class="num">-</td>
 </tr><tr>
 <td>ファナック<br><span class="ticker">6954</span></td>
 <td class="num">&yen;7,677</td>
 <td class="num">61.9</td>
 <td class="num">0.59</td>
 <td class="num"><span style="color:#FFC107;font-weight:600">TV:NEUTRAL</span></td>
-<td class="num">4</td>
+<td class="num">-</td>
 </tr><tr>
 <td>富士電機<br><span class="ticker">6504</span></td>
 <td class="num">&yen;14,590</td>
 <td class="num">63.7</td>
 <td class="num">0.59</td>
 <td class="num"><span style="color:#FFC107;font-weight:600">TV:NEUTRAL</span></td>
-<td class="num">2</td>
+<td class="num">-</td>
 </tr></tbody>
   </table>
   </div>
@@ -330,9 +330,9 @@ a.stock-link:hover { text-decoration:underline; }
     <tbody><tr>
 <td><a class="stock-link" href="stock/8766.html">東京海上ホールディングス</a><br><span class="ticker">8766</span></td>
 <td class="num">&yen;6,976</td>
-<td class="num">&yen;7,920</td>
+<td class="num">&yen;7,922</td>
 <td class="num">2</td>
-<td class="num" style="color:#00C853">+1,888<br><span class="small">(+13.5%)</span></td>
+<td class="num" style="color:#00C853">+1,892<br><span class="small">(+13.6%)</span></td>
 <td class="num">32日</td>
 </tr><tr>
 <td><a class="stock-link" href="stock/9502.html">中部電力</a><br><span class="ticker">9502</span></td>
@@ -344,58 +344,58 @@ a.stock-link:hover { text-decoration:underline; }
 </tr><tr>
 <td><a class="stock-link" href="stock/4063.html">信越化学工業</a><br><span class="ticker">4063</span></td>
 <td class="num">&yen;7,379</td>
-<td class="num">&yen;7,008</td>
+<td class="num">&yen;7,000</td>
 <td class="num">4</td>
-<td class="num" style="color:#FF1744">-1,484<br><span class="small">(-5.0%)</span></td>
+<td class="num" style="color:#FF1744">-1,516<br><span class="small">(-5.1%)</span></td>
 <td class="num">6日</td>
 </tr><tr>
 <td><a class="stock-link" href="stock/8035.html">東京エレクトロン</a><br><span class="ticker">8035</span></td>
 <td class="num">&yen;50,740</td>
-<td class="num">&yen;47,460</td>
+<td class="num">&yen;47,430</td>
 <td class="num">1</td>
-<td class="num" style="color:#FF1744">-3,280<br><span class="small">(-6.5%)</span></td>
+<td class="num" style="color:#FF1744">-3,310<br><span class="small">(-6.5%)</span></td>
 <td class="num">4日</td>
 </tr><tr>
 <td><a class="stock-link" href="stock/4061.html">デンカ</a><br><span class="ticker">4061</span></td>
 <td class="num">&yen;4,025</td>
-<td class="num">&yen;3,790</td>
+<td class="num">&yen;3,792</td>
 <td class="num">7</td>
-<td class="num" style="color:#FF1744">-1,645<br><span class="small">(-5.8%)</span></td>
+<td class="num" style="color:#FF1744">-1,631<br><span class="small">(-5.8%)</span></td>
 <td class="num">4日</td>
 </tr><tr>
 <td><a class="stock-link" href="stock/6954.html">ファナック</a><br><span class="ticker">6954</span></td>
 <td class="num">&yen;7,677</td>
-<td class="num">&yen;7,707</td>
+<td class="num">&yen;7,706</td>
 <td class="num">4</td>
-<td class="num" style="color:#00C853">+120<br><span class="small">(+0.4%)</span></td>
+<td class="num" style="color:#00C853">+116<br><span class="small">(+0.4%)</span></td>
 <td class="num">0日</td>
 </tr><tr>
 <td><a class="stock-link" href="stock/6504.html">富士電機</a><br><span class="ticker">6504</span></td>
 <td class="num">&yen;14,590</td>
-<td class="num">&yen;14,580</td>
+<td class="num">&yen;14,570</td>
 <td class="num">2</td>
-<td class="num" style="color:#FF1744">-20<br><span class="small">(-0.1%)</span></td>
+<td class="num" style="color:#FF1744">-40<br><span class="small">(-0.1%)</span></td>
 <td class="num">0日</td>
 </tr><tr>
 <td><a class="stock-link" href="stock/5332.html">TOTO</a><br><span class="ticker">5332</span></td>
 <td class="num">&yen;6,703</td>
-<td class="num">&yen;6,703</td>
+<td class="num">&yen;6,696</td>
 <td class="num">4</td>
-<td class="num" style="color:#9E9E9E">0<br><span class="small">(+0.0%)</span></td>
+<td class="num" style="color:#FF1744">-28<br><span class="small">(-0.1%)</span></td>
 <td class="num">0日</td>
 </tr><tr>
 <td><a class="stock-link" href="stock/5801.html">古河電気工業</a><br><span class="ticker">5801</span></td>
 <td class="num">&yen;50,410</td>
-<td class="num">&yen;50,190</td>
+<td class="num">&yen;50,210</td>
 <td class="num">1</td>
-<td class="num" style="color:#FF1744">-220<br><span class="small">(-0.4%)</span></td>
+<td class="num" style="color:#FF1744">-200<br><span class="small">(-0.4%)</span></td>
 <td class="num">0日</td>
 </tr><tr>
 <td><a class="stock-link" href="stock/3436.html">SUMCO</a><br><span class="ticker">3436</span></td>
 <td class="num">&yen;2,976</td>
-<td class="num">&yen;2,969</td>
+<td class="num">&yen;2,968</td>
 <td class="num">10</td>
-<td class="num" style="color:#FF1744">-75<br><span class="small">(-0.2%)</span></td>
+<td class="num" style="color:#FF1744">-90<br><span class="small">(-0.3%)</span></td>
 <td class="num">0日</td>
 </tr></tbody>
   </table>
@@ -554,7 +554,7 @@ a.stock-link:hover { text-decoration:underline; }
 
 <script>
 const labels = ["2026-03-04", "2026-03-05", "2026-03-06", "2026-03-07", "2026-03-08", "2026-03-09", "2026-03-10", "2026-03-11", "2026-03-12", "2026-03-13", "2026-03-14", "2026-03-15", "2026-03-16", "2026-03-17", "2026-03-18", "2026-03-19", "2026-03-20", "2026-03-21", "2026-03-22", "2026-03-23", "2026-03-24", "2026-03-25", "2026-03-26", "2026-03-27", "2026-03-28", "2026-03-29", "2026-03-30", "2026-03-31", "2026-04-01", "2026-04-02", "2026-04-03", "2026-04-04", "2026-04-05", "2026-04-06", "2026-04-07", "2026-04-08", "2026-04-09", "2026-04-10", "2026-04-11", "2026-04-12", "2026-04-13", "2026-04-14", "2026-04-15", "2026-04-16", "2026-04-17", "2026-04-18", "2026-04-19", "2026-04-20", "2026-04-21", "2026-04-22", "2026-04-23", "2026-04-24", "2026-04-25", "2026-04-26", "2026-04-27", "2026-04-28", "2026-04-29", "2026-04-30", "2026-05-01", "2026-05-02", "2026-05-03", "2026-05-04", "2026-05-05", "2026-05-06", "2026-05-07", "2026-05-08", "2026-05-09", "2026-05-10", "2026-05-11", "2026-05-12", "2026-05-13", "2026-05-14", "2026-05-15", "2026-05-16", "2026-05-17", "2026-05-18", "2026-05-19"];
-const data = [300000, 300000, 300000, 300000, 300000, 293542.0, 293542.0, 293542.0, 294766.0, 293630.8, 293630.8, 293630.8, 292423.3, 292423.3, 292423.3, 292423.3, 292423.3, 292423.3, 292423.3, 289696.0, 288174.1, 288174.1, 294722.1, 294778.1, 294778.1, 294778.1, 294778.1, 297920.3, 298942.8, 300042.8, 301112.9, 301112.9, 301112.9, 301112.9, 301112.9, 309795.0, 309795.0, 309165.0, 309165.0, 309165.0, 309165.0, 309165.0, 309165.0, 309165.0, 306635.0, 306635.0, 306635.0, 306635.0, 303875.5, 303875.5, 303788.5, 303788.5, 303788.5, 303788.5, 296617.0, 296617.0, 296617.0, 294594.0, 292185.6, 292185.6, 292185.6, 292185.6, 292185.6, 292185.6, 304441.6, 306126.6, 306126.6, 306126.6, 311368.6, 314753.6, 319403.6, 316923.6, 314483.6, 314483.6, 314483.6, 315907.6, 308333.3];
+const data = [300000, 300000, 300000, 300000, 300000, 293542.0, 293542.0, 293542.0, 294766.0, 293630.8, 293630.8, 293630.8, 292423.3, 292423.3, 292423.3, 292423.3, 292423.3, 292423.3, 292423.3, 289696.0, 288174.1, 288174.1, 294722.1, 294778.1, 294778.1, 294778.1, 294778.1, 297920.3, 298942.8, 300042.8, 301112.9, 301112.9, 301112.9, 301112.9, 301112.9, 309795.0, 309795.0, 309165.0, 309165.0, 309165.0, 309165.0, 309165.0, 309165.0, 309165.0, 306635.0, 306635.0, 306635.0, 306635.0, 303875.5, 303875.5, 303788.5, 303788.5, 303788.5, 303788.5, 296617.0, 296617.0, 296617.0, 294594.0, 292185.6, 292185.6, 292185.6, 292185.6, 292185.6, 292185.6, 304441.6, 306126.6, 306126.6, 306126.6, 311368.6, 314753.6, 319403.6, 316923.6, 314483.6, 314483.6, 314483.6, 315907.6, 308242.3];
 if (labels.length > 0) {
   const ctx = document.getElementById('equityChart').getContext('2d');
   const gradient = ctx.createLinearGradient(0,0,0,200);
@@ -618,7 +618,7 @@ if (labels.length > 0) {
 
 // Sector Pie Chart
 const sectorLabels = ["\u91d1\u878d\u30fb\u5546\u793e", "\u904b\u8f38\u30fb\u901a\u4fe1\u30fb\u30b5\u30fc\u30d3\u30b9", "\u5316\u5b66\u30fb\u533b\u85ac", "\u6a5f\u68b0\u30fb\u96fb\u6a5f", "\u9244\u92fc\u30fb\u91d1\u5c5e", "\u4e0d\u52d5\u7523\u30fb\u5009\u5eab", "\u73fe\u91d1"];
-const sectorValues = [63300, 30476, 54562, 59988, 77002, 29690, -6684];
+const sectorValues = [63274, 30476, 54544, 59964, 76994, 29675, -6684];
 if (sectorLabels.length > 0) {
   const colors = ['#2196F3','#00C853','#FF9800','#9C27B0','#F44336','#00BCD4','#FF5722','#795548','#607D8B','#E91E63','#8BC34A','#FFC107'];
   new Chart(document.getElementById('sectorChart'), {
@@ -686,7 +686,7 @@ if (mLabels.length > 0) {
 }
 
 // Drawdown Chart
-const ddData = [0.0, 0.0, 0.0, 0.0, 0.0, -2.15, -2.15, -2.15, -1.74, -2.12, -2.12, -2.12, -2.53, -2.53, -2.53, -2.53, -2.53, -2.53, -2.53, -3.43, -3.94, -3.94, -1.76, -1.74, -1.74, -1.74, -1.74, -0.69, -0.35, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -0.2, -0.2, -0.2, -0.2, -0.2, -0.2, -0.2, -1.02, -1.02, -1.02, -1.02, -1.91, -1.91, -1.94, -1.94, -1.94, -1.94, -4.25, -4.25, -4.25, -4.91, -5.68, -5.68, -5.68, -5.68, -5.68, -5.68, -1.73, -1.18, -1.18, -1.18, 0.0, 0.0, 0.0, -0.78, -1.54, -1.54, -1.54, -1.09, -3.47];
+const ddData = [0.0, 0.0, 0.0, 0.0, 0.0, -2.15, -2.15, -2.15, -1.74, -2.12, -2.12, -2.12, -2.53, -2.53, -2.53, -2.53, -2.53, -2.53, -2.53, -3.43, -3.94, -3.94, -1.76, -1.74, -1.74, -1.74, -1.74, -0.69, -0.35, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -0.2, -0.2, -0.2, -0.2, -0.2, -0.2, -0.2, -1.02, -1.02, -1.02, -1.02, -1.91, -1.91, -1.94, -1.94, -1.94, -1.94, -4.25, -4.25, -4.25, -4.91, -5.68, -5.68, -5.68, -5.68, -5.68, -5.68, -1.73, -1.18, -1.18, -1.18, 0.0, 0.0, 0.0, -0.78, -1.54, -1.54, -1.54, -1.09, -3.49];
 if (labels.length > 0 && ddData.length > 0) {
   const ddCtx = document.getElementById('ddChart').getContext('2d');
   const ddGrad = ddCtx.createLinearGradient(0,0,0,120);
