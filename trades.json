@@ -381,8 +381,8 @@
     "exit_price": null,
     "exit_date": null,
     "status": "open",
-    "high_price": 2655.0,
-    "stop_price": 2442.6
+    "high_price": 2714.0,
+    "stop_price": 2496.9
   },
   {
     "ticker": "5803.T",
@@ -571,8 +571,8 @@
     "exit_price": null,
     "exit_date": null,
     "status": "open",
-    "high_price": 7688.0,
-    "stop_price": 7073.0,
+    "high_price": 7919.0,
+    "stop_price": 7285.5,
     "entry_meta": {
       "rsi": 53.3,
       "adx": 26.3,
@@ -893,9 +893,9 @@
     "shares": 8,
     "original_shares": 8,
     "entry_date": "2026-05-13",
-    "exit_price": null,
-    "exit_date": null,
-    "status": "open",
+    "exit_price": 3580.0,
+    "exit_date": "2026-05-19",
+    "status": "closed",
     "high_price": 3916.0,
     "stop_price": 3602.7,
     "entry_meta": {
@@ -904,7 +904,8 @@
       "sma_slope": 9.79,
       "ichimoku_bullish": true,
       "market_regime": "bull"
-    }
+    },
+    "pnl": -8.0
   },
   {
     "ticker": "1803.T",
