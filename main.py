@@ -588,6 +588,7 @@ def run(profile_name: str = "default"):
     trailing_stop_exits = []
     partial_exits = []
     full_profit_exits = []
+    time_stop_exits = []
     trailing_stop_updates = []
     original_positions = list(open_positions)  # 履歴用に元のポジションを保存
     for pos in open_positions:
@@ -673,6 +674,24 @@ def run(profile_name: str = "default"):
                         "total_shares": pos["shares"],
                     })
 
+        # タイムストップ: 30日超保有 & ストップが建値未到達 → 手じまい
+        entry_date_str = pos.get("entry_date", "")
+        try:
+            entry_dt = date.fromisoformat(entry_date_str)
+            days_held = (date.today() - entry_dt).days
+        except (ValueError, TypeError):
+            days_held = 0
+        stop_price_now = pos.get("stop_price", 0)
+        if days_held > 30 and stop_price_now < entry_price and mode == "paper":
+            logger.info(f"  → タイムストップ: {name}（{ticker}）{days_held}日保有 / ストップ建値未到達（stop={stop_price_now:.0f} < entry={entry_price:.0f}）")
+            time_stop_exits.append({
+                "ticker": ticker, "price": current,
+                "entry_price": entry_price, "shares": pos["shares"],
+                "days_held": days_held,
+                "name": name,
+            })
+            continue
+
         # ストップ価格に達したら損切り（ペーパーモードのみ自動執行）
         if updated and mode == "paper":
             stop = updated.get("stop_price", entry_price * 0.92)
@@ -700,9 +719,18 @@ def run(profile_name: str = "default"):
         for ts in trailing_stop_exits:
             record_exit(ts["ticker"], ts["price"])
 
+        # タイムストップによる手じまい
+        for tse in time_stop_exits:
+            record_exit(tse["ticker"], tse["price"])
+
         for sig in sell_signals:
             # 既に利確/ストップで売却済みの場合はスキップ
-            exited_tickers = {ts["ticker"] for ts in trailing_stop_exits} | {fp["ticker"] for fp in full_profit_exits} | {ce["ticker"] for ce in coch_exits}
+            exited_tickers = (
+                {ts["ticker"] for ts in trailing_stop_exits}
+                | {fp["ticker"] for fp in full_profit_exits}
+                | {ce["ticker"] for ce in coch_exits}
+                | {tse["ticker"] for tse in time_stop_exits}
+            )
             if sig["ticker"] not in exited_tickers:
                 record_exit(sig["ticker"], sig["price"])
 
@@ -937,8 +965,11 @@ def run(profile_name: str = "default"):
         name = TICKER_NAMES.get(ts["ticker"], ts["ticker"])
         code = ts["ticker"].replace(".T", "")
         sell_lines.append(f"**{name}**（{code}）¥{ts['price']:,.0f} | トレーリングストップ発動")
+    for tse in time_stop_exits:
+        code = tse["ticker"].replace(".T", "")
+        sell_lines.append(f"**{tse['name']}**（{code}）¥{tse['price']:,.0f} | タイムストップ（{tse['days_held']}日保有）")
     for sig in sell_signals:
-        ts_tickers = {ts["ticker"] for ts in trailing_stop_exits}
+        ts_tickers = {ts["ticker"] for ts in trailing_stop_exits} | {tse["ticker"] for tse in time_stop_exits}
         if sig["ticker"] not in ts_tickers:
             name = TICKER_NAMES.get(sig["ticker"], sig["ticker"])
             code = sig["ticker"].replace(".T", "")
@@ -1084,9 +1115,9 @@ def run(profile_name: str = "default"):
         total_pnl = weekly_rep.get("total_pnl", 0)
         total_pnl_pct = (total_pnl / balance * 100) if balance else 0.0
         # Count distinct sells (matches exit_records dedupe against trailing_stop_exits)
-        ts_tickers_set = {ts["ticker"] for ts in trailing_stop_exits}
+        ts_tickers_set = {ts["ticker"] for ts in trailing_stop_exits} | {tse["ticker"] for tse in time_stop_exits}
         sell_count = (
-            len(full_profit_exits) + len(coch_exits) + len(trailing_stop_exits)
+            len(full_profit_exits) + len(coch_exits) + len(trailing_stop_exits) + len(time_stop_exits)
             + sum(1 for s in sell_signals if s["ticker"] not in ts_tickers_set)
         )
         daily_text = format_daily_summary_mrkdwn(
@@ -1149,8 +1180,19 @@ def run(profile_name: str = "default"):
             "pnl": round(pnl_per_share * shares, 1),
             "pnl_pct": round(pnl_per_share / entry_price * 100, 1) if entry_price else 0,
         })
+    for tse in time_stop_exits:
+        entry_price = tse["entry_price"]
+        shares = tse["shares"]
+        pnl_per_share = tse["price"] - entry_price
+        exit_records.append({
+            "ticker": tse["ticker"], "name": tse["name"],
+            "price": tse["price"], "reason": f"タイムストップ（{tse['days_held']}日保有）",
+            "entry_price": entry_price, "shares": shares,
+            "pnl": round(pnl_per_share * shares, 1),
+            "pnl_pct": round(pnl_per_share / entry_price * 100, 1) if entry_price else 0,
+        })
     for sig in sell_signals:
-        ts_tickers = {ts["ticker"] for ts in trailing_stop_exits}
+        ts_tickers = {ts["ticker"] for ts in trailing_stop_exits} | {tse["ticker"] for tse in time_stop_exits}
         if sig["ticker"] not in ts_tickers:
             name = NIKKEI_225.get(sig["ticker"], sig["ticker"])
             orig = next((p for p in original_positions if p["ticker"] == sig["ticker"]), None)
