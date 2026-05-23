@@ -803,12 +803,19 @@ def run(profile_name: str = "default"):
                             continue
                 entry_shares = sig.get("recommended_shares") or sig.get("shares")
                 if entry_shares:
+                    val = sig.get("valuation") or {}
                     signal_meta = {
                         "rsi": round(sig["rsi"], 1),
                         "adx": sig.get("adx"),
                         "sma_slope": sig.get("sma_slope"),
                         "ichimoku_bullish": sig.get("ichimoku_bullish"),
                         "market_regime": market_regime.get("regime"),
+                        "composite_score": sig.get("composite_score"),
+                        "entry_reason": sig.get("reason"),
+                        "valuation_signal": val.get("signal_label"),
+                        "valuation_score": val.get("score") or val.get("total_score"),
+                        "fair_value": val.get("fair_value"),
+                        "upside_pct": val.get("upside_pct"),
                     }
                     record_entry(sig["ticker"], sig["price"], entry_shares,
                                  stop_pct=stop_loss_pct, signal_meta=signal_meta,

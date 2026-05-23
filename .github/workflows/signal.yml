@@ -39,11 +39,18 @@ jobs:
       - name: Generate dashboard
         run: python generate_dashboard.py
 
+      - name: Generate trade journal (weekends only)
+        run: |
+          DAY=$(date +%u)
+          if [ "$DAY" = "6" ] || [ "$DAY" = "7" ]; then
+            python generate_trade_journal.py
+          fi
+
       - name: Commit state changes
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add trades.json execution_history*.json docs/ 2>/dev/null || true
+          git add trades.json execution_history*.json docs/ CHANGELOG.md 2>/dev/null || true
           git diff --cached --quiet || git commit -m "Update trading state [skip ci]"
           git pull --rebase origin main || true
           git push || true
