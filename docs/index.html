@@ -89,7 +89,7 @@ a.stock-link:hover { text-decoration:underline; }
 </head>
 <body>
 <h1>Paper Trade Dashboard</h1>
-<div class="updated">最終更新: 2026-05-22 18:49 JST &nbsp;|&nbsp; <a href="history.html" style="color:#64B5F6;text-decoration:none">実行履歴 &rarr;</a> &nbsp;|&nbsp; <a href="weekly-review.html" style="color:#64B5F6;text-decoration:none">週次レビュー &rarr;</a> &nbsp;|&nbsp; <a href="strategy.html" style="color:#64B5F6;text-decoration:none">戦略分析 &rarr;</a> &nbsp;|&nbsp; <a href="analysis.html" style="color:#64B5F6;text-decoration:none">AI分析 &rarr;</a> &nbsp;|&nbsp; <a href="policy.html" style="color:#64B5F6;text-decoration:none">運用方針 &rarr;</a></div>
+<div class="updated">最終更新: 2026-05-23 10:35 JST &nbsp;|&nbsp; <a href="history.html" style="color:#64B5F6;text-decoration:none">実行履歴 &rarr;</a> &nbsp;|&nbsp; <a href="weekly-review.html" style="color:#64B5F6;text-decoration:none">週次レビュー &rarr;</a> &nbsp;|&nbsp; <a href="strategy.html" style="color:#64B5F6;text-decoration:none">戦略分析 &rarr;</a> &nbsp;|&nbsp; <a href="analysis.html" style="color:#64B5F6;text-decoration:none">AI分析 &rarr;</a> &nbsp;|&nbsp; <a href="policy.html" style="color:#64B5F6;text-decoration:none">運用方針 &rarr;</a></div>
 
 <div class="hero-card">
   <div class="label" data-tip="現金 + 保有株式の時価評価額の合計">総資産</div>
@@ -219,7 +219,7 @@ a.stock-link:hover { text-decoration:underline; }
       <div class="policy-title" data-tip="エントリーとイグジットの判定ロジック">戦略</div>
       <div class="policy-body">
         <div class="policy-name" data-tip="短期移動平均線が長期を上回った（ゴールデンクロス）タイミングで、RSIが上昇モメンタムを確認している局面にエントリーする順張り戦略">ゴールデンクロス + RSI コンファーメーション</div>
-        <div class="policy-rule buy-rule" data-tip="SMA = Simple Moving Average（単純移動平均線）。SMA25がSMA100を上抜け（Golden Cross）、RSI（Relative Strength Index）50-65 の上昇モメンタム帯、終値がSMA200より上（長期上昇トレンド確認）、ADX（Average Directional Index）≥25（トレンド強度）の全条件を満たす時にBUY">買い: SMA25 &gt; SMA100 &amp; RSI 50-65 &amp; 株価 &gt; SMA200 &amp; ADX≥25</div>
+        <div class="policy-rule buy-rule" data-tip="SMA = Simple Moving Average（単純移動平均線）。SMA25がSMA100を上抜け（Golden Cross）、RSI（Relative Strength Index）50-62 の上昇モメンタム帯、終値がSMA200より上（長期上昇トレンド確認）、ADX（Average Directional Index）≥28（トレンド強度）の全条件を満たす時にBUY">買い: SMA25 &gt; SMA100 &amp; RSI 50-62 &amp; 株価 &gt; SMA200 &amp; ADX≥28</div>
         <div class="policy-rule sell-rule" data-tip="Trailing Stop（トレーリングストップ: -8%）で損切り、+6%でストップを建値に移動、+10%で半分利確、+15%で全利確。CoCh = Change of Character（トレンド構造崩壊: 直近の高値安値パターンが崩れた時）でも即イグジット">売り: ストップ -8% / 建値移動 +6% / 半分利確 +10% / 全利確 +15%</div>
       </div>
     </div>
@@ -333,70 +333,70 @@ a.stock-link:hover { text-decoration:underline; }
 <td class="num">&yen;7,381</td>
 <td class="num">2</td>
 <td class="num" style="color:#00C853">+810<br><span class="small">(+5.8%)</span></td>
-<td class="num">35日</td>
+<td class="num">36日</td>
 </tr><tr>
 <td><a class="stock-link" href="stock/9502.html">中部電力</a><br><span class="ticker">9502</span></td>
 <td class="num">&yen;2,678</td>
 <td class="num">&yen;2,718</td>
 <td class="num">11</td>
 <td class="num" style="color:#00C853">+434<br><span class="small">(+1.5%)</span></td>
-<td class="num">22日</td>
+<td class="num">23日</td>
 </tr><tr>
 <td><a class="stock-link" href="stock/4061.html">デンカ</a><br><span class="ticker">4061</span></td>
 <td class="num">&yen;4,025</td>
 <td class="num">&yen;3,868</td>
 <td class="num">7</td>
 <td class="num" style="color:#FF1744">-1,099<br><span class="small">(-3.9%)</span></td>
-<td class="num">7日</td>
+<td class="num">8日</td>
 </tr><tr>
 <td><a class="stock-link" href="stock/6954.html">ファナック</a><br><span class="ticker">6954</span></td>
 <td class="num">&yen;7,677</td>
 <td class="num">&yen;8,174</td>
 <td class="num">4</td>
 <td class="num" style="color:#00C853">+1,988<br><span class="small">(+6.5%)</span></td>
-<td class="num">3日</td>
+<td class="num">4日</td>
 </tr><tr>
 <td><a class="stock-link" href="stock/6504.html">富士電機</a><br><span class="ticker">6504</span></td>
 <td class="num">&yen;14,590</td>
 <td class="num">&yen;16,280</td>
 <td class="num">1</td>
 <td class="num" style="color:#00C853">+1,690<br><span class="small">(+11.6%)</span></td>
-<td class="num">3日</td>
+<td class="num">4日</td>
 </tr><tr>
 <td><a class="stock-link" href="stock/5332.html">TOTO</a><br><span class="ticker">5332</span></td>
 <td class="num">&yen;6,703</td>
 <td class="num">&yen;6,820</td>
 <td class="num">4</td>
 <td class="num" style="color:#00C853">+468<br><span class="small">(+1.8%)</span></td>
-<td class="num">3日</td>
+<td class="num">4日</td>
 </tr><tr>
 <td><a class="stock-link" href="stock/3436.html">SUMCO</a><br><span class="ticker">3436</span></td>
 <td class="num">&yen;3,066</td>
 <td class="num">&yen;3,177</td>
 <td class="num">9</td>
 <td class="num" style="color:#00C853">+1,003<br><span class="small">(+3.6%)</span></td>
-<td class="num">3日</td>
+<td class="num">4日</td>
 </tr><tr>
 <td><a class="stock-link" href="stock/4021.html">日産化学</a><br><span class="ticker">4021</span></td>
 <td class="num">&yen;7,189</td>
 <td class="num">&yen;7,245</td>
 <td class="num">4</td>
 <td class="num" style="color:#00C853">+224<br><span class="small">(+0.8%)</span></td>
-<td class="num">2日</td>
+<td class="num">3日</td>
 </tr><tr>
 <td><a class="stock-link" href="stock/7004.html">カナデビア</a><br><span class="ticker">7004</span></td>
 <td class="num">&yen;1,327</td>
 <td class="num">&yen;1,342</td>
 <td class="num">23</td>
 <td class="num" style="color:#00C853">+352<br><span class="small">(+1.1%)</span></td>
-<td class="num">2日</td>
+<td class="num">3日</td>
 </tr><tr>
 <td><a class="stock-link" href="stock/8053.html">住友商事</a><br><span class="ticker">8053</span></td>
 <td class="num">&yen;7,131</td>
 <td class="num">&yen;7,131</td>
 <td class="num">4</td>
 <td class="num" style="color:#9E9E9E">0<br><span class="small">(+0.0%)</span></td>
-<td class="num">0日</td>
+<td class="num">1日</td>
 </tr></tbody>
   </table>
   </div>
@@ -553,8 +553,8 @@ a.stock-link:hover { text-decoration:underline; }
 </div>
 
 <script>
-const labels = ["2026-03-04", "2026-03-05", "2026-03-06", "2026-03-07", "2026-03-08", "2026-03-09", "2026-03-10", "2026-03-11", "2026-03-12", "2026-03-13", "2026-03-14", "2026-03-15", "2026-03-16", "2026-03-17", "2026-03-18", "2026-03-19", "2026-03-20", "2026-03-21", "2026-03-22", "2026-03-23", "2026-03-24", "2026-03-25", "2026-03-26", "2026-03-27", "2026-03-28", "2026-03-29", "2026-03-30", "2026-03-31", "2026-04-01", "2026-04-02", "2026-04-03", "2026-04-04", "2026-04-05", "2026-04-06", "2026-04-07", "2026-04-08", "2026-04-09", "2026-04-10", "2026-04-11", "2026-04-12", "2026-04-13", "2026-04-14", "2026-04-15", "2026-04-16", "2026-04-17", "2026-04-18", "2026-04-19", "2026-04-20", "2026-04-21", "2026-04-22", "2026-04-23", "2026-04-24", "2026-04-25", "2026-04-26", "2026-04-27", "2026-04-28", "2026-04-29", "2026-04-30", "2026-05-01", "2026-05-02", "2026-05-03", "2026-05-04", "2026-05-05", "2026-05-06", "2026-05-07", "2026-05-08", "2026-05-09", "2026-05-10", "2026-05-11", "2026-05-12", "2026-05-13", "2026-05-14", "2026-05-15", "2026-05-16", "2026-05-17", "2026-05-18", "2026-05-19", "2026-05-20", "2026-05-21", "2026-05-22"];
-const data = [300000, 300000, 300000, 300000, 300000, 293542.0, 293542.0, 293542.0, 294766.0, 293630.8, 293630.8, 293630.8, 292423.3, 292423.3, 292423.3, 292423.3, 292423.3, 292423.3, 292423.3, 289696.0, 288174.1, 288174.1, 294722.1, 294778.1, 294778.1, 294778.1, 294778.1, 297920.3, 298942.8, 300042.8, 301112.9, 301112.9, 301112.9, 301112.9, 301112.9, 309795.0, 309795.0, 309165.0, 309165.0, 309165.0, 309165.0, 309165.0, 309165.0, 309165.0, 306635.0, 306635.0, 306635.0, 306635.0, 303875.5, 303875.5, 303788.5, 303788.5, 303788.5, 303788.5, 296617.0, 296617.0, 296617.0, 294594.0, 292185.6, 292185.6, 292185.6, 292185.6, 292185.6, 292185.6, 304441.6, 306126.6, 306126.6, 306126.6, 311368.6, 314753.6, 319403.6, 316923.6, 314483.6, 314483.6, 314483.6, 315907.6, 312031.8, 304607.8, 304607.8, 317215.3];
+const labels = ["2026-03-04", "2026-03-05", "2026-03-06", "2026-03-07", "2026-03-08", "2026-03-09", "2026-03-10", "2026-03-11", "2026-03-12", "2026-03-13", "2026-03-14", "2026-03-15", "2026-03-16", "2026-03-17", "2026-03-18", "2026-03-19", "2026-03-20", "2026-03-21", "2026-03-22", "2026-03-23", "2026-03-24", "2026-03-25", "2026-03-26", "2026-03-27", "2026-03-28", "2026-03-29", "2026-03-30", "2026-03-31", "2026-04-01", "2026-04-02", "2026-04-03", "2026-04-04", "2026-04-05", "2026-04-06", "2026-04-07", "2026-04-08", "2026-04-09", "2026-04-10", "2026-04-11", "2026-04-12", "2026-04-13", "2026-04-14", "2026-04-15", "2026-04-16", "2026-04-17", "2026-04-18", "2026-04-19", "2026-04-20", "2026-04-21", "2026-04-22", "2026-04-23", "2026-04-24", "2026-04-25", "2026-04-26", "2026-04-27", "2026-04-28", "2026-04-29", "2026-04-30", "2026-05-01", "2026-05-02", "2026-05-03", "2026-05-04", "2026-05-05", "2026-05-06", "2026-05-07", "2026-05-08", "2026-05-09", "2026-05-10", "2026-05-11", "2026-05-12", "2026-05-13", "2026-05-14", "2026-05-15", "2026-05-16", "2026-05-17", "2026-05-18", "2026-05-19", "2026-05-20", "2026-05-21", "2026-05-22", "2026-05-23"];
+const data = [300000, 300000, 300000, 300000, 300000, 293542.0, 293542.0, 293542.0, 294766.0, 293630.8, 293630.8, 293630.8, 292423.3, 292423.3, 292423.3, 292423.3, 292423.3, 292423.3, 292423.3, 289696.0, 288174.1, 288174.1, 294722.1, 294778.1, 294778.1, 294778.1, 294778.1, 297920.3, 298942.8, 300042.8, 301112.9, 301112.9, 301112.9, 301112.9, 301112.9, 309795.0, 309795.0, 309165.0, 309165.0, 309165.0, 309165.0, 309165.0, 309165.0, 309165.0, 306635.0, 306635.0, 306635.0, 306635.0, 303875.5, 303875.5, 303788.5, 303788.5, 303788.5, 303788.5, 296617.0, 296617.0, 296617.0, 294594.0, 292185.6, 292185.6, 292185.6, 292185.6, 292185.6, 292185.6, 304441.6, 306126.6, 306126.6, 306126.6, 311368.6, 314753.6, 319403.6, 316923.6, 314483.6, 314483.6, 314483.6, 315907.6, 312031.8, 304607.8, 304607.8, 311345.3, 317215.3];
 if (labels.length > 0) {
   const ctx = document.getElementById('equityChart').getContext('2d');
   const gradient = ctx.createLinearGradient(0,0,0,200);
@@ -686,7 +686,7 @@ if (mLabels.length > 0) {
 }
 
 // Drawdown Chart
-const ddData = [0.0, 0.0, 0.0, 0.0, 0.0, -2.15, -2.15, -2.15, -1.74, -2.12, -2.12, -2.12, -2.53, -2.53, -2.53, -2.53, -2.53, -2.53, -2.53, -3.43, -3.94, -3.94, -1.76, -1.74, -1.74, -1.74, -1.74, -0.69, -0.35, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -0.2, -0.2, -0.2, -0.2, -0.2, -0.2, -0.2, -1.02, -1.02, -1.02, -1.02, -1.91, -1.91, -1.94, -1.94, -1.94, -1.94, -4.25, -4.25, -4.25, -4.91, -5.68, -5.68, -5.68, -5.68, -5.68, -5.68, -1.73, -1.18, -1.18, -1.18, 0.0, 0.0, 0.0, -0.78, -1.54, -1.54, -1.54, -1.09, -2.31, -4.63, -4.63, -0.69];
+const ddData = [0.0, 0.0, 0.0, 0.0, 0.0, -2.15, -2.15, -2.15, -1.74, -2.12, -2.12, -2.12, -2.53, -2.53, -2.53, -2.53, -2.53, -2.53, -2.53, -3.43, -3.94, -3.94, -1.76, -1.74, -1.74, -1.74, -1.74, -0.69, -0.35, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -0.2, -0.2, -0.2, -0.2, -0.2, -0.2, -0.2, -1.02, -1.02, -1.02, -1.02, -1.91, -1.91, -1.94, -1.94, -1.94, -1.94, -4.25, -4.25, -4.25, -4.91, -5.68, -5.68, -5.68, -5.68, -5.68, -5.68, -1.73, -1.18, -1.18, -1.18, 0.0, 0.0, 0.0, -0.78, -1.54, -1.54, -1.54, -1.09, -2.31, -4.63, -4.63, -2.52, -0.69];
 if (labels.length > 0 && ddData.length > 0) {
   const ddCtx = document.getElementById('ddChart').getContext('2d');
   const ddGrad = ddCtx.createLinearGradient(0,0,0,120);
