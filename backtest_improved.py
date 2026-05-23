@@ -378,7 +378,7 @@ def run_strategy_backtest(all_data, config, strategy_params,
 
         effective_max_daily = regime_max_daily if use_regime else max_daily
         for cand in buy_candidates:
-            if daily_entries >= effective_max_daily:
+            if effective_max_daily > 0 and daily_entries >= effective_max_daily:
                 break
             if len(positions) >= max_positions:
                 break
