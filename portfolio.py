@@ -193,7 +193,7 @@ def record_partial_exit(ticker: str, exit_shares: int, price: float, exit_date: 
     return None
 
 
-def record_exit(ticker: str, price: float, exit_date: str = None) -> Optional[dict]:
+def record_exit(ticker: str, price: float, exit_date: str = None, reason: str = None) -> Optional[dict]:
     """仮想イグジットを記録する。最も古いオープンポジションをクローズする。"""
     trades = _load_trades()
     for trade in trades:
@@ -202,6 +202,8 @@ def record_exit(ticker: str, price: float, exit_date: str = None) -> Optional[di
             trade["exit_date"] = exit_date or date.today().isoformat()
             trade["status"] = "closed"
             trade["pnl"] = round((price - trade["entry_price"]) * trade["shares"], 1)
+            if reason:
+                trade["exit_reason"] = reason
             _save_trades(trades)
             return trade
     return None

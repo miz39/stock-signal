@@ -576,7 +576,7 @@ def run(profile_name: str = "default"):
 
     # Execute CoCh exits
     for ce in coch_exits:
-        record_exit(ce["ticker"], ce["price"])
+        record_exit(ce["ticker"], ce["price"], reason="CoCh")
         logger.info(f"  → CoCh売却: {NIKKEI_225.get(ce['ticker'], ce['ticker'])}")
 
     # Refresh positions after CoCh exits
@@ -709,7 +709,8 @@ def run(profile_name: str = "default"):
     if mode == "paper":
         # 全部利確の実行
         for fp in full_profit_exits:
-            record_exit(fp["ticker"], fp["price"])
+            reason = f"全部利確(+{fp.get('gain_pct', 0):.1f}%)" if fp.get("gain_pct", 0) >= profit_take_full_pct * 100 else f"利確(+{fp.get('gain_pct', 0):.1f}%)"
+            record_exit(fp["ticker"], fp["price"], reason=reason)
 
         # 部分利確の実行
         for pe in partial_exits:
@@ -717,11 +718,11 @@ def run(profile_name: str = "default"):
 
         # トレーリングストップによる売却
         for ts in trailing_stop_exits:
-            record_exit(ts["ticker"], ts["price"])
+            record_exit(ts["ticker"], ts["price"], reason="トレーリングストップ")
 
         # タイムストップによる手じまい
         for tse in time_stop_exits:
-            record_exit(tse["ticker"], tse["price"])
+            record_exit(tse["ticker"], tse["price"], reason=f"タイムストップ({tse['days_held']}日)")
 
         for sig in sell_signals:
             # 既に利確/ストップで売却済みの場合はスキップ
@@ -732,7 +733,7 @@ def run(profile_name: str = "default"):
                 | {tse["ticker"] for tse in time_stop_exits}
             )
             if sig["ticker"] not in exited_tickers:
-                record_exit(sig["ticker"], sig["price"])
+                record_exit(sig["ticker"], sig["price"], reason=sig.get("reason", "売りシグナル"))
 
         open_positions = get_open_positions()
         open_tickers = {p["ticker"] for p in open_positions}
