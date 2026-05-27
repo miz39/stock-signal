@@ -726,21 +726,22 @@
   {
     "ticker": "9502.T",
     "entry_price": 2678.0,
-    "shares": 11,
+    "shares": 6,
     "original_shares": 11,
     "entry_date": "2026-04-30",
     "exit_price": null,
     "exit_date": null,
     "status": "open",
-    "high_price": 2881.0,
-    "stop_price": 2650.5,
+    "high_price": 2953.0,
+    "stop_price": 2716.8,
     "entry_meta": {
       "rsi": 50.8,
       "adx": 25.4,
       "sma_slope": 0.45,
       "ichimoku_bullish": false,
       "market_regime": "bull"
-    }
+    },
+    "partial_exit_done": true
   },
   {
     "ticker": "5801.T",
@@ -999,8 +1000,8 @@
     "exit_price": null,
     "exit_date": null,
     "status": "open",
-    "high_price": 4025.0,
-    "stop_price": 3703.0,
+    "high_price": 4055.0,
+    "stop_price": 3730.6,
     "entry_meta": {
       "rsi": 52.3,
       "adx": 31.4,
@@ -1067,21 +1068,22 @@
   {
     "ticker": "5332.T",
     "entry_price": 6703.0,
-    "shares": 4,
+    "shares": 2,
     "original_shares": 4,
     "entry_date": "2026-05-19",
     "exit_price": null,
     "exit_date": null,
     "status": "open",
-    "high_price": 7057.0,
-    "stop_price": 6703.0,
+    "high_price": 7354.0,
+    "stop_price": 6765.7,
     "entry_meta": {
       "rsi": 59.9,
       "adx": 29.3,
       "sma_slope": 5.69,
       "ichimoku_bullish": true,
       "market_regime": "bull"
-    }
+    },
+    "partial_exit_done": true
   },
   {
     "ticker": "5801.T",
@@ -1132,8 +1134,8 @@
     "exit_price": null,
     "exit_date": null,
     "status": "open",
-    "high_price": 7417.0,
-    "stop_price": 6823.6,
+    "high_price": 7519.0,
+    "stop_price": 6917.5,
     "entry_meta": {
       "rsi": 63.6,
       "adx": 33.0,
@@ -1152,7 +1154,7 @@
     "exit_date": null,
     "status": "open",
     "high_price": 1441.0,
-    "stop_price": 1325.7,
+    "stop_price": 1326.7,
     "entry_meta": {
       "rsi": 59.4,
       "adx": 38.7,
@@ -1243,5 +1245,31 @@
       "fair_value": 25609.0,
       "upside_pct": 6.0
     }
+  },
+  {
+    "ticker": "9502.T",
+    "entry_price": 2678.0,
+    "shares": 5,
+    "entry_date": "2026-04-30",
+    "exit_price": 2953.0,
+    "exit_date": "2026-05-27",
+    "status": "closed",
+    "pnl": 1375.0,
+    "high_price": 2953.0,
+    "stop_price": 2716.8,
+    "reason": "利確（+8%）"
+  },
+  {
+    "ticker": "5332.T",
+    "entry_price": 6703.0,
+    "shares": 2,
+    "entry_date": "2026-05-19",
+    "exit_price": 7354.0,
+    "exit_date": "2026-05-27",
+    "status": "closed",
+    "pnl": 1302.0,
+    "high_price": 7354.0,
+    "stop_price": 6765.7,
+    "reason": "利確（+8%）"
   }
 ]
