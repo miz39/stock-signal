@@ -732,8 +732,8 @@
     "exit_price": null,
     "exit_date": null,
     "status": "open",
-    "high_price": 2953.0,
-    "stop_price": 2716.8,
+    "high_price": 2985.5,
+    "stop_price": 2746.7,
     "entry_meta": {
       "rsi": 50.8,
       "adx": 25.4,
