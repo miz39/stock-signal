@@ -999,18 +999,20 @@
     "shares": 8,
     "original_shares": 8,
     "entry_date": "2026-05-15",
-    "exit_price": null,
-    "exit_date": null,
-    "status": "open",
-    "high_price": 4253.0,
-    "stop_price": 3912.8,
+    "exit_price": 4477.0,
+    "exit_date": "2026-05-29",
+    "status": "closed",
+    "high_price": 4477.0,
+    "stop_price": 4118.8,
     "entry_meta": {
       "rsi": 52.3,
       "adx": 31.4,
       "sma_slope": 2.85,
       "ichimoku_bullish": false,
       "market_regime": "bull"
-    }
+    },
+    "pnl": 3716.0,
+    "exit_reason": "利確(+11.6%)"
   },
   {
     "ticker": "8766.T",
@@ -1280,9 +1282,9 @@
   },
   {
     "ticker": "7733.T",
-    "entry_price": 1842.5,
-    "shares": 17,
-    "original_shares": 17,
+    "entry_price": 1839.3,
+    "shares": 18,
+    "original_shares": 18,
     "entry_date": "2026-05-28",
     "exit_price": null,
     "exit_date": null,
