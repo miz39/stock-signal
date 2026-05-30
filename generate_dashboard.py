@@ -23,9 +23,7 @@ REVIEW_OUTPUT = os.path.join(DOCS_DIR, "weekly-review.html")
 
 # 銘柄名マッピング
 from nikkei225 import NIKKEI_225, get_sector
-from portfolio import get_cash_balance, set_profile, get_readiness_metrics, get_trade_analysis
-from strategy import detect_market_regime
-from data import fetch_stock_data
+from portfolio import get_cash_balance, set_profile
 
 
 def load_config() -> dict:
@@ -46,7 +44,7 @@ def fetch_current_prices(tickers: list) -> dict:
         return {}
     try:
         import yfinance as yf
-        data = yf.download(tickers, period="5d", progress=False)
+        data = yf.download(tickers, period="1d", progress=False)
         prices = {}
         if len(tickers) == 1:
             close = data["Close"]
@@ -317,24 +315,6 @@ def build_dashboard_data(trades: list, initial_balance: float = 300000, history:
             except Exception:
                 pass
 
-    # Paper→real trading readiness
-    readiness = get_readiness_metrics(initial_balance)
-
-    # Trade analysis (exit reason, holding period, sector, ticker breakdowns)
-    trade_analysis = get_trade_analysis()
-
-    # Market regime
-    regime_info = {"regime": "unknown", "price": 0, "sma50": 0, "sma200": 0}
-    bull_only = False
-    try:
-        cfg = load_config()
-        bull_only = cfg.get("strategy", {}).get("bull_only_entry", False)
-        nk_data = fetch_stock_data("^N225", period="1y")
-        if nk_data is not None and not nk_data.empty:
-            regime_info = detect_market_regime(nk_data)
-    except Exception:
-        pass
-
     # Signal accuracy (holding period buckets)
     signal_accuracy = _build_signal_accuracy(closed_trades)
 
@@ -395,10 +375,6 @@ def build_dashboard_data(trades: list, initial_balance: float = 300000, history:
         "signal_accuracy": signal_accuracy,
         "rsi_analysis": rsi_analysis,
         "latest_buy_candidates": latest_buy_candidates,
-        "readiness": readiness,
-        "trade_analysis": trade_analysis,
-        "regime": regime_info,
-        "bull_only_entry": bull_only,
     }
 
 
@@ -779,67 +755,44 @@ def generate_policy_section(config: dict = None) -> str:
     rsi_period = strat.get("rsi_period", 14)
     risk_pct = int(acct.get("risk_per_trade", 0.02) * 100)
     max_alloc = int(acct.get("max_allocation", 0.10) * 100)
-    stop_loss_pct = int(strat.get("stop_loss_pct", 0.08) * 100)
     balance = acct.get("balance", 300000)
     max_pos = acct.get("max_positions", 10)
     mode_label = "ペーパー" if mode == "paper" else "リアル"
     wl_label = "日経225全銘柄" if watchlist == "nikkei225" else watchlist
 
-    # Additional strategy params for tooltip display
-    adx_thr = strat.get("adx_threshold", 25)
-    rsi_min = strat.get("rsi_entry_min", 50)
-    rsi_max = strat.get("rsi_entry_max", 65)
-    profit_tighten = int(strat.get("profit_tighten_pct", 0.06) * 100)
-    profit_half = int(strat.get("profit_take_pct", 0.08) * 100)
-    profit_full = int(strat.get("profit_take_full_pct", 0.15) * 100)
-    max_daily = acct.get("max_daily_entries", 3)
-    max_sector = acct.get("max_sector_positions", 2)
-    cooldown = acct.get("cooldown_days", 7)
-    bull_only = strat.get("bull_only_entry", False)
-    crash_en = strat.get("crash_detection_enabled", False)
-    crash_w = strat.get("crash_warning_pct", -3.0)
-    crash_c = strat.get("crash_critical_pct", -5.0)
-    earn_en = strat.get("earnings_blackout_enabled", False)
-    earn_d = strat.get("earnings_blackout_days", 3)
-
     return f"""<div class="section">
-  <h2 data-tip="現在の config.yaml に基づく戦略・リスク管理・口座設定の一覧">運用方針</h2>
+  <h2>運用方針</h2>
   <div class="policy-grid">
     <div class="policy-card">
-      <div class="policy-title" data-tip="エントリーとイグジットの判定ロジック">戦略</div>
+      <div class="policy-title">戦略</div>
       <div class="policy-body">
-        <div class="policy-name" data-tip="短期移動平均線が長期を上回った（ゴールデンクロス）タイミングで、RSIが上昇モメンタムを確認している局面にエントリーする順張り戦略">ゴールデンクロス + RSI コンファーメーション</div>
-        <div class="policy-rule buy-rule" data-tip="SMA = Simple Moving Average（単純移動平均線）。SMA{sma_s}がSMA{sma_l}を上抜け（Golden Cross）、RSI（Relative Strength Index）{rsi_min}-{rsi_max} の上昇モメンタム帯、終値がSMA{sma_t}より上（長期上昇トレンド確認）、ADX（Average Directional Index）≥{adx_thr}（トレンド強度）の全条件を満たす時にBUY">買い: SMA{sma_s} &gt; SMA{sma_l} &amp; RSI {rsi_min}-{rsi_max} &amp; 株価 &gt; SMA{sma_t} &amp; ADX≥{adx_thr}</div>
-        <div class="policy-rule sell-rule" data-tip="Trailing Stop（トレーリングストップ: -{stop_loss_pct}%）で損切り、+{profit_tighten}%でストップを建値に移動、+{profit_half}%で半分利確、+{profit_full}%で全利確。CoCh = Change of Character（トレンド構造崩壊: 直近の高値安値パターンが崩れた時）でも即イグジット">売り: ストップ -{stop_loss_pct}% / 建値移動 +{profit_tighten}% / 半分利確 +{profit_half}% / 全利確 +{profit_full}%</div>
+        <div class="policy-name">ゴールデンクロス + RSI コンファーメーション</div>
+        <div class="policy-rule buy-rule">買い: SMA{sma_s} &gt; SMA{sma_l} &amp; RSI &lt; {rsi_ob} &amp; 株価 &gt; SMA{sma_t}</div>
+        <div class="policy-rule sell-rule">売り: SMA{sma_s} &lt; SMA{sma_l} or RSI &gt; 75</div>
       </div>
     </div>
     <div class="policy-card">
-      <div class="policy-title" data-tip="損失を限定し、資金を守るためのルール群">リスク管理</div>
+      <div class="policy-title">リスク管理</div>
       <div class="policy-body">
-        <div class="policy-item" data-tip="エントリー価格から-{stop_loss_pct}%下落で自動損切り。その後トレーリングで高値更新時にストップも引き上げ"><span>損切り</span> <span class="policy-val">-{stop_loss_pct}%</span></div>
-        <div class="policy-item" data-tip="1回のトレードで許容する最大損失額を総資産の{risk_pct}%に制限。ポジションサイズを自動計算"><span>1トレードリスク</span> <span class="policy-val">{risk_pct}%</span></div>
-        <div class="policy-item" data-tip="1銘柄に投入する金額の上限。集中リスクを防止"><span>1銘柄上限</span> <span class="policy-val">{max_alloc}%</span></div>
-        <div class="policy-item" data-tip="1日にエントリーできる新規銘柄数の上限"><span>日次上限</span> <span class="policy-val">{max_daily}件/日</span></div>
-        <div class="policy-item" data-tip="同一セクター（業種）で同時に保有できる銘柄数の上限。セクターリスク分散"><span>同一セクター</span> <span class="policy-val">最大{max_sector}銘柄</span></div>
-        <div class="policy-item" data-tip="損切りした銘柄に対して{cooldown}日間は再エントリーを禁止。感情的なリベンジトレードを防止"><span>クールダウン</span> <span class="policy-val">{cooldown}日</span></div>
+        <div class="policy-item">損切り <span class="policy-val">-5%</span></div>
+        <div class="policy-item">1トレードリスク <span class="policy-val">{risk_pct}%</span></div>
+        <div class="policy-item">1銘柄上限 <span class="policy-val">{max_alloc}%</span></div>
       </div>
     </div>
     <div class="policy-card">
-      <div class="policy-title" data-tip="エントリーを自動制限する安全機能">フィルター</div>
+      <div class="policy-title">口座</div>
       <div class="policy-body">
-        <div class="policy-item" data-tip="{'ON: BULL局面（日経225 > SMA50 > SMA200）以外では新規エントリーを全停止。ストレステストでnon-bull局面の期待値がマイナスと判明したため導入' if bull_only else 'OFF: 全局面でエントリー可能。non-bull局面では損失リスクあり'}"><span>Bull Only</span> <span class="policy-val">{'ON' if bull_only else 'OFF'}</span></div>
-        <div class="policy-item" data-tip="{'ON: 日経225が前日比' + str(crash_w) + '%で警告、' + str(crash_c) + '%で新規エントリー全停止' if crash_en else 'OFF'}"><span>クラッシュ検知</span> <span class="policy-val">{'ON (' + str(crash_c) + '%)' if crash_en else 'OFF'}</span></div>
-        <div class="policy-item" data-tip="{'ON: 決算発表' + str(earn_d) + '日前から当日まで当該銘柄のBUYをスキップ。決算発表後の急変動リスクを回避' if earn_en else 'OFF'}"><span>決算ブラックアウト</span> <span class="policy-val">{'ON (' + str(earn_d) + '日前)' if earn_en else 'OFF'}</span></div>
+        <div class="policy-item">初期資金 <span class="policy-val">&yen;{balance:,.0f}</span></div>
+        <div class="policy-item">最大銘柄数 <span class="policy-val">{max_pos}銘柄</span></div>
+        <div class="policy-item">モード <span class="policy-val">{mode_label}</span></div>
       </div>
     </div>
     <div class="policy-card">
-      <div class="policy-title" data-tip="口座設定とスキャンスケジュール">口座 / スキャン</div>
+      <div class="policy-title">スキャン</div>
       <div class="policy-body">
-        <div class="policy-item" data-tip="ペーパートレードの仮想初期資金"><span>初期資金</span> <span class="policy-val">&yen;{balance:,.0f}</span></div>
-        <div class="policy-item" data-tip="同時に保有できる銘柄数の上限。分散投資とリスク管理のバランス"><span>最大銘柄数</span> <span class="policy-val">{max_pos}銘柄</span></div>
-        <div class="policy-item" data-tip="{'ペーパー: 仮想資金で実際の売買は行わない。戦略の検証用' if mode == 'paper' else 'リアル: 実際の資金で売買を行う'}"><span>モード</span> <span class="policy-val">{mode_label}</span></div>
-        <div class="policy-item" data-tip="日経225構成銘柄225銘柄を自動スキャン対象として全件チェック"><span>対象</span> <span class="policy-val">{wl_label}</span></div>
-        <div class="policy-item" data-tip="寄り前(8:50)、昼休み(12:35)、引け後(15:10)の3回。cronで自動実行"><span>スキャン</span> <span class="policy-val">1日3回 (8:50/12:35/15:10)</span></div>
+        <div class="policy-item">対象 <span class="policy-val">{wl_label}</span></div>
+        <div class="policy-item">実行 <span class="policy-val">1日3回</span></div>
+        <div class="policy-item">時刻 <span class="policy-val">8:50 / 12:35 / 15:10</span></div>
       </div>
     </div>
   </div>
@@ -927,126 +880,6 @@ def generate_html(data: dict, config: dict = None, profile_label: str = "") -> s
     else:
         closed_rows = '<tr><td colspan="6" class="empty">クローズドトレードはありません</td></tr>'
 
-    # Market regime banner
-    regime = data.get("regime", {})
-    regime_name = regime.get("regime", "unknown")
-    regime_price = regime.get("price", 0)
-    regime_sma50 = regime.get("sma50", 0)
-    regime_sma200 = regime.get("sma200", 0)
-    bull_only_on = data.get("bull_only_entry", False)
-    regime_colors = {"bull": "#00C853", "bear": "#FF1744", "neutral": "#FFA726", "unknown": "#9E9E9E"}
-    regime_labels = {"bull": "BULL", "bear": "BEAR", "neutral": "NEUTRAL", "unknown": "UNKNOWN"}
-    regime_tooltips = {
-        "bull": "上昇トレンド: 日経225が50日移動平均線を上回り、50日線が200日線を上回っている状態。順張り戦略に最適な局面。",
-        "bear": "下降トレンド: 日経225が50日移動平均線を下回り、50日線が200日線を下回っている状態。新規エントリーは1日1件に制限。",
-        "neutral": "方向感なし: 日経225の50日線と200日線が交差付近にあり、明確なトレンドがない状態。ダマしシグナルが出やすい。",
-        "unknown": "判定不能: 移動平均線の計算に十分なデータがないか、判定条件を満たさない状態。",
-    }
-    regime_color = regime_colors.get(regime_name, "#9E9E9E")
-    regime_label = regime_labels.get(regime_name, "UNKNOWN")
-    if bull_only_on and regime_name != "bull":
-        entry_status = '<span data-tip="bull_only_entry: ON — BULL以外の局面では新規エントリーを全停止" style="color:#FF1744;font-weight:600">新規エントリー停止中</span>'
-    elif bull_only_on:
-        entry_status = '<span data-tip="bull_only_entry: ON — BULL局面のため通常通りエントリー可能" style="color:#00C853;font-weight:600">エントリー継続</span>'
-    else:
-        entry_status = '<span data-tip="bull_only_entry: OFF — 全局面でエントリー可能（non-bull局面では損失リスクあり）" style="color:#9E9E9E">bull_only_entry: OFF</span>'
-
-    # リアル移行準備度
-    readiness = data.get("readiness") or {"criteria": [], "score_pct": 0, "passed_count": 0, "total_count": 0, "ready": False}
-    readiness_tips = {
-        "trade_count": "Trade Count — 統計的に有意な結果を得るために必要な最低トレード数",
-        "profit_factor": "Profit Factor — 総利益 ÷ 総損失。1.0超で利益が損失を上回る。1.5以上が目標",
-        "max_dd_pct": "Maximum Drawdown — 累計損益のピークからの最大下落率。資金管理の安定性を測る",
-        "recent_pf": "直近30件PF — 直近30トレードのプロフィットファクター。戦略の劣化を検知する",
-        "win_rate": "Win Rate — 決済済みトレードのうちプラスで終了した割合",
-    }
-    readiness_rows = ""
-    for c in readiness.get("criteria", []):
-        icon = "✓" if c["passed"] else "✗"
-        row_color = "#00C853" if c["passed"] else "#FF8A80"
-        tip = readiness_tips.get(c["name"], "")
-        tip_attr = f' data-tip="{tip}"' if tip else ""
-        readiness_rows += (
-            f'<div class="readiness-row" style="color:{row_color}">'
-            f'<span class="readiness-icon">{icon}</span>'
-            f'<span class="readiness-label"{tip_attr}>{c["label"]}</span>'
-            f'<span class="readiness-value">{c["display"]}</span>'
-            f'</div>'
-        )
-    ready_score = readiness.get("score_pct", 0)
-    ready_passed = readiness.get("passed_count", 0)
-    ready_total = readiness.get("total_count", 0)
-    if readiness.get("ready"):
-        ready_label = "🎉 リアル運用移行可能"
-        ready_color = "#00C853"
-    elif ready_score >= 60:
-        ready_label = "準備中（もう一歩）"
-        ready_color = "#FFA726"
-    else:
-        ready_label = "ペーパー継続"
-        ready_color = "#64B5F6"
-
-    # トレード分析（exit_reason / 保有日数 / セクター / 銘柄）
-    ta = data.get("trade_analysis") or {
-        "exit_reasons": [], "holding_buckets": [], "sectors": [], "tickers": [],
-        "summary": {"trade_count": 0, "win_rate": 0, "avg_win": 0, "avg_loss": 0,
-                    "expectancy": 0, "best_trade": 0, "worst_trade": 0},
-    }
-    ta_summary = ta["summary"]
-
-    def _ta_row(label_html: str, count: int, wins: int, losses: int,
-                win_rate: float, total_pnl: float, avg_pnl: float) -> str:
-        wr_color = "#00C853" if win_rate >= 50 else "#FF8A80"
-        pnl_c = "#00C853" if total_pnl >= 0 else "#FF8A80"
-        avg_c = "#00C853" if avg_pnl >= 0 else "#FF8A80"
-        sign_t = "+" if total_pnl >= 0 else ""
-        sign_a = "+" if avg_pnl >= 0 else ""
-        return (
-            f"<tr><td>{label_html}</td>"
-            f"<td class=\"num\">{count}</td>"
-            f"<td class=\"num\" style=\"color:{wr_color}\">{win_rate:.1f}%</td>"
-            f"<td class=\"num small\">{wins}勝 {losses}負</td>"
-            f"<td class=\"num\" style=\"color:{pnl_c}\">{sign_t}&yen;{total_pnl:,.0f}</td>"
-            f"<td class=\"num\" style=\"color:{avg_c}\">{sign_a}&yen;{avg_pnl:,.0f}</td></tr>"
-        )
-
-    ta_reason_rows = "".join(
-        _ta_row(r["reason"], r["count"], r["wins"], r["losses"],
-                r["win_rate"], r["total_pnl"], r["avg_pnl"])
-        for r in ta["exit_reasons"]
-    ) or '<tr><td colspan="6" class="empty">データなし</td></tr>'
-
-    ta_holding_rows = "".join(
-        _ta_row(r["bucket"], r["count"], r["wins"], r["losses"],
-                r["win_rate"], r["total_pnl"], r["avg_pnl"])
-        for r in ta["holding_buckets"]
-    ) or '<tr><td colspan="6" class="empty">データなし</td></tr>'
-
-    ta_sector_rows = "".join(
-        _ta_row(r["sector"], r["count"], r["wins"], r["losses"],
-                r["win_rate"], r["total_pnl"], r["avg_pnl"])
-        for r in ta["sectors"]
-    ) or '<tr><td colspan="6" class="empty">データなし</td></tr>'
-
-    ta_ticker_rows = ""
-    for r in ta["tickers"]:
-        wr_color = "#00C853" if r["win_rate"] >= 50 else "#FF8A80"
-        pnl_c = "#00C853" if r["total_pnl"] >= 0 else "#FF8A80"
-        sign_t = "+" if r["total_pnl"] >= 0 else ""
-        code = r["ticker"].replace(".T", "")
-        ta_ticker_rows += (
-            f"<tr><td>{r['name']}<br><span class=\"ticker\">{code}</span></td>"
-            f"<td class=\"num\">{r['count']}</td>"
-            f"<td class=\"num\" style=\"color:{wr_color}\">{r['win_rate']:.1f}%</td>"
-            f"<td class=\"num small\">{r['wins']}勝 {r['losses']}負</td>"
-            f"<td class=\"num\" style=\"color:{pnl_c}\">{sign_t}&yen;{r['total_pnl']:,.0f}</td></tr>"
-        )
-    if not ta_ticker_rows:
-        ta_ticker_rows = '<tr><td colspan="5" class="empty">データなし</td></tr>'
-
-    ta_exp_color = "#00C853" if ta_summary["expectancy"] >= 0 else "#FF8A80"
-    ta_exp_sign = "+" if ta_summary["expectancy"] >= 0 else ""
-
     # Chart.js データ
     equity_labels_json = json.dumps(data["equity_labels"])
     equity_data_json = json.dumps(data["equity_data"])
@@ -1097,55 +930,21 @@ td.num {{ text-align:right; font-variant-numeric:tabular-nums; }}
 .policy-val {{ color:#E0E0E0; font-weight:600; }}
 a.stock-link {{ color:#64B5F6; text-decoration:none; }}
 a.stock-link:hover {{ text-decoration:underline; }}
-[data-tip] {{ position:relative; cursor:help; }}
-[data-tip]:hover::after {{ content:attr(data-tip); position:absolute; bottom:calc(100% + 6px); left:50%; transform:translateX(-50%); background:#333; color:#E0E0E0; font-size:0.72rem; font-weight:400; line-height:1.4; padding:8px 12px; border-radius:6px; white-space:normal; width:max-content; max-width:280px; z-index:100; box-shadow:0 2px 8px rgba(0,0,0,0.4); pointer-events:none; }}
-[data-tip]:hover::before {{ content:''; position:absolute; bottom:calc(100% + 2px); left:50%; transform:translateX(-50%); border:5px solid transparent; border-top-color:#333; z-index:100; pointer-events:none; }}
-.regime-banner {{ background:#1E1E1E; border-radius:10px; padding:14px; margin-bottom:12px; }}
-.regime-top {{ display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; }}
-.regime-left {{ display:flex; align-items:center; gap:10px; }}
-.regime-badge {{ font-size:0.85rem; font-weight:700; padding:4px 12px; border-radius:4px; }}
-.regime-price {{ font-size:0.75rem; color:#BDBDBD; }}
-.regime-right {{ font-size:0.8rem; }}
-.regime-legend {{ display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:6px; margin-top:10px; padding-top:10px; border-top:1px solid #2A2A2A; }}
-.regime-legend-item {{ display:flex; align-items:flex-start; gap:8px; font-size:0.72rem; color:#9E9E9E; padding:4px 0; }}
-.regime-legend-dot {{ width:8px; height:8px; border-radius:2px; flex-shrink:0; margin-top:3px; }}
-.regime-legend-name {{ font-weight:600; color:#BDBDBD; }}
-.readiness-card {{ background:#1E1E1E; border-radius:10px; padding:14px; margin-bottom:20px; }}
-.readiness-head {{ display:flex; justify-content:space-between; align-items:baseline; margin-bottom:8px; }}
-.readiness-title {{ font-size:0.9rem; font-weight:600; color:#E0E0E0; }}
-.readiness-status {{ font-size:0.8rem; font-weight:600; }}
-.readiness-bar {{ background:#2A2A2A; height:6px; border-radius:3px; overflow:hidden; margin-bottom:10px; }}
-.readiness-bar-fill {{ height:100%; border-radius:3px; transition:width 0.3s; }}
-.readiness-row {{ display:flex; align-items:center; padding:4px 0; font-size:0.8rem; }}
-.readiness-icon {{ width:18px; font-weight:700; }}
-.readiness-label {{ flex:1; color:#BDBDBD; }}
-.readiness-value {{ font-variant-numeric:tabular-nums; color:#E0E0E0; }}
-.ta-summary {{ display:grid; grid-template-columns:repeat(auto-fit,minmax(120px,1fr)); gap:8px; margin-bottom:14px; }}
-.ta-stat {{ background:#1E1E1E; border-radius:8px; padding:10px; text-align:center; }}
-.ta-stat-label {{ font-size:0.65rem; color:#9E9E9E; text-transform:uppercase; margin-bottom:4px; }}
-.ta-stat-value {{ font-size:1.05rem; font-weight:700; font-variant-numeric:tabular-nums; }}
-.ta-grid {{ display:grid; grid-template-columns:1fr 1fr; gap:12px; }}
-.ta-block {{ background:#1E1E1E; border-radius:10px; padding:12px; }}
-.ta-block h3 {{ font-size:0.85rem; color:#BDBDBD; margin-bottom:8px; }}
-.ta-block table th {{ position:static; background:transparent; }}
 @media(max-width:600px) {{
-  .ta-grid {{ grid-template-columns:1fr; }}
   .cards {{ grid-template-columns:repeat(2,1fr); }}
   .card .value {{ font-size:1.2rem; }}
   .policy-grid {{ grid-template-columns:1fr; }}
-  .regime-legend {{ grid-template-columns:1fr; }}
   table {{ font-size:0.75rem; }}
   td, th {{ padding:6px 4px; }}
-  [data-tip]:hover::after {{ left:0; transform:none; max-width:220px; }}
 }}
 </style>
 </head>
 <body>
 <h1>Paper Trade Dashboard{profile_label}</h1>
-<div class="updated">最終更新: {now} &nbsp;|&nbsp; <a href="history.html" style="color:#64B5F6;text-decoration:none">実行履歴 &rarr;</a> &nbsp;|&nbsp; <a href="weekly-review.html" style="color:#64B5F6;text-decoration:none">週次レビュー &rarr;</a> &nbsp;|&nbsp; <a href="{'../strategy.html' if profile_label else 'strategy.html'}" style="color:#64B5F6;text-decoration:none">戦略分析 &rarr;</a> &nbsp;|&nbsp; <a href="{'../analysis.html' if profile_label else 'analysis.html'}" style="color:#64B5F6;text-decoration:none">AI分析 &rarr;</a> &nbsp;|&nbsp; <a href="{'../policy.html' if profile_label else 'policy.html'}" style="color:#64B5F6;text-decoration:none">運用方針 &rarr;</a></div>
+<div class="updated">最終更新: {now} &nbsp;|&nbsp; <a href="history.html" style="color:#64B5F6;text-decoration:none">実行履歴 &rarr;</a> &nbsp;|&nbsp; <a href="weekly-review.html" style="color:#64B5F6;text-decoration:none">週次レビュー &rarr;</a> &nbsp;|&nbsp; <a href="{'../analysis.html' if profile_label else 'analysis.html'}" style="color:#64B5F6;text-decoration:none">AI分析 &rarr;</a></div>
 
 <div class="hero-card">
-  <div class="label" data-tip="現金 + 保有株式の時価評価額の合計">総資産</div>
+  <div class="label">総資産</div>
   <div class="hero-value">&yen;{total_assets:,.0f}</div>
   <div class="hero-change" style="color:{pnl_color(total_change)}">{pnl_sign(total_change)}（{'+' if total_return_pct >= 0 else ''}{total_return_pct:.2f}%）</div>
   <div class="sub">初期資金 &yen;{initial_balance:,.0f}</div>
@@ -1153,111 +952,31 @@ a.stock-link:hover {{ text-decoration:underline; }}
 
 <div class="cards">
   <div class="card">
-    <div class="label" data-tip="保有中の全銘柄の現在時価の合計">株時価</div>
+    <div class="label">株時価</div>
     <div class="value">&yen;{stock_value:,.0f}</div>
     <div class="sub">{data['open_count']}銘柄保有</div>
   </div>
   <div class="card">
-    <div class="label" data-tip="初期資金から売買損益を反映した現在の現金残高">現金</div>
+    <div class="label">現金</div>
     <div class="value">&yen;{cash:,.0f}</div>
   </div>
   <div class="card">
-    <div class="label" data-tip="Realized PnL（実現損益）: 決済済みトレードの利益と損失の合計">確定損益</div>
+    <div class="label">確定損益</div>
     <div class="value" style="color:{pnl_color(total_pnl)}">&yen;{pnl_sign(total_pnl)}</div>
     <div class="sub">{data['trade_count']}トレード</div>
   </div>
   <div class="card">
-    <div class="label" data-tip="Unrealized PnL（含み損益）: 保有中銘柄の（現在価格 − 取得価格）× 株数の合計。未決済のため変動する">含み損益</div>
+    <div class="label">含み損益</div>
     <div class="value" style="color:{pnl_color(unrealized_pnl)}">&yen;{pnl_sign(unrealized_pnl)}</div>
   </div>
   <div class="card">
-    <div class="label" data-tip="Win Rate（勝率）: 決済済みトレードのうちプラスで終わった割合。50%超なら勝ち越し">勝率</div>
+    <div class="label">勝率</div>
     <div class="value">{data['win_rate']}%</div>
     <div class="sub">{data['wins']}勝{data['losses']}敗</div>
   </div>
   <div class="card">
-    <div class="label" data-tip="Maximum Drawdown（最大ドローダウン）: 累計損益のピークからの最大下落幅。小さいほど安定">最大DD</div>
+    <div class="label">最大DD</div>
     <div class="value red">&yen;{data['max_dd']:,.0f}</div>
-  </div>
-</div>
-
-<div class="regime-banner" style="border-left:4px solid {regime_color}">
-  <div class="regime-top">
-    <div class="regime-left">
-      <span class="regime-badge" style="background:{regime_color};color:#121212">{regime_label}</span>
-      <span class="regime-price">日経225 &yen;{regime_price:,.0f} &nbsp; SMA50 &yen;{regime_sma50:,.0f} &nbsp; SMA200 &yen;{regime_sma200:,.0f}</span>
-    </div>
-    <div class="regime-right">{entry_status}</div>
-  </div>
-  <div class="regime-legend">
-    <div class="regime-legend-item{' style="opacity:1"' if regime_name == 'bull' else ' style="opacity:0.5"'}">
-      <div class="regime-legend-dot" style="background:#00C853"></div>
-      <div><span class="regime-legend-name">BULL</span> — 上昇トレンド。現在値 &gt; SMA50 &gt; SMA200。順張り戦略に最適。</div>
-    </div>
-    <div class="regime-legend-item{' style="opacity:1"' if regime_name == 'neutral' else ' style="opacity:0.5"'}">
-      <div class="regime-legend-dot" style="background:#FFA726"></div>
-      <div><span class="regime-legend-name">NEUTRAL</span> — 方向感なし。SMA50/200が交差付近。ダマしが出やすい。</div>
-    </div>
-    <div class="regime-legend-item{' style="opacity:1"' if regime_name == 'bear' else ' style="opacity:0.5"'}">
-      <div class="regime-legend-dot" style="background:#FF1744"></div>
-      <div><span class="regime-legend-name">BEAR</span> — 下降トレンド。現在値 &lt; SMA50 &lt; SMA200。新規は1日1件に制限。</div>
-    </div>
-    <div class="regime-legend-item{' style="opacity:1"' if regime_name == 'unknown' else ' style="opacity:0.5"'}">
-      <div class="regime-legend-dot" style="background:#9E9E9E"></div>
-      <div><span class="regime-legend-name">UNKNOWN</span> — 判定不能。十分なデータがないか判定条件外。</div>
-    </div>
-  </div>
-</div>
-
-<div class="readiness-card">
-  <div class="readiness-head">
-    <div class="readiness-title" data-tip="ペーパートレードからリアル運用に移行するための5基準（サンプル数/PF/最大DD/直近30件PF/勝率）の達成度">リアル移行準備度 {ready_score:.0f}% ({ready_passed}/{ready_total} 基準達成)</div>
-    <div class="readiness-status" style="color:{ready_color}">{ready_label}</div>
-  </div>
-  <div class="readiness-bar"><div class="readiness-bar-fill" style="width:{ready_score}%;background:{ready_color}"></div></div>
-  {readiness_rows}
-</div>
-
-<div class="section">
-  <h2>トレード分析（{ta_summary['trade_count']}件のクローズドトレード）</h2>
-  <div class="ta-summary">
-    <div class="ta-stat"><div class="ta-stat-label" data-tip="Win Rate（勝率）: 決済済みトレードのうちプラスで終了した割合">勝率</div><div class="ta-stat-value">{ta_summary['win_rate']:.1f}%</div></div>
-    <div class="ta-stat"><div class="ta-stat-label" data-tip="Expected Value（期待値）: 1トレードあたりの期待利益。（平均勝ち × 勝率）−（平均負け × 敗率）">期待値/トレード</div><div class="ta-stat-value" style="color:{ta_exp_color}">{ta_exp_sign}&yen;{ta_summary['expectancy']:,.0f}</div></div>
-    <div class="ta-stat"><div class="ta-stat-label" data-tip="Average Win（平均勝ち）: 勝ちトレードの平均利益額">平均勝ち</div><div class="ta-stat-value green">+&yen;{ta_summary['avg_win']:,.0f}</div></div>
-    <div class="ta-stat"><div class="ta-stat-label" data-tip="Average Loss（平均負け）: 負けトレードの平均損失額">平均負け</div><div class="ta-stat-value red">&yen;{ta_summary['avg_loss']:,.0f}</div></div>
-    <div class="ta-stat"><div class="ta-stat-label" data-tip="Best Trade（最大勝ち）: 単一トレードでの最大利益">最大勝ち</div><div class="ta-stat-value green">+&yen;{ta_summary['best_trade']:,.0f}</div></div>
-    <div class="ta-stat"><div class="ta-stat-label" data-tip="Worst Trade（最大負け）: 単一トレードでの最大損失">最大負け</div><div class="ta-stat-value red">&yen;{ta_summary['worst_trade']:,.0f}</div></div>
-  </div>
-
-  <div class="ta-grid">
-    <div class="ta-block">
-      <h3>イグジット理由別</h3>
-      <div style="overflow-x:auto"><table>
-        <thead><tr><th>理由</th><th>件数</th><th>勝率</th><th>勝負</th><th>合計</th><th>平均</th></tr></thead>
-        <tbody>{ta_reason_rows}</tbody>
-      </table></div>
-    </div>
-    <div class="ta-block">
-      <h3>保有日数別</h3>
-      <div style="overflow-x:auto"><table>
-        <thead><tr><th>期間</th><th>件数</th><th>勝率</th><th>勝負</th><th>合計</th><th>平均</th></tr></thead>
-        <tbody>{ta_holding_rows}</tbody>
-      </table></div>
-    </div>
-    <div class="ta-block">
-      <h3>セクター別</h3>
-      <div style="overflow-x:auto"><table>
-        <thead><tr><th>セクター</th><th>件数</th><th>勝率</th><th>勝負</th><th>合計</th><th>平均</th></tr></thead>
-        <tbody>{ta_sector_rows}</tbody>
-      </table></div>
-    </div>
-    <div class="ta-block">
-      <h3>銘柄別 TOP10（取引回数順）</h3>
-      <div style="overflow-x:auto"><table>
-        <thead><tr><th>銘柄</th><th>件数</th><th>勝率</th><th>勝負</th><th>合計</th></tr></thead>
-        <tbody>{ta_ticker_rows}</tbody>
-      </table></div>
-    </div>
   </div>
 </div>
 
@@ -1279,20 +998,20 @@ a.stock-link:hover {{ text-decoration:underline; }}
 </div>
 
 <div class="section">
-  <h2 data-tip="Signal Accuracy by Holding Period: 保有期間の長さ別に勝率・平均リターンを比較。短期決済と長期保有のどちらが有利か確認">シグナル精度（保有期間別）</h2>
+  <h2>シグナル精度（保有期間別）</h2>
   <div class="chart-wrap"><canvas id="sigAccChart" height="220"></canvas></div>
 </div>
 
 <div class="section">
-  <h2 data-tip="RSI Effectiveness Analysis: エントリー時のRSI（Relative Strength Index）値帯と最終損益の関係。RSI 50-65のスイートスポットが有効か検証">RSI 有効性分析</h2>
+  <h2>RSI 有効性分析</h2>
   <div class="chart-wrap"><canvas id="rsiChart" height="220"></canvas></div>
 </div>
 
 <div class="section">
-  <h2 data-tip="直近スキャンでBUYシグナルが出た銘柄の上位5件。複合スコアの高い順">直近の買い候補 TOP5</h2>
+  <h2>直近の買い候補 TOP5</h2>
   <div style="overflow-x:auto">
   <table>
-    <thead><tr><th>銘柄</th><th>株価</th><th data-tip="Relative Strength Index（相対力指数）: 0-100の値。50-65がエントリー好適帯。70超は過熱">RSI</th><th data-tip="Composite Score（複合スコア）: 7要素の加重スコア (0-1)。高いほどエントリー条件が整っている">Score</th><th data-tip="TradingView Recommendation: TradingViewのテクニカル分析に基づく売買推奨 (BUY/NEUTRAL/SELL)">TV推奨</th><th>推奨株数</th></tr></thead>
+    <thead><tr><th>銘柄</th><th>株価</th><th>RSI</th><th>Score</th><th>TV推奨</th><th>推奨株数</th></tr></thead>
     <tbody>{buy_candidate_rows}</tbody>
   </table>
   </div>
@@ -1302,17 +1021,17 @@ a.stock-link:hover {{ text-decoration:underline; }}
   <h2>保有中ポジション</h2>
   <div style="overflow-x:auto">
   <table>
-    <thead><tr><th>銘柄</th><th data-tip="エントリー時の約定価格">取得</th><th data-tip="最新の終値 or リアルタイム価格">現在</th><th>株数</th><th data-tip="（現在価格 − 取得価格）× 株数">損益</th><th data-tip="エントリーからの経過日数">保有</th></tr></thead>
+    <thead><tr><th>銘柄</th><th>取得</th><th>現在</th><th>株数</th><th>損益</th><th>保有</th></tr></thead>
     <tbody>{open_rows}</tbody>
   </table>
   </div>
 </div>
 
 <div class="section">
-  <h2 data-tip="決済済みの直近20トレード。利確・損切り・トレーリングストップ等で終了したもの">直近クローズドトレード</h2>
+  <h2>直近クローズドトレード</h2>
   <div style="overflow-x:auto">
   <table>
-    <thead><tr><th>銘柄</th><th>取得</th><th data-tip="イグジット時の約定価格">売却</th><th>株数</th><th data-tip="実現損益 =（売却価格 − 取得価格）× 株数">損益</th><th>期間</th></tr></thead>
+    <thead><tr><th>銘柄</th><th>取得</th><th>売却</th><th>株数</th><th>損益</th><th>期間</th></tr></thead>
     <tbody>{closed_rows}</tbody>
   </table>
   </div>
@@ -1823,9 +1542,8 @@ def _generate_weekly_hint(weekly_closed, win_rate, stop_count, profit_take_count
     if win_rate < 40:
         losing = [t for t in weekly_closed if t.get("pnl", 0) < 0]
         avg_loss = abs(sum(t.get("pnl", 0) for t in losing) / len(losing)) if losing else 0
-        sl_pct = int(config.get("strategy", {}).get("stop_loss_pct", 0.08) * 100)
         return (f"勝率{win_rate}%。平均損失¥{avg_loss:,.0f}を抑えるため、"
-                f"損切りラインを-{sl_pct}%→-{sl_pct-1}%に引き締めるか、ポジションサイズの見直しを検討してみてください。")
+                "損切りラインを-5%→-4%に引き締めるか、ポジションサイズの見直しを検討してみてください。")
 
     # デフォルト
     profit_take_pct = config.get("strategy", {}).get("profit_take_pct", 0.07)
