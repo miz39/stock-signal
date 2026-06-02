@@ -542,9 +542,9 @@
     "shares": 1,
     "original_shares": 1,
     "entry_date": "2026-06-01",
-    "exit_price": null,
-    "exit_date": null,
-    "status": "open",
+    "exit_price": 14425.0,
+    "exit_date": "2026-06-02",
+    "status": "closed",
     "high_price": 15725.0,
     "stop_price": 14467.0,
     "entry_meta": {
@@ -559,7 +559,9 @@
       "valuation_score": -0.2,
       "fair_value": 11022.0,
       "upside_pct": -29.9
-    }
+    },
+    "pnl": -1300.0,
+    "exit_reason": "トレーリングストップ"
   },
   {
     "ticker": "7004.T",
@@ -588,9 +590,9 @@
   },
   {
     "ticker": "6954.T",
-    "entry_price": 8135.0,
-    "shares": 3,
-    "original_shares": 3,
+    "entry_price": 7992.2,
+    "shares": 4,
+    "original_shares": 4,
     "entry_date": "2026-06-01",
     "exit_price": null,
     "exit_date": null,
@@ -684,6 +686,81 @@
       "valuation_score": 1.37,
       "fair_value": 2755.0,
       "upside_pct": 153.2
+    }
+  },
+  {
+    "ticker": "6526.T",
+    "entry_price": 2711.5,
+    "shares": 11,
+    "original_shares": 11,
+    "entry_date": "2026-06-02",
+    "exit_price": null,
+    "exit_date": null,
+    "status": "open",
+    "high_price": 2711.5,
+    "stop_price": 2494.6,
+    "entry_meta": {
+      "rsi": 60.3,
+      "adx": 33.7,
+      "sma_slope": 8.07,
+      "ichimoku_bullish": true,
+      "market_regime": "bull",
+      "composite_score": 0.6036,
+      "entry_reason": "ゴールデンクロス（SMA25 > SMA100）+ RSI適正（60.3）+ 上昇トレンド",
+      "valuation_signal": "適正",
+      "valuation_score": 0.27,
+      "fair_value": 2905.0,
+      "upside_pct": 7.1
+    }
+  },
+  {
+    "ticker": "4021.T",
+    "entry_price": 7239.0,
+    "shares": 4,
+    "original_shares": 4,
+    "entry_date": "2026-06-02",
+    "exit_price": null,
+    "exit_date": null,
+    "status": "open",
+    "high_price": 7239.0,
+    "stop_price": 6659.9,
+    "entry_meta": {
+      "rsi": 56.2,
+      "adx": 38.9,
+      "sma_slope": 2.46,
+      "ichimoku_bullish": true,
+      "market_regime": "bull",
+      "composite_score": 0.6027,
+      "entry_reason": "ゴールデンクロス（SMA25 > SMA100）+ RSI適正（56.2）+ 上昇トレンド",
+      "valuation_signal": "割安",
+      "valuation_score": 0.72,
+      "fair_value": 8612.0,
+      "upside_pct": 19.0
+    }
+  },
+  {
+    "ticker": "8750.T",
+    "entry_price": 1599.5,
+    "shares": 19,
+    "original_shares": 19,
+    "entry_date": "2026-06-02",
+    "exit_price": null,
+    "exit_date": null,
+    "status": "open",
+    "high_price": 1599.5,
+    "stop_price": 1471.5,
+    "entry_meta": {
+      "rsi": 55.3,
+      "adx": 28.9,
+      "sma_slope": 2.27,
+      "ichimoku_bullish": true,
+      "market_regime": "bull",
+      "composite_score": 0.5335,
+      "entry_reason": "ゴールデンクロス（SMA25 > SMA100）+ RSI適正（55.3）+ 上昇トレンド",
+      "valuation_signal": null,
+      "valuation_score": null,
+      "fair_value": null,
+      "upside_pct": null
     }
   }
 ]
