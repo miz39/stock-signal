@@ -237,8 +237,8 @@
     "exit_price": null,
     "exit_date": null,
     "status": "open",
-    "high_price": 2841.5,
-    "stop_price": 2614.2,
+    "high_price": 2849.0,
+    "stop_price": 2621.1,
     "original_shares": 11,
     "partial_exit_done": true
   },
@@ -696,9 +696,9 @@
     "shares": 10,
     "original_shares": 11,
     "entry_date": "2026-06-02",
-    "exit_price": null,
-    "exit_date": null,
-    "status": "open",
+    "exit_price": 2681.0,
+    "exit_date": "2026-06-05",
+    "status": "closed",
     "high_price": 3053.0,
     "stop_price": 2808.8,
     "entry_meta": {
@@ -714,7 +714,9 @@
       "fair_value": 2905.0,
       "upside_pct": 7.1
     },
-    "partial_exit_done": true
+    "partial_exit_done": true,
+    "pnl": -733.0,
+    "exit_reason": "トレーリングストップ"
   },
   {
     "ticker": "4021.T",
@@ -750,8 +752,8 @@
     "exit_price": null,
     "exit_date": null,
     "status": "open",
-    "high_price": 1650.0,
-    "stop_price": 1518.0,
+    "high_price": 1678.5,
+    "stop_price": 1544.2,
     "entry_meta": {
       "rsi": 55.3,
       "adx": 28.9,
@@ -802,6 +804,31 @@
       "valuation_score": -0.48,
       "fair_value": -619.0,
       "upside_pct": -108.3
+    }
+  },
+  {
+    "ticker": "5233.T",
+    "entry_price": 4362.0,
+    "shares": 6,
+    "original_shares": 6,
+    "entry_date": "2026-06-05",
+    "exit_price": null,
+    "exit_date": null,
+    "status": "open",
+    "high_price": 4362.0,
+    "stop_price": 4013.0,
+    "entry_meta": {
+      "rsi": 61.8,
+      "adx": 28.9,
+      "sma_slope": 4.2,
+      "ichimoku_bullish": true,
+      "market_regime": "bull",
+      "composite_score": 0.4549,
+      "entry_reason": "ゴールデンクロス（SMA25 > SMA100）+ RSI適正（61.8）+ 上昇トレンド",
+      "valuation_signal": null,
+      "valuation_score": null,
+      "fair_value": null,
+      "upside_pct": null
     }
   }
 ]
