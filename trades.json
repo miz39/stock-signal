@@ -808,9 +808,9 @@
   },
   {
     "ticker": "5233.T",
-    "entry_price": 4362.0,
-    "shares": 6,
-    "original_shares": 6,
+    "entry_price": 4360.0,
+    "shares": 7,
+    "original_shares": 7,
     "entry_date": "2026-06-05",
     "exit_price": null,
     "exit_date": null,
