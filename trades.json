@@ -758,8 +758,8 @@
     "exit_price": null,
     "exit_date": null,
     "status": "open",
-    "high_price": 1678.5,
-    "stop_price": 1544.2,
+    "high_price": 1705.5,
+    "stop_price": 1569.1,
     "entry_meta": {
       "rsi": 55.3,
       "adx": 28.9,
@@ -848,8 +848,8 @@
     "exit_price": null,
     "exit_date": null,
     "status": "open",
-    "high_price": 2871.5,
-    "stop_price": 2641.8,
+    "high_price": 2897.5,
+    "stop_price": 2665.7,
     "entry_meta": {
       "rsi": 61.6,
       "adx": 51.0,
@@ -873,8 +873,8 @@
     "exit_price": null,
     "exit_date": null,
     "status": "open",
-    "high_price": 3483.0,
-    "stop_price": 3204.4,
+    "high_price": 3579.0,
+    "stop_price": 3292.7,
     "entry_meta": {
       "rsi": 58.2,
       "adx": 29.7,
@@ -920,9 +920,9 @@
     "shares": 8,
     "original_shares": 8,
     "entry_date": "2026-06-08",
-    "exit_price": null,
-    "exit_date": null,
-    "status": "open",
+    "exit_price": 3371.0,
+    "exit_date": "2026-06-09",
+    "status": "closed",
     "high_price": 3542.0,
     "stop_price": 3416.3,
     "entry_meta": {
@@ -937,6 +937,8 @@
       "valuation_score": null,
       "fair_value": null,
       "upside_pct": null
-    }
+    },
+    "pnl": -1368.0,
+    "exit_reason": "トレーリングストップ"
   }
 ]
