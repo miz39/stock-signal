@@ -759,7 +759,7 @@
     "exit_date": null,
     "status": "open",
     "high_price": 1705.5,
-    "stop_price": 1569.1,
+    "stop_price": 1599.5,
     "entry_meta": {
       "rsi": 55.3,
       "adx": 28.9,
@@ -848,8 +848,8 @@
     "exit_price": null,
     "exit_date": null,
     "status": "open",
-    "high_price": 2897.5,
-    "stop_price": 2665.7,
+    "high_price": 2930.5,
+    "stop_price": 2696.1,
     "entry_meta": {
       "rsi": 61.6,
       "adx": 51.0,
@@ -873,8 +873,8 @@
     "exit_price": null,
     "exit_date": null,
     "status": "open",
-    "high_price": 3579.0,
-    "stop_price": 3292.7,
+    "high_price": 3610.0,
+    "stop_price": 3321.2,
     "entry_meta": {
       "rsi": 58.2,
       "adx": 29.7,
@@ -898,8 +898,8 @@
     "exit_price": null,
     "exit_date": null,
     "status": "open",
-    "high_price": 2854.0,
-    "stop_price": 2625.7,
+    "high_price": 2861.0,
+    "stop_price": 2632.1,
     "entry_meta": {
       "rsi": 52.0,
       "adx": 42.1,
@@ -940,5 +940,30 @@
     },
     "pnl": -1368.0,
     "exit_reason": "トレーリングストップ"
+  },
+  {
+    "ticker": "5201.T",
+    "entry_price": 7166.0,
+    "shares": 4,
+    "original_shares": 4,
+    "entry_date": "2026-06-09",
+    "exit_price": null,
+    "exit_date": null,
+    "status": "open",
+    "high_price": 7166.0,
+    "stop_price": 6592.7,
+    "entry_meta": {
+      "rsi": 57.1,
+      "adx": 37.2,
+      "sma_slope": 6.58,
+      "ichimoku_bullish": false,
+      "market_regime": "bull",
+      "composite_score": 0.5811,
+      "entry_reason": "ゴールデンクロス（SMA25 > SMA100）+ RSI適正（57.1）+ 上昇トレンド",
+      "valuation_signal": null,
+      "valuation_score": null,
+      "fair_value": null,
+      "upside_pct": null
+    }
   }
 ]
