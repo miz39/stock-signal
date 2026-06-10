@@ -625,9 +625,9 @@
     "shares": 4,
     "original_shares": 4,
     "entry_date": "2026-06-01",
-    "exit_price": null,
-    "exit_date": null,
-    "status": "open",
+    "exit_price": 6422.0,
+    "exit_date": "2026-06-10",
+    "status": "closed",
     "high_price": 6997.0,
     "stop_price": 6437.2,
     "entry_meta": {
@@ -642,7 +642,9 @@
       "valuation_score": 0.99,
       "fair_value": 11542.0,
       "upside_pct": 64.9
-    }
+    },
+    "pnl": -2300.0,
+    "exit_reason": "トレーリングストップ"
   },
   {
     "ticker": "7733.T",
@@ -755,11 +757,11 @@
     "shares": 19,
     "original_shares": 19,
     "entry_date": "2026-06-02",
-    "exit_price": null,
-    "exit_date": null,
-    "status": "open",
-    "high_price": 1705.5,
-    "stop_price": 1599.5,
+    "exit_price": 1750.0,
+    "exit_date": "2026-06-10",
+    "status": "closed",
+    "high_price": 1749.5,
+    "stop_price": 1609.5,
     "entry_meta": {
       "rsi": 55.3,
       "adx": 28.9,
@@ -772,7 +774,9 @@
       "valuation_score": null,
       "fair_value": null,
       "upside_pct": null
-    }
+    },
+    "pnl": 2859.5,
+    "exit_reason": "RSI過熱（75.6）"
   },
   {
     "ticker": "6526.T",
@@ -873,8 +877,8 @@
     "exit_price": null,
     "exit_date": null,
     "status": "open",
-    "high_price": 3610.0,
-    "stop_price": 3321.2,
+    "high_price": 3654.0,
+    "stop_price": 3361.7,
     "entry_meta": {
       "rsi": 58.2,
       "adx": 29.7,
