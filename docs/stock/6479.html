@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ミネベアミツミ（6479）- Stock Detail</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3"></script>
 <style>
 * { margin:0; padding:0; box-sizing:border-box; }
 body { background:#121212; color:#E0E0E0; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; padding:16px; max-width:960px; margin:0 auto; }
@@ -36,17 +37,17 @@ a.back:hover { text-decoration:underline; }
   <h1>ミネベアミツミ</h1>
   <span class="code">6479.T</span>
 </div>
-<div class="updated">最終更新: 2026-03-13 16:10 JST</div>
+<div class="updated">最終更新: 2026-06-11 11:08 JST</div>
 
 <div class="cards">
   <div class="card">
     <div class="label">現在価格</div>
-    <div class="value" style="color:#00C853">&yen;2,776</div>
-    <div class="sub" style="color:#00C853">+0.3%</div>
+    <div class="value" style="color:#FF1744">&yen;4,271</div>
+    <div class="sub" style="color:#FF1744">-0.3%</div>
   </div>
   <div class="card">
     <div class="label">RSI(14)</div>
-    <div class="value" style="color:#64B5F6">31.6</div>
+    <div class="value" style="color:#64B5F6">52.8</div>
     <div class="sub">適正</div>
   </div>
   <div class="card">
@@ -55,7 +56,7 @@ a.back:hover { text-decoration:underline; }
   </div>
   <div class="card">
     <div class="label">損切りライン</div>
-    <div class="value" style="color:#FF1744">&yen;2,630</div>
+    <div class="value" style="color:#FF1744">&yen;4,070</div>
     <div class="sub">取得価格の -5%</div>
   </div>
 </div>
@@ -70,17 +71,18 @@ a.back:hover { text-decoration:underline; }
 <div class="section">
   <h2>ファンダメンタル</h2>
   <div class="cards">
-    <div class="card"><div class="label">PER</div><div class="value">17.7倍</div><div class="card-sub">適正</div></div><div class="card"><div class="label">PBR</div><div class="value">1.32倍</div><div class="card-sub">適正</div></div><div class="card"><div class="label">配当利回り</div><div class="value">1.76%</div></div><div class="card"><div class="label">時価総額</div><div class="value">&yen;1.1兆</div></div>
+    <div class="card"><div class="label">PER</div><div class="value">17.3倍</div><div class="card-sub">適正</div></div><div class="card"><div class="label">PBR</div><div class="value">1.91倍</div><div class="card-sub">適正</div></div><div class="card"><div class="label">ROE</div><div class="value">11.9%</div><div class="card-sub">平均的</div></div><div class="card"><div class="label">配当利回り</div><div class="value">1.36%</div></div><div class="card"><div class="label">時価総額</div><div class="value">&yen;1.7兆</div></div>
   </div>
 </div>
 
 <script>
-const dates = ["2025-09-16", "2025-09-17", "2025-09-18", "2025-09-19", "2025-09-22", "2025-09-24", "2025-09-25", "2025-09-26", "2025-09-29", "2025-09-30", "2025-10-01", "2025-10-02", "2025-10-03", "2025-10-06", "2025-10-07", "2025-10-08", "2025-10-09", "2025-10-10", "2025-10-14", "2025-10-15", "2025-10-16", "2025-10-17", "2025-10-20", "2025-10-21", "2025-10-22", "2025-10-23", "2025-10-24", "2025-10-27", "2025-10-28", "2025-10-29", "2025-10-30", "2025-10-31", "2025-11-04", "2025-11-05", "2025-11-06", "2025-11-07", "2025-11-10", "2025-11-11", "2025-11-12", "2025-11-13", "2025-11-14", "2025-11-17", "2025-11-18", "2025-11-19", "2025-11-20", "2025-11-21", "2025-11-25", "2025-11-26", "2025-11-27", "2025-11-28", "2025-12-01", "2025-12-02", "2025-12-03", "2025-12-04", "2025-12-05", "2025-12-08", "2025-12-09", "2025-12-10", "2025-12-11", "2025-12-12", "2025-12-15", "2025-12-16", "2025-12-17", "2025-12-18", "2025-12-19", "2025-12-22", "2025-12-23", "2025-12-24", "2025-12-25", "2025-12-26", "2025-12-29", "2025-12-30", "2026-01-05", "2026-01-06", "2026-01-07", "2026-01-08", "2026-01-09", "2026-01-13", "2026-01-14", "2026-01-15", "2026-01-16", "2026-01-19", "2026-01-20", "2026-01-21", "2026-01-22", "2026-01-23", "2026-01-26", "2026-01-27", "2026-01-28", "2026-01-29", "2026-01-30", "2026-02-02", "2026-02-03", "2026-02-04", "2026-02-05", "2026-02-06", "2026-02-09", "2026-02-10", "2026-02-12", "2026-02-13", "2026-02-16", "2026-02-17", "2026-02-18", "2026-02-19", "2026-02-20", "2026-02-24", "2026-02-25", "2026-02-26", "2026-02-27", "2026-03-02", "2026-03-03", "2026-03-04", "2026-03-05", "2026-03-06", "2026-03-09", "2026-03-10", "2026-03-11", "2026-03-12", "2026-03-13"];
-const prices = [2737.4, 2709.7, 2747.3, 2710.7, 2760.7, 2793.9, 2804.8, 2785.0, 2776.0, 2789.5, 2730.0, 2763.5, 2815.0, 2906.5, 2954.0, 2968.0, 3005.0, 2935.0, 2807.0, 2894.5, 2896.0, 2884.0, 2950.5, 2971.5, 3025.0, 2974.0, 3014.0, 3098.0, 3030.0, 2997.5, 3031.0, 3056.0, 3139.0, 3098.0, 3114.0, 3018.0, 2916.0, 2907.0, 2961.5, 2916.0, 2949.5, 2910.5, 2861.5, 2840.5, 2876.5, 2914.0, 2942.0, 2993.0, 3036.0, 3171.0, 3166.0, 3181.0, 3150.0, 3291.0, 3279.0, 3299.0, 3311.0, 3344.0, 3305.0, 3338.0, 3290.0, 3209.0, 3140.0, 3101.0, 3105.0, 3194.0, 3159.0, 3145.0, 3178.0, 3141.0, 3162.0, 3141.0, 3190.0, 3190.0, 3124.0, 3019.0, 2997.0, 3075.0, 3236.0, 3207.0, 3341.0, 3329.0, 3242.0, 3238.0, 3373.0, 3354.0, 3218.0, 3250.0, 3146.0, 3136.0, 3135.0, 3150.0, 3253.0, 3346.0, 3395.0, 3256.0, 3498.0, 3458.0, 3497.0, 3471.0, 3431.0, 3408.0, 3391.0, 3359.0, 3310.0, 3319.0, 3260.0, 3258.0, 3364.0, 3330.0, 3095.0, 2920.5, 3000.0, 2970.0, 2771.5, 2832.0, 2841.5, 2841.5, 2776.5];
-const sma25 = [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, 2844.8, 2854.3, 2866.5, 2880.5, 2893.3, 2902.7, 2912.2, 2922.3, 2936.4, 2949.3, 2962.3, 2973.8, 2979.9, 2983.6, 2985.8, 2984.3, 2983.5, 2979.7, 2976.8, 2978.1, 2977.4, 2978.1, 2980.5, 2982.2, 2984.7, 2990.6, 2998.3, 3004.9, 3007.0, 3017.5, 3028.7, 3039.4, 3049.6, 3057.8, 3066.1, 3075.1, 3086.0, 3097.7, 3107.0, 3112.6, 3120.1, 3129.9, 3139.9, 3151.2, 3164.7, 3175.3, 3185.2, 3193.2, 3201.0, 3207.2, 3205.3, 3199.4, 3192.1, 3189.1, 3186.9, 3184.0, 3185.7, 3186.4, 3182.3, 3179.6, 3181.0, 3183.6, 3184.0, 3188.4, 3190.2, 3191.4, 3189.0, 3188.7, 3193.0, 3199.7, 3209.9, 3213.6, 3227.9, 3238.6, 3250.9, 3264.8, 3281.3, 3297.7, 3310.4, 3315.3, 3319.4, 3318.5, 3315.8, 3316.4, 3321.4, 3319.7, 3309.4, 3297.5, 3287.5, 3280.4, 3265.8, 3253.7, 3241.4, 3224.9, 3202.1];
-const sma75 = [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, 3013.6, 3017.3, 3021.2, 3025.5, 3032.5, 3038.5, 3045.8, 3052.8, 3058.9, 3065.0, 3072.8, 3081.1, 3087.2, 3093.0, 3096.2, 3098.6, 3100.8, 3102.8, 3107.0, 3114.2, 3120.9, 3125.7, 3133.8, 3140.6, 3147.6, 3153.6, 3159.7, 3164.9, 3168.8, 3173.2, 3177.4, 3181.2, 3183.9, 3185.5, 3189.1, 3191.9, 3193.0, 3193.0, 3194.3, 3194.4, 3192.5, 3190.9, 3190.0, 3189.7, 3188.9];
-const sma200 = [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null];
-const entryPrice = 2769.0;
+const dates = ["2025-12-11", "2025-12-12", "2025-12-15", "2025-12-16", "2025-12-17", "2025-12-18", "2025-12-19", "2025-12-22", "2025-12-23", "2025-12-24", "2025-12-25", "2025-12-26", "2025-12-29", "2025-12-30", "2026-01-05", "2026-01-06", "2026-01-07", "2026-01-08", "2026-01-09", "2026-01-13", "2026-01-14", "2026-01-15", "2026-01-16", "2026-01-19", "2026-01-20", "2026-01-21", "2026-01-22", "2026-01-23", "2026-01-26", "2026-01-27", "2026-01-28", "2026-01-29", "2026-01-30", "2026-02-02", "2026-02-03", "2026-02-04", "2026-02-05", "2026-02-06", "2026-02-09", "2026-02-10", "2026-02-12", "2026-02-13", "2026-02-16", "2026-02-17", "2026-02-18", "2026-02-19", "2026-02-20", "2026-02-24", "2026-02-25", "2026-02-26", "2026-02-27", "2026-03-02", "2026-03-03", "2026-03-04", "2026-03-05", "2026-03-06", "2026-03-09", "2026-03-10", "2026-03-11", "2026-03-12", "2026-03-13", "2026-03-16", "2026-03-17", "2026-03-18", "2026-03-19", "2026-03-23", "2026-03-24", "2026-03-25", "2026-03-26", "2026-03-27", "2026-03-30", "2026-03-31", "2026-04-01", "2026-04-02", "2026-04-03", "2026-04-06", "2026-04-07", "2026-04-08", "2026-04-09", "2026-04-10", "2026-04-13", "2026-04-14", "2026-04-15", "2026-04-16", "2026-04-17", "2026-04-20", "2026-04-21", "2026-04-22", "2026-04-23", "2026-04-24", "2026-04-27", "2026-04-28", "2026-04-30", "2026-05-01", "2026-05-07", "2026-05-08", "2026-05-11", "2026-05-12", "2026-05-13", "2026-05-14", "2026-05-15", "2026-05-18", "2026-05-19", "2026-05-20", "2026-05-21", "2026-05-22", "2026-05-25", "2026-05-26", "2026-05-27", "2026-05-28", "2026-05-29", "2026-06-01", "2026-06-02", "2026-06-03", "2026-06-04", "2026-06-05", "2026-06-08", "2026-06-09", "2026-06-10", "2026-06-11"];
+const prices = [3274.6, 3307.3, 3259.8, 3179.5, 3111.2, 3072.5, 3076.5, 3164.7, 3130.0, 3116.1, 3148.8, 3112.2, 3133.0, 3112.2, 3160.7, 3160.7, 3095.3, 2991.3, 2969.5, 3046.8, 3206.3, 3177.5, 3310.3, 3298.4, 3212.2, 3208.3, 3342.0, 3323.2, 3188.4, 3220.2, 3117.1, 3107.2, 3106.2, 3121.1, 3223.1, 3315.3, 3363.8, 3226.1, 3465.9, 3426.2, 3464.9, 3439.1, 3399.5, 3376.7, 3359.9, 3328.1, 3279.6, 3288.5, 3230.1, 3228.1, 3333.1, 3299.4, 3066.6, 2893.7, 2972.4, 2942.7, 2746.0, 2806.0, 2815.4, 2815.4, 2751.0, 2694.0, 2686.1, 2776.3, 2650.9, 2517.7, 2615.3, 2706.9, 2721.3, 2697.0, 2615.5, 2535.0, 2667.5, 2575.0, 2589.5, 2605.5, 2627.0, 2752.0, 2731.5, 2845.5, 2863.0, 2872.5, 2863.5, 3011.0, 2949.5, 3092.0, 3128.0, 3096.0, 3027.0, 3086.0, 3073.0, 3059.0, 3124.0, 3108.0, 3290.0, 3380.0, 3458.0, 3566.0, 3914.0, 3978.0, 3944.0, 3815.0, 3878.0, 3730.0, 3877.0, 3992.0, 4221.0, 4317.0, 4232.0, 4276.0, 4562.0, 4721.0, 4675.0, 4880.0, 4968.0, 4994.0, 4546.0, 4651.0, 4396.0, 4271.0];
+const sma25 = [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, 3153.1, 3150.4, 3151.8, 3154.4, 3154.7, 3159.1, 3160.9, 3162.1, 3159.8, 3159.4, 3163.7, 3170.3, 3180.4, 3184.1, 3198.3, 3208.9, 3221.1, 3234.8, 3251.1, 3267.4, 3280.0, 3284.8, 3288.9, 3288.0, 3285.3, 3285.9, 3290.9, 3289.2, 3279.0, 3267.2, 3257.3, 3250.3, 3235.8, 3223.8, 3211.6, 3195.3, 3172.7, 3145.9, 3124.3, 3096.8, 3065.7, 3027.9, 2994.9, 2967.2, 2941.0, 2914.5, 2886.0, 2856.2, 2831.3, 2805.1, 2779.6, 2750.5, 2723.6, 2711.0, 2704.5, 2699.4, 2696.3, 2701.3, 2703.6, 2711.4, 2716.8, 2730.4, 2747.8, 2764.2, 2774.2, 2791.6, 2813.8, 2831.6, 2848.3, 2863.7, 2887.5, 2918.0, 2955.0, 2990.9, 3044.5, 3100.0, 3153.5, 3201.1, 3246.1, 3286.0, 3327.3, 3372.5, 3426.4, 3484.5, 3533.4, 3586.4, 3645.2, 3709.0, 3772.1, 3846.2, 3921.5, 3998.4, 4057.8, 4118.9, 4170.4, 4209.7];
+const sma75 = [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, 3072.9, 3064.0, 3054.9, 3048.1, 3042.1, 3038.6, 3035.8, 3033.1, 3029.1, 3027.5, 3025.3, 3024.5, 3024.7, 3024.2, 3023.1, 3022.1, 3020.9, 3020.4, 3022.2, 3024.1, 3027.3, 3029.6, 3033.3, 3036.8, 3045.0, 3055.2, 3065.0, 3071.3, 3078.7, 3085.9, 3094.7, 3106.3, 3121.2, 3137.3, 3152.1, 3166.2, 3182.8, 3200.9, 3220.2, 3239.1, 3259.6, 3280.0, 3294.8, 3311.5, 3325.1, 3337.2];
+const sma200 = [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null];
+const entryPrice = 4284.0;
+const entryDate = '2026-06-11';
 
 if (dates.length > 0) {
   const ctx = document.getElementById('priceChart').getContext('2d');
@@ -141,6 +143,17 @@ if (dates.length > 0) {
           fill: false,
           order: 5,
         },
+        ...(entryDate && dates.includes(entryDate) ? [{
+          label: '購入日',
+          data: dates.map(d => d === entryDate ? entryPrice : null),
+          borderColor: 'transparent',
+          backgroundColor: '#F44336',
+          pointRadius: 8,
+          pointStyle: 'triangle',
+          pointRotation: 0,
+          showLine: false,
+          order: 0,
+        }] : []),
       ]
     },
     options: {
@@ -149,6 +162,27 @@ if (dates.length > 0) {
       interaction: { mode: 'index', intersect: false },
       plugins: {
         legend: { labels: { color:'#9E9E9E', font:{ size:11 }, usePointStyle:true, pointStyle:'line' } },
+        annotation: entryDate && dates.includes(entryDate) ? {
+          annotations: {
+            entryLine: {
+              type: 'line',
+              xMin: entryDate,
+              xMax: entryDate,
+              borderColor: 'rgba(244,67,54,0.4)',
+              borderWidth: 1,
+              borderDash: [4,3],
+              label: {
+                display: true,
+                content: '購入 ' + entryDate,
+                position: 'start',
+                backgroundColor: 'rgba(244,67,54,0.8)',
+                color: '#fff',
+                font: { size: 10 },
+                padding: 4,
+              }
+            }
+          }
+        } : {},
         tooltip: {
           callbacks: {
             label: function(ctx) {
