@@ -763,8 +763,8 @@
     "exit_price": null,
     "exit_date": null,
     "status": "open",
-    "high_price": 1101.0,
-    "stop_price": 1012.9,
+    "high_price": 1142.5,
+    "stop_price": 1051.1,
     "entry_meta": {
       "rsi": 59.9,
       "adx": 31.2,
@@ -1162,14 +1162,14 @@
   {
     "ticker": "8308.T",
     "entry_price": 2036.5,
-    "shares": 16,
+    "shares": 8,
     "original_shares": 16,
     "entry_date": "2026-05-28",
     "exit_price": null,
     "exit_date": null,
     "status": "open",
-    "high_price": 2182.0,
-    "stop_price": 2007.4,
+    "high_price": 2270.5,
+    "stop_price": 2088.9,
     "entry_meta": {
       "rsi": 53.2,
       "adx": 28.4,
@@ -1182,7 +1182,8 @@
       "valuation_score": 0.45,
       "fair_value": 34275.0,
       "upside_pct": 1583.4
-    }
+    },
+    "partial_exit_done": true
   },
   {
     "ticker": "6724.T",
@@ -1220,8 +1221,8 @@
     "exit_price": null,
     "exit_date": null,
     "status": "open",
-    "high_price": 3701.0,
-    "stop_price": 3404.9,
+    "high_price": 3762.0,
+    "stop_price": 3461.0,
     "entry_meta": {
       "rsi": 58.2,
       "adx": 29.7,
@@ -1299,8 +1300,8 @@
     "exit_price": null,
     "exit_date": null,
     "status": "open",
-    "high_price": 7166.0,
-    "stop_price": 6592.7,
+    "high_price": 7313.0,
+    "stop_price": 6728.0,
     "entry_meta": {
       "rsi": 57.1,
       "adx": 37.2,
@@ -1349,8 +1350,8 @@
     "exit_price": null,
     "exit_date": null,
     "status": "open",
-    "high_price": 4356.0,
-    "stop_price": 4007.5,
+    "high_price": 4468.0,
+    "stop_price": 4110.6,
     "entry_meta": {
       "rsi": 53.2,
       "adx": 46.1,
@@ -1371,11 +1372,11 @@
     "shares": 4,
     "original_shares": 4,
     "entry_date": "2026-06-11",
-    "exit_price": null,
-    "exit_date": null,
-    "status": "open",
-    "high_price": 7740.0,
-    "stop_price": 7120.8,
+    "exit_price": 8170.0,
+    "exit_date": "2026-06-15",
+    "status": "closed",
+    "high_price": 8170.0,
+    "stop_price": 7516.4,
     "entry_meta": {
       "rsi": 55.3,
       "adx": 32.0,
@@ -1388,7 +1389,9 @@
       "valuation_score": null,
       "fair_value": null,
       "upside_pct": null
-    }
+    },
+    "pnl": 3164.0,
+    "exit_reason": "利確(+10.7%)"
   },
   {
     "ticker": "8306.T",
@@ -1399,8 +1402,8 @@
     "exit_price": null,
     "exit_date": null,
     "status": "open",
-    "high_price": 3170.0,
-    "stop_price": 2916.4,
+    "high_price": 3322.0,
+    "stop_price": 3056.2,
     "entry_meta": {
       "rsi": 57.7,
       "adx": 30.2,
@@ -1417,15 +1420,15 @@
   },
   {
     "ticker": "6963.T",
-    "entry_price": 4732.0,
-    "shares": 6,
+    "entry_price": 4951.2,
+    "shares": 5,
     "original_shares": 6,
     "entry_date": "2026-06-11",
     "exit_price": null,
     "exit_date": null,
     "status": "open",
-    "high_price": 4930.0,
-    "stop_price": 4535.6,
+    "high_price": 5285.0,
+    "stop_price": 4862.2,
     "entry_meta": {
       "rsi": 50.8,
       "adx": 30.4,
@@ -1438,6 +1441,58 @@
       "valuation_score": null,
       "fair_value": null,
       "upside_pct": null
+    },
+    "partial_exit_done": true
+  },
+  {
+    "ticker": "8308.T",
+    "entry_price": 2036.5,
+    "shares": 8,
+    "entry_date": "2026-05-28",
+    "exit_price": 2270.5,
+    "exit_date": "2026-06-15",
+    "status": "closed",
+    "pnl": 1872.0,
+    "high_price": 2270.5,
+    "stop_price": 2088.9,
+    "reason": "利確（+8%）"
+  },
+  {
+    "ticker": "6963.T",
+    "entry_price": 4732.0,
+    "shares": 3,
+    "entry_date": "2026-06-11",
+    "exit_price": 5285.0,
+    "exit_date": "2026-06-15",
+    "status": "closed",
+    "pnl": 1659.0,
+    "high_price": 5285.0,
+    "stop_price": 4862.2,
+    "reason": "利確（+8%）"
+  },
+  {
+    "ticker": "9984.T",
+    "entry_price": 7306.0,
+    "shares": 4,
+    "original_shares": 4,
+    "entry_date": "2026-06-15",
+    "exit_price": null,
+    "exit_date": null,
+    "status": "open",
+    "high_price": 7306.0,
+    "stop_price": 6721.5,
+    "entry_meta": {
+      "rsi": 56.4,
+      "adx": 29.0,
+      "sma_slope": 2.86,
+      "ichimoku_bullish": true,
+      "market_regime": "bull",
+      "composite_score": 0.6183,
+      "entry_reason": "ゴールデンクロス（SMA25 > SMA100）+ RSI適正（56.4）+ 上昇トレンド",
+      "valuation_signal": "割高",
+      "valuation_score": -0.48,
+      "fair_value": -619.0,
+      "upside_pct": -108.5
     }
   }
 ]
