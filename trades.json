@@ -931,7 +931,8 @@
       "market_regime": "bull"
     },
     "partial_exit_done": true,
-    "exit_reason": "トレーリングストップ"
+    "exit_reason": "トレーリングストップ",
+    "pnl": 432.0
   },
   {
     "ticker": "5801.T",
@@ -1019,7 +1020,8 @@
       "ichimoku_bullish": false,
       "market_regime": "bull"
     },
-    "exit_reason": "トレーリングストップ"
+    "exit_reason": "トレーリングストップ",
+    "pnl": 6.9
   },
   {
     "ticker": "6504.T",
@@ -1065,7 +1067,8 @@
       "ichimoku_bullish": true,
       "market_regime": "bull"
     },
-    "exit_reason": "トレーリングストップ"
+    "exit_reason": "トレーリングストップ",
+    "pnl": -1240.0
   },
   {
     "ticker": "6954.T",
@@ -1104,7 +1107,8 @@
       "fair_value": 25609.0,
       "upside_pct": 6.0
     },
-    "exit_reason": "トレーリングストップ"
+    "exit_reason": "トレーリングストップ",
+    "pnl": -1653.0
   },
   {
     "ticker": "9502.T",

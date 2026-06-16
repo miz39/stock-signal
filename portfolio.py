@@ -28,9 +28,15 @@ def _load_trades() -> list:
     with open(TRADES_FILE, "r") as f:
         fcntl.flock(f, fcntl.LOCK_SH)
         try:
-            return json.load(f)
+            trades = json.load(f)
         finally:
             fcntl.flock(f, fcntl.LOCK_UN)
+    # pnl フィールドが欠落しているクローズトレードを補完（手動修正時などの保険）
+    for t in trades:
+        if t.get("status") == "closed" and "pnl" not in t:
+            ep = t.get("exit_price", t.get("entry_price", 0))
+            t["pnl"] = round((ep - t.get("entry_price", 0)) * t.get("shares", 0), 1)
+    return trades
 
 
 def _save_trades(trades: list) -> None:
