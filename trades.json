@@ -1304,8 +1304,8 @@
     "exit_price": null,
     "exit_date": null,
     "status": "open",
-    "high_price": 7315.0,
-    "stop_price": 6729.8,
+    "high_price": 7421.0,
+    "stop_price": 6827.3,
     "entry_meta": {
       "rsi": 57.1,
       "adx": 37.2,
@@ -1329,8 +1329,8 @@
     "exit_price": null,
     "exit_date": null,
     "status": "open",
-    "high_price": 5131.0,
-    "stop_price": 4720.5,
+    "high_price": 5149.0,
+    "stop_price": 4737.1,
     "entry_meta": {
       "rsi": 60.4,
       "adx": 52.5,
@@ -1348,14 +1348,14 @@
   {
     "ticker": "6479.T",
     "entry_price": 4284.0,
-    "shares": 7,
+    "shares": 4,
     "original_shares": 7,
     "entry_date": "2026-06-11",
     "exit_price": null,
     "exit_date": null,
     "status": "open",
-    "high_price": 4681.0,
-    "stop_price": 4306.5,
+    "high_price": 4718.0,
+    "stop_price": 4340.6,
     "entry_meta": {
       "rsi": 53.2,
       "adx": 46.1,
@@ -1368,7 +1368,8 @@
       "valuation_score": -0.39,
       "fair_value": 2595.0,
       "upside_pct": -39.4
-    }
+    },
+    "partial_exit_done": true
   },
   {
     "ticker": "5332.T",
@@ -1432,7 +1433,7 @@
     "exit_date": null,
     "status": "open",
     "high_price": 5285.0,
-    "stop_price": 4970.3,
+    "stop_price": 4983.9,
     "entry_meta": {
       "rsi": 50.8,
       "adx": 30.4,
@@ -1498,5 +1499,18 @@
       "fair_value": -619.0,
       "upside_pct": -108.5
     }
+  },
+  {
+    "ticker": "6479.T",
+    "entry_price": 4284.0,
+    "shares": 3,
+    "entry_date": "2026-06-11",
+    "exit_price": 4718.0,
+    "exit_date": "2026-06-17",
+    "status": "closed",
+    "pnl": 1302.0,
+    "high_price": 4718.0,
+    "stop_price": 4340.6,
+    "reason": "利確（+8%）"
   }
 ]
