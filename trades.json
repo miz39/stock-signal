@@ -1306,7 +1306,7 @@
     "exit_date": null,
     "status": "open",
     "high_price": 7724.0,
-    "stop_price": 7106.1,
+    "stop_price": 7166.0,
     "entry_meta": {
       "rsi": 57.1,
       "adx": 37.2,
@@ -1435,7 +1435,7 @@
     "exit_date": null,
     "status": "open",
     "high_price": 5530.0,
-    "stop_price": 5087.6,
+    "stop_price": 5343.7,
     "entry_meta": {
       "rsi": 50.8,
       "adx": 30.4,
@@ -1540,5 +1540,30 @@
     "high_price": 7596.0,
     "stop_price": 6988.3,
     "reason": "利確（+8%）"
+  },
+  {
+    "ticker": "7004.T",
+    "entry_price": 1435.0,
+    "shares": 21,
+    "original_shares": 21,
+    "entry_date": "2026-06-19",
+    "exit_price": null,
+    "exit_date": null,
+    "status": "open",
+    "high_price": 1435.0,
+    "stop_price": 1320.2,
+    "entry_meta": {
+      "rsi": 61.8,
+      "adx": 31.3,
+      "sma_slope": 1.3,
+      "ichimoku_bullish": false,
+      "market_regime": "bull",
+      "composite_score": 0.5151,
+      "entry_reason": "ゴールデンクロス（SMA25 > SMA100）+ RSI適正（61.8）+ 上昇トレンド",
+      "valuation_signal": null,
+      "valuation_score": null,
+      "fair_value": null,
+      "upside_pct": null
+    }
   }
 ]
