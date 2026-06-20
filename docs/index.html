@@ -31,6 +31,16 @@ td.num { text-align:right; font-variant-numeric:tabular-nums; }
 .hero-change { font-size:1rem; font-weight:600; margin-top:2px; }
 .green { color:#00C853; }
 .red { color:#FF1744; }
+.readiness-card { background:#1E1E1E; border-radius:10px; padding:14px; margin-bottom:20px; }
+.readiness-head { display:flex; justify-content:space-between; align-items:baseline; margin-bottom:8px; }
+.readiness-title { font-size:0.9rem; font-weight:600; color:#E0E0E0; }
+.readiness-status { font-size:0.8rem; font-weight:600; }
+.readiness-bar { background:#2A2A2A; height:6px; border-radius:3px; overflow:hidden; margin-bottom:10px; }
+.readiness-bar-fill { height:100%; border-radius:3px; transition:width 0.3s; }
+.readiness-row { display:flex; align-items:center; padding:4px 0; font-size:0.8rem; }
+.readiness-icon { width:18px; font-weight:700; }
+.readiness-label { flex:1; color:#BDBDBD; }
+.readiness-value { font-variant-numeric:tabular-nums; color:#E0E0E0; }
 .policy-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:10px; }
 .policy-card { background:#1E1E1E; border-radius:10px; padding:14px; }
 .policy-title { font-size:0.7rem; color:#9E9E9E; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px; font-weight:500; }
@@ -55,7 +65,7 @@ a.stock-link:hover { text-decoration:underline; }
 </head>
 <body>
 <h1>Paper Trade Dashboard</h1>
-<div class="updated">最終更新: 2026-06-19 19:58 JST &nbsp;|&nbsp; <a href="history.html" style="color:#64B5F6;text-decoration:none">実行履歴 &rarr;</a> &nbsp;|&nbsp; <a href="weekly-review.html" style="color:#64B5F6;text-decoration:none">週次レビュー &rarr;</a> &nbsp;|&nbsp; <a href="analysis.html" style="color:#64B5F6;text-decoration:none">AI分析 &rarr;</a></div>
+<div class="updated">最終更新: 2026-06-20 16:26 JST &nbsp;|&nbsp; <a href="history.html" style="color:#64B5F6;text-decoration:none">実行履歴 &rarr;</a> &nbsp;|&nbsp; <a href="weekly-review.html" style="color:#64B5F6;text-decoration:none">週次レビュー &rarr;</a> &nbsp;|&nbsp; <a href="analysis.html" style="color:#64B5F6;text-decoration:none">AI分析 &rarr;</a></div>
 
 <div class="hero-card">
   <div class="label">総資産</div>
@@ -96,6 +106,15 @@ a.stock-link:hover { text-decoration:underline; }
 
 <div class="chart-wrap">
   <canvas id="equityChart" height="200"></canvas>
+</div>
+
+<div class="readiness-card">
+  <div class="readiness-head">
+    <div class="readiness-title" data-tip="ペーパートレードからリアル運用に移行するための5基準（サンプル数/PF/最大DD/直近30件PF/勝率）の達成度">リアル移行準備度 60% (3/5 基準達成)</div>
+    <div class="readiness-status" style="color:#FFA726">準備中（もう一歩）</div>
+  </div>
+  <div class="readiness-bar"><div class="readiness-bar-fill" style="width:60.0%;background:#FFA726"></div></div>
+  <div class="readiness-row" style="color:#FF8A80"><span class="readiness-icon">✗</span><span class="readiness-label" data-tip="Trade Count — 統計的に有意な結果を得るために必要な最低トレード数">サンプル数</span><span class="readiness-value">80/100</span></div><div class="readiness-row" style="color:#FF8A80"><span class="readiness-icon">✗</span><span class="readiness-label" data-tip="Profit Factor — 総利益 ÷ 総損失。1.0超で利益が損失を上回る。1.5以上が目標">PF</span><span class="readiness-value">1.23 / 1.5</span></div><div class="readiness-row" style="color:#00C853"><span class="readiness-icon">✓</span><span class="readiness-label" data-tip="Maximum Drawdown — 累計損益のピークからの最大下落率。資金管理の安定性を測る">最大DD</span><span class="readiness-value">6.0% / 10%</span></div><div class="readiness-row" style="color:#00C853"><span class="readiness-icon">✓</span><span class="readiness-label" data-tip="直近30件PF — 直近30トレードのプロフィットファクター。戦略の劣化を検知する">直近30件PF</span><span class="readiness-value">1.47 / 1.0</span></div><div class="readiness-row" style="color:#00C853"><span class="readiness-icon">✓</span><span class="readiness-label" data-tip="Win Rate — 決済済みトレードのうちプラスで終了した割合">勝率</span><span class="readiness-value">50.0% / 45%</span></div>
 </div>
 
 <div class="section">
@@ -214,70 +233,70 @@ a.stock-link:hover { text-decoration:underline; }
 <td class="num">&yen;1,092</td>
 <td class="num">28</td>
 <td class="num" style="color:#00C853">+126<br><span class="small">(+0.4%)</span></td>
-<td class="num">18日</td>
+<td class="num">19日</td>
 </tr><tr>
 <td><a class="stock-link" href="stock/8308.html">りそなホールディングス</a><br><span class="ticker">8308</span></td>
 <td class="num">&yen;2,036</td>
 <td class="num">&yen;2,196</td>
 <td class="num">8</td>
 <td class="num" style="color:#00C853">+1,276<br><span class="small">(+7.8%)</span></td>
-<td class="num">22日</td>
+<td class="num">23日</td>
 </tr><tr>
 <td><a class="stock-link" href="stock/3099.html">三越伊勢丹ホールディングス</a><br><span class="ticker">3099</span></td>
 <td class="num">&yen;3,433</td>
 <td class="num">&yen;3,871</td>
 <td class="num">4</td>
 <td class="num" style="color:#00C853">+1,752<br><span class="small">(+12.8%)</span></td>
-<td class="num">11日</td>
+<td class="num">12日</td>
 </tr><tr>
 <td><a class="stock-link" href="stock/5201.html">AGC</a><br><span class="ticker">5201</span></td>
 <td class="num">&yen;7,166</td>
 <td class="num">&yen;7,616</td>
 <td class="num">2</td>
 <td class="num" style="color:#00C853">+900<br><span class="small">(+6.3%)</span></td>
-<td class="num">10日</td>
+<td class="num">11日</td>
 </tr><tr>
 <td><a class="stock-link" href="stock/9147.html">NIPPON EXPRESSホールディングス</a><br><span class="ticker">9147</span></td>
 <td class="num">&yen;5,035</td>
 <td class="num">&yen;5,191</td>
 <td class="num">6</td>
 <td class="num" style="color:#00C853">+936<br><span class="small">(+3.1%)</span></td>
-<td class="num">8日</td>
+<td class="num">9日</td>
 </tr><tr>
 <td><a class="stock-link" href="stock/6479.html">ミネベアミツミ</a><br><span class="ticker">6479</span></td>
 <td class="num">&yen;4,391</td>
 <td class="num">&yen;4,628</td>
 <td class="num">6</td>
 <td class="num" style="color:#00C853">+1,424<br><span class="small">(+5.4%)</span></td>
-<td class="num">8日</td>
+<td class="num">9日</td>
 </tr><tr>
 <td><a class="stock-link" href="stock/8306.html">三菱UFJフィナンシャル・グループ</a><br><span class="ticker">8306</span></td>
 <td class="num">&yen;3,121</td>
 <td class="num">&yen;3,278</td>
 <td class="num">10</td>
 <td class="num" style="color:#00C853">+1,570<br><span class="small">(+5.0%)</span></td>
-<td class="num">8日</td>
+<td class="num">9日</td>
 </tr><tr>
 <td><a class="stock-link" href="stock/6963.html">ローム</a><br><span class="ticker">6963</span></td>
 <td class="num">&yen;4,951</td>
 <td class="num">&yen;5,509</td>
 <td class="num">5</td>
 <td class="num" style="color:#00C853">+2,789<br><span class="small">(+11.3%)</span></td>
-<td class="num">8日</td>
+<td class="num">9日</td>
 </tr><tr>
 <td><a class="stock-link" href="stock/9984.html">ソフトバンクグループ</a><br><span class="ticker">9984</span></td>
 <td class="num">&yen;7,306</td>
 <td class="num">&yen;7,111</td>
 <td class="num">4</td>
 <td class="num" style="color:#FF1744">-780<br><span class="small">(-2.7%)</span></td>
-<td class="num">4日</td>
+<td class="num">5日</td>
 </tr><tr>
 <td><a class="stock-link" href="stock/7004.html">カナデビア</a><br><span class="ticker">7004</span></td>
 <td class="num">&yen;1,435</td>
 <td class="num">&yen;1,435</td>
 <td class="num">21</td>
 <td class="num" style="color:#9E9E9E">0<br><span class="small">(+0.0%)</span></td>
-<td class="num">0日</td>
+<td class="num">1日</td>
 </tr></tbody>
   </table>
   </div>
@@ -434,8 +453,8 @@ a.stock-link:hover { text-decoration:underline; }
 </div>
 
 <script>
-const labels = ["2026-03-04", "2026-03-05", "2026-03-06", "2026-03-07", "2026-03-08", "2026-03-09", "2026-03-10", "2026-03-11", "2026-03-12", "2026-03-13", "2026-03-14", "2026-03-15", "2026-03-16", "2026-03-17", "2026-03-18", "2026-03-19", "2026-03-20", "2026-03-21", "2026-03-22", "2026-03-23", "2026-03-24", "2026-03-25", "2026-03-26", "2026-03-27", "2026-03-28", "2026-03-29", "2026-03-30", "2026-03-31", "2026-04-01", "2026-04-02", "2026-04-03", "2026-04-04", "2026-04-05", "2026-04-06", "2026-04-07", "2026-04-08", "2026-04-09", "2026-04-10", "2026-04-11", "2026-04-12", "2026-04-13", "2026-04-14", "2026-04-15", "2026-04-16", "2026-04-17", "2026-04-18", "2026-04-19", "2026-04-20", "2026-04-21", "2026-04-22", "2026-04-23", "2026-04-24", "2026-04-25", "2026-04-26", "2026-04-27", "2026-04-28", "2026-04-29", "2026-04-30", "2026-05-01", "2026-05-02", "2026-05-03", "2026-05-04", "2026-05-05", "2026-05-06", "2026-05-07", "2026-05-08", "2026-05-09", "2026-05-10", "2026-05-11", "2026-05-12", "2026-05-13", "2026-05-14", "2026-05-15", "2026-05-16", "2026-05-17", "2026-05-18", "2026-05-19", "2026-05-20", "2026-05-21", "2026-05-22", "2026-05-23", "2026-05-24", "2026-05-25", "2026-05-26", "2026-05-27", "2026-05-28", "2026-05-29", "2026-05-30", "2026-05-31", "2026-06-01", "2026-06-02", "2026-06-03", "2026-06-04", "2026-06-05", "2026-06-06", "2026-06-07", "2026-06-08", "2026-06-09", "2026-06-10", "2026-06-11", "2026-06-12", "2026-06-13", "2026-06-14", "2026-06-15", "2026-06-16", "2026-06-17", "2026-06-18", "2026-06-19"];
-const data = [300000, 300000, 300000, 300000, 300000, 293542.0, 293542.0, 293542.0, 294766.0, 293630.8, 293630.8, 293630.8, 292423.3, 292423.3, 292423.3, 292423.3, 292423.3, 292423.3, 292423.3, 289696.0, 288174.1, 288174.1, 294722.1, 294778.1, 294778.1, 294778.1, 294778.1, 297920.3, 298942.8, 300042.8, 301112.9, 301112.9, 301112.9, 301112.9, 301112.9, 309795.0, 309795.0, 309165.0, 309165.0, 309165.0, 309165.0, 309165.0, 309165.0, 309165.0, 306635.0, 306635.0, 306635.0, 306635.0, 302951.5, 302951.5, 302864.5, 302864.5, 302864.5, 302864.5, 295693.0, 295693.0, 295693.0, 293670.0, 291261.6, 291261.6, 291261.6, 291261.6, 291261.6, 291261.6, 298531.6, 298531.6, 298531.6, 298531.6, 300811.6, 300811.6, 300811.6, 300811.6, 300811.6, 300811.6, 300811.6, 300811.6, 302203.8, 302203.8, 302203.8, 305701.3, 305701.3, 305701.3, 307355.3, 307355.3, 310032.3, 310550.3, 310550.3, 310550.3, 310550.3, 310550.3, 308096.2, 312096.2, 312096.2, 316746.2, 316746.2, 316746.2, 310894.4, 309526.4, 310085.9, 305873.9, 301893.5, 301893.5, 301893.5, 308588.5, 308588.5, 309890.5, 312386.5, 322379.3];
+const labels = ["2026-03-04", "2026-03-05", "2026-03-06", "2026-03-07", "2026-03-08", "2026-03-09", "2026-03-10", "2026-03-11", "2026-03-12", "2026-03-13", "2026-03-14", "2026-03-15", "2026-03-16", "2026-03-17", "2026-03-18", "2026-03-19", "2026-03-20", "2026-03-21", "2026-03-22", "2026-03-23", "2026-03-24", "2026-03-25", "2026-03-26", "2026-03-27", "2026-03-28", "2026-03-29", "2026-03-30", "2026-03-31", "2026-04-01", "2026-04-02", "2026-04-03", "2026-04-04", "2026-04-05", "2026-04-06", "2026-04-07", "2026-04-08", "2026-04-09", "2026-04-10", "2026-04-11", "2026-04-12", "2026-04-13", "2026-04-14", "2026-04-15", "2026-04-16", "2026-04-17", "2026-04-18", "2026-04-19", "2026-04-20", "2026-04-21", "2026-04-22", "2026-04-23", "2026-04-24", "2026-04-25", "2026-04-26", "2026-04-27", "2026-04-28", "2026-04-29", "2026-04-30", "2026-05-01", "2026-05-02", "2026-05-03", "2026-05-04", "2026-05-05", "2026-05-06", "2026-05-07", "2026-05-08", "2026-05-09", "2026-05-10", "2026-05-11", "2026-05-12", "2026-05-13", "2026-05-14", "2026-05-15", "2026-05-16", "2026-05-17", "2026-05-18", "2026-05-19", "2026-05-20", "2026-05-21", "2026-05-22", "2026-05-23", "2026-05-24", "2026-05-25", "2026-05-26", "2026-05-27", "2026-05-28", "2026-05-29", "2026-05-30", "2026-05-31", "2026-06-01", "2026-06-02", "2026-06-03", "2026-06-04", "2026-06-05", "2026-06-06", "2026-06-07", "2026-06-08", "2026-06-09", "2026-06-10", "2026-06-11", "2026-06-12", "2026-06-13", "2026-06-14", "2026-06-15", "2026-06-16", "2026-06-17", "2026-06-18", "2026-06-19", "2026-06-20"];
+const data = [300000, 300000, 300000, 300000, 300000, 293542.0, 293542.0, 293542.0, 294766.0, 293630.8, 293630.8, 293630.8, 292423.3, 292423.3, 292423.3, 292423.3, 292423.3, 292423.3, 292423.3, 289696.0, 288174.1, 288174.1, 294722.1, 294778.1, 294778.1, 294778.1, 294778.1, 297920.3, 298942.8, 300042.8, 301112.9, 301112.9, 301112.9, 301112.9, 301112.9, 309795.0, 309795.0, 309165.0, 309165.0, 309165.0, 309165.0, 309165.0, 309165.0, 309165.0, 306635.0, 306635.0, 306635.0, 306635.0, 302951.5, 302951.5, 302864.5, 302864.5, 302864.5, 302864.5, 295693.0, 295693.0, 295693.0, 293670.0, 291261.6, 291261.6, 291261.6, 291261.6, 291261.6, 291261.6, 298531.6, 298531.6, 298531.6, 298531.6, 300811.6, 300811.6, 300811.6, 300811.6, 300811.6, 300811.6, 300811.6, 300811.6, 302203.8, 302203.8, 302203.8, 305701.3, 305701.3, 305701.3, 307355.3, 307355.3, 310032.3, 310550.3, 310550.3, 310550.3, 310550.3, 310550.3, 308096.2, 312096.2, 312096.2, 316746.2, 316746.2, 316746.2, 310894.4, 309526.4, 310085.9, 305873.9, 301893.5, 301893.5, 301893.5, 308588.5, 308588.5, 309890.5, 312386.5, 312386.5, 322379.3];
 if (labels.length > 0) {
   const ctx = document.getElementById('equityChart').getContext('2d');
   const gradient = ctx.createLinearGradient(0,0,0,200);
@@ -567,7 +586,7 @@ if (mLabels.length > 0) {
 }
 
 // Drawdown Chart
-const ddData = [0.0, 0.0, 0.0, 0.0, 0.0, -2.15, -2.15, -2.15, -1.74, -2.12, -2.12, -2.12, -2.53, -2.53, -2.53, -2.53, -2.53, -2.53, -2.53, -3.43, -3.94, -3.94, -1.76, -1.74, -1.74, -1.74, -1.74, -0.69, -0.35, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -0.2, -0.2, -0.2, -0.2, -0.2, -0.2, -0.2, -1.02, -1.02, -1.02, -1.02, -2.21, -2.21, -2.24, -2.24, -2.24, -2.24, -4.55, -4.55, -4.55, -5.21, -5.98, -5.98, -5.98, -5.98, -5.98, -5.98, -3.64, -3.64, -3.64, -3.64, -2.9, -2.9, -2.9, -2.9, -2.9, -2.9, -2.9, -2.9, -2.45, -2.45, -2.45, -1.32, -1.32, -1.32, -0.79, -0.79, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -0.79, 0.0, 0.0, 0.0, 0.0, 0.0, -1.85, -2.28, -2.1, -3.43, -4.69, -4.69, -4.69, -2.58, -2.58, -2.16, -1.38, 0.0];
+const ddData = [0.0, 0.0, 0.0, 0.0, 0.0, -2.15, -2.15, -2.15, -1.74, -2.12, -2.12, -2.12, -2.53, -2.53, -2.53, -2.53, -2.53, -2.53, -2.53, -3.43, -3.94, -3.94, -1.76, -1.74, -1.74, -1.74, -1.74, -0.69, -0.35, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -0.2, -0.2, -0.2, -0.2, -0.2, -0.2, -0.2, -1.02, -1.02, -1.02, -1.02, -2.21, -2.21, -2.24, -2.24, -2.24, -2.24, -4.55, -4.55, -4.55, -5.21, -5.98, -5.98, -5.98, -5.98, -5.98, -5.98, -3.64, -3.64, -3.64, -3.64, -2.9, -2.9, -2.9, -2.9, -2.9, -2.9, -2.9, -2.9, -2.45, -2.45, -2.45, -1.32, -1.32, -1.32, -0.79, -0.79, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -0.79, 0.0, 0.0, 0.0, 0.0, 0.0, -1.85, -2.28, -2.1, -3.43, -4.69, -4.69, -4.69, -2.58, -2.58, -2.16, -1.38, -1.38, 0.0];
 if (labels.length > 0 && ddData.length > 0) {
   const ddCtx = document.getElementById('ddChart').getContext('2d');
   const ddGrad = ddCtx.createLinearGradient(0,0,0,120);
