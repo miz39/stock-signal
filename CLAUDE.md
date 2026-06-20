@@ -52,9 +52,8 @@ dow = date.today().weekday()  # 5=土, 6=日
 
 ## 運用スケジュール（cron）
 ```
-8:50  寄り前  — main.py → generate_dashboard.py → git push
-12:35 昼      — main.py → generate_dashboard.py → git push
-15:10 引け後  — main.py → generate_dashboard.py → git push
+7:50  寄り前  — main.py → generate_dashboard.py → git push（S株朝9:00執行の1h前）
+14:10 引け前  — main.py → generate_dashboard.py → git push（S株引け15:30執行の1h前）
 ```
 平日のみ（月〜金）。cron は default プロファイルのみ実行。通知は Slack Webhook。
 スキャン後にダッシュボード再生成 + GitHub Pages へ自動 push。
