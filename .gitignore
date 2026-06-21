@@ -13,6 +13,7 @@ signal.log*
 # Real trading data — local only, never committed
 real_trades.json
 docs/real.html
+real_monitor.log
 
 # Backups
 backups/
