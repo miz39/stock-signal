@@ -4,7 +4,9 @@
 年1回、JPXカレンダー（https://www.jpx.co.jp/corporate/about-jpx/calendar/）を参照して更新する。
 """
 
-from datetime import date
+from datetime import date, datetime, timezone, timedelta
+
+JST = timezone(timedelta(hours=9))
 
 # 2026年の東証休場日（祝日・年末年始）
 # Source: https://nikkeiyosoku.com/stock/holiday/2026/
@@ -34,9 +36,9 @@ TSE_HOLIDAYS_2026 = {
 
 
 def is_market_open(target: date = None) -> bool:
-    """東証が開場しているかどうかを返す。土日・祝日はFalse。"""
+    """東証が開場しているかどうかを返す。土日・祝日はFalse。JST基準で判定する。"""
     if target is None:
-        target = date.today()
+        target = datetime.now(JST).date()
     # Saturday=5, Sunday=6
     if target.weekday() >= 5:
         return False
