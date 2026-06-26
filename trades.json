@@ -1304,9 +1304,9 @@
     "shares": 4,
     "original_shares": 4,
     "entry_date": "2026-06-09",
-    "exit_price": null,
-    "exit_date": null,
-    "status": "open",
+    "exit_price": 7146.0,
+    "exit_date": "2026-06-26",
+    "status": "closed",
     "high_price": 7724.0,
     "stop_price": 7166.0,
     "entry_meta": {
@@ -1322,7 +1322,9 @@
       "fair_value": null,
       "upside_pct": null
     },
-    "partial_exit_done": true
+    "partial_exit_done": true,
+    "pnl": -850.0,
+    "exit_reason": "トレーリングストップ"
   },
   {
     "ticker": "9147.T",
@@ -1660,8 +1662,8 @@
     "exit_price": null,
     "exit_date": null,
     "status": "open",
-    "high_price": 1728.0,
-    "stop_price": 1589.8,
+    "high_price": 1729.0,
+    "stop_price": 1590.7,
     "entry_meta": {
       "rsi": 54.9,
       "adx": 44.8,
@@ -1685,8 +1687,8 @@
     "exit_price": null,
     "exit_date": null,
     "status": "open",
-    "high_price": 3794.0,
-    "stop_price": 3680.2,
+    "high_price": 3818.0,
+    "stop_price": 3512.6,
     "entry_meta": {
       "rsi": 51.5,
       "adx": 28.9,
