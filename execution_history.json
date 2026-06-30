@@ -63149,5 +63149,1629 @@
         }
       ]
     }
+  },
+  {
+    "timestamp": "2026-06-30T17:40:52.792176+09:00",
+    "date": "2026-06-30",
+    "session": "15:10 引け後",
+    "profile": "default",
+    "mode": "paper",
+    "market_regime": {
+      "regime": "bull",
+      "sma50": 64555.3,
+      "sma200": 54545.9,
+      "price": 70062.3
+    },
+    "scan": {
+      "total": 225,
+      "buy_count": 14,
+      "sell_count": 0,
+      "error_count": 1
+    },
+    "buy_signals": [
+      {
+        "ticker": "9983.T",
+        "name": "ファーストリテイリング",
+        "price": 82810.0,
+        "rsi": 58.6,
+        "reason": "ゴールデンクロス（SMA25 > SMA100）+ RSI適正（58.6）+ 上昇トレンド",
+        "stop_loss": 76185.2,
+        "shares": 0,
+        "composite_score": 0.6576,
+        "tv_score": 0.4615,
+        "llm_review": null,
+        "valuation": {
+          "signal": "SELL",
+          "signal_label": "割高",
+          "score": -0.59,
+          "confidence": 90,
+          "fair_value": 29442.0,
+          "upside_pct": -64.4,
+          "agents": [
+            {
+              "agent": "DCF",
+              "score": -2.0,
+              "confidence": 83,
+              "reasons": [
+                "理論株価 ¥29,442 vs 現在 ¥82,810（-64.4%）",
+                "WACC 8.0%, 永続成長率 1.5%"
+              ],
+              "fair_value": 29442.0,
+              "upside_pct": -64.4
+            },
+            {
+              "agent": "三表財務",
+              "score": 2.0,
+              "confidence": 100,
+              "reasons": [
+                "売上成長率 平均+14.0% → 高成長",
+                "営業利益率 16.5% → 高収益"
+              ],
+              "fair_value": null,
+              "upside_pct": null
+            },
+            {
+              "agent": "類似企業比較",
+              "score": -1.5,
+              "confidence": 100,
+              "reasons": [
+                "PER 53.0 → セクター中央値11.6対比 +358.2% 割高",
+                "PBR 9.65 → セクター中央値1.04対比 +831.4% 割高"
+              ],
+              "fair_value": null,
+              "upside_pct": null
+            },
+            {
+              "agent": "オペレーティング",
+              "score": 0.9,
+              "confidence": 100,
+              "reasons": [
+                "ROIC 21.0% → 高い資本効率",
+                "マージン安定性 σ=1.5pp → 高い安定性"
+              ],
+              "fair_value": null,
+              "upside_pct": null
+            },
+            {
+              "agent": "感応度",
+              "score": -1.5,
+              "confidence": 60,
+              "reasons": [
+                "Bull ¥52,569 / Base ¥29,442 / Bear ¥20,884",
+                "現在株価 ¥82,810 → 0/9 シナリオで割安"
+              ],
+              "fair_value": null,
+              "upside_pct": null
+            }
+          ],
+          "reasons_summary": [
+            "【DCF】理論株価 ¥29,442 vs 現在 ¥82,810（-64.4%）",
+            "【三表財務】売上成長率 平均+14.0% → 高成長",
+            "【類似企業比較】PER 53.0 → セクター中央値11.6対比 +358.2% 割高",
+            "【オペレーティング】ROIC 21.0% → 高い資本効率",
+            "【感応度】Bull ¥52,569 / Base ¥29,442 / Bear ¥20,884"
+          ]
+        },
+        "sma_short": 80946.4,
+        "sma_long": 71384.8,
+        "sma_trend": 62756.5
+      },
+      {
+        "ticker": "6981.T",
+        "name": "村田製作所",
+        "price": 11395.0,
+        "rsi": 60.8,
+        "reason": "ゴールデンクロス（SMA25 > SMA100）+ RSI適正（60.8）+ 上昇トレンド",
+        "stop_loss": 10483.4,
+        "shares": 2,
+        "composite_score": 0.6484,
+        "tv_score": 0.6154,
+        "llm_review": null,
+        "valuation": {
+          "signal": "SELL",
+          "signal_label": "割高",
+          "score": -0.73,
+          "confidence": 90,
+          "fair_value": 3049.0,
+          "upside_pct": -73.2,
+          "agents": [
+            {
+              "agent": "DCF",
+              "score": -2.0,
+              "confidence": 83,
+              "reasons": [
+                "理論株価 ¥3,049 vs 現在 ¥11,395（-73.2%）",
+                "WACC 9.0%, 永続成長率 1.5%"
+              ],
+              "fair_value": 3049.0,
+              "upside_pct": -73.2
+            },
+            {
+              "agent": "三表財務",
+              "score": 1.6,
+              "confidence": 100,
+              "reasons": [
+                "営業利益率 15.4% → 高収益",
+                "自己資本比率 85.0% → 財務健全"
+              ],
+              "fair_value": null,
+              "upside_pct": null
+            },
+            {
+              "agent": "類似企業比較",
+              "score": -1.5,
+              "confidence": 100,
+              "reasons": [
+                "PER 89.2 → セクター中央値24.3対比 +266.7% 割高",
+                "PBR 7.63 → セクター中央値2.07対比 +268.4% 割高"
+              ],
+              "fair_value": null,
+              "upside_pct": null
+            },
+            {
+              "agent": "オペレーティング",
+              "score": 0.5,
+              "confidence": 100,
+              "reasons": [
+                "ROIC 10.1% → 平均的",
+                "マージン安定性 σ=1.5pp → 高い安定性"
+              ],
+              "fair_value": null,
+              "upside_pct": null
+            },
+            {
+              "agent": "感応度",
+              "score": -1.5,
+              "confidence": 60,
+              "reasons": [
+                "Bull ¥4,848 / Base ¥3,049 / Bear ¥2,276",
+                "現在株価 ¥11,395 → 0/9 シナリオで割安"
+              ],
+              "fair_value": null,
+              "upside_pct": null
+            }
+          ],
+          "reasons_summary": [
+            "【DCF】理論株価 ¥3,049 vs 現在 ¥11,395（-73.2%）",
+            "【三表財務】営業利益率 15.4% → 高収益",
+            "【類似企業比較】PER 89.2 → セクター中央値24.3対比 +266.7% 割高",
+            "【オペレーティング】ROIC 10.1% → 平均的",
+            "【感応度】Bull ¥4,848 / Base ¥3,049 / Bear ¥2,276"
+          ]
+        },
+        "sma_short": 10210.5,
+        "sma_long": 5828.5,
+        "sma_trend": 4424.4
+      },
+      {
+        "ticker": "4062.T",
+        "name": "イビデン",
+        "price": 23815.0,
+        "rsi": 56.7,
+        "reason": "ゴールデンクロス（SMA25 > SMA100）+ RSI適正（56.7）+ 上昇トレンド",
+        "stop_loss": 21909.8,
+        "shares": 1,
+        "composite_score": 0.639,
+        "tv_score": 0.5,
+        "llm_review": null,
+        "valuation": {
+          "signal": "SELL",
+          "signal_label": "割高",
+          "score": -0.87,
+          "confidence": 87,
+          "fair_value": 4496.0,
+          "upside_pct": -81.1,
+          "agents": [
+            {
+              "agent": "DCF",
+              "score": -2.0,
+              "confidence": 70,
+              "reasons": [
+                "理論株価 ¥4,496 vs 現在 ¥23,815（-81.1%）",
+                "WACC 9.0%, 永続成長率 1.5%"
+              ],
+              "fair_value": 4496.0,
+              "upside_pct": -81.1
+            },
+            {
+              "agent": "三表財務",
+              "score": 0.6,
+              "confidence": 100,
+              "reasons": [
+                "営業利益率 悪化傾向",
+                "自己資本比率 57.3% → 財務健全"
+              ],
+              "fair_value": null,
+              "upside_pct": null
+            },
+            {
+              "agent": "類似企業比較",
+              "score": -1.5,
+              "confidence": 100,
+              "reasons": [
+                "PER 110.4 → セクター中央値20.2対比 +446.8% 割高",
+                "PBR 12.09 → セクター中央値1.83対比 +562.4% 割高"
+              ],
+              "fair_value": null,
+              "upside_pct": null
+            },
+            {
+              "agent": "オペレーティング",
+              "score": 0.9,
+              "confidence": 100,
+              "reasons": [
+                "ROIC 9.8% → 平均的",
+                "営業レバレッジ 2.4x → 増収時の利益拡大効果大"
+              ],
+              "fair_value": null,
+              "upside_pct": null
+            },
+            {
+              "agent": "感応度",
+              "score": -1.5,
+              "confidence": 60,
+              "reasons": [
+                "Bull ¥7,226 / Base ¥4,496 / Bear ¥3,324",
+                "現在株価 ¥23,815 → 0/9 シナリオで割安"
+              ],
+              "fair_value": null,
+              "upside_pct": null
+            }
+          ],
+          "reasons_summary": [
+            "【DCF】理論株価 ¥4,496 vs 現在 ¥23,815（-81.1%）",
+            "【三表財務】営業利益率 悪化傾向",
+            "【類似企業比較】PER 110.4 → セクター中央値20.2対比 +446.8% 割高",
+            "【オペレーティング】ROIC 9.8% → 平均的",
+            "【感応度】Bull ¥7,226 / Base ¥4,496 / Bear ¥3,324"
+          ]
+        },
+        "sma_short": 22010.8,
+        "sma_long": 13385.3,
+        "sma_trend": 9633.6
+      },
+      {
+        "ticker": "5332.T",
+        "name": "TOTO",
+        "price": 8611.0,
+        "rsi": 60.5,
+        "reason": "ゴールデンクロス（SMA25 > SMA100）+ RSI適正（60.5）+ 上昇トレンド",
+        "stop_loss": 7922.1,
+        "shares": 3,
+        "composite_score": 0.6298,
+        "tv_score": 0.5769,
+        "llm_review": null,
+        "valuation": {
+          "signal": "SELL",
+          "signal_label": "割高",
+          "score": -0.83,
+          "confidence": 87,
+          "fair_value": 4664.0,
+          "upside_pct": -45.8,
+          "agents": [
+            {
+              "agent": "DCF",
+              "score": -2.0,
+              "confidence": 70,
+              "reasons": [
+                "理論株価 ¥4,664 vs 現在 ¥8,611（-45.8%）",
+                "WACC 10.0%, 永続成長率 1.5%"
+              ],
+              "fair_value": 4664.0,
+              "upside_pct": -45.8
+            },
+            {
+              "agent": "三表財務",
+              "score": 1.1,
+              "confidence": 100,
+              "reasons": [
+                "自己資本比率 63.8% → 財務健全",
+                "D/E レシオ 0.13 → 低負債"
+              ],
+              "fair_value": null,
+              "upside_pct": null
+            },
+            {
+              "agent": "類似企業比較",
+              "score": -1.5,
+              "confidence": 100,
+              "reasons": [
+                "PER 35.5 → セクター中央値18.0対比 +96.6% 割高",
+                "PBR 2.68 → セクター中央値1.09対比 +144.9% 割高"
+              ],
+              "fair_value": null,
+              "upside_pct": null
+            },
+            {
+              "agent": "オペレーティング",
+              "score": 0.5,
+              "confidence": 100,
+              "reasons": [
+                "ROIC 7.6% → WACC 割れの可能性",
+                "営業レバレッジ 6.1x → 増収時の利益拡大効果大"
+              ],
+              "fair_value": null,
+              "upside_pct": null
+            },
+            {
+              "agent": "感応度",
+              "score": -1.5,
+              "confidence": 60,
+              "reasons": [
+                "Bull ¥6,971 / Base ¥4,664 / Bear ¥3,559",
+                "現在株価 ¥8,611 → 0/9 シナリオで割安"
+              ],
+              "fair_value": null,
+              "upside_pct": null
+            }
+          ],
+          "reasons_summary": [
+            "【DCF】理論株価 ¥4,664 vs 現在 ¥8,611（-45.8%）",
+            "【三表財務】自己資本比率 63.8% → 財務健全",
+            "【類似企業比較】PER 35.5 → セクター中央値18.0対比 +96.6% 割高",
+            "【オペレーティング】ROIC 7.6% → WACC 割れの可能性",
+            "【感応度】Bull ¥6,971 / Base ¥4,664 / Bear ¥3,559"
+          ]
+        },
+        "sma_short": 8066.9,
+        "sma_long": 6401.3,
+        "sma_trend": 5257.2
+      },
+      {
+        "ticker": "6952.T",
+        "name": "カシオ計算機",
+        "price": 1918.5,
+        "rsi": 60.5,
+        "reason": "ゴールデンクロス（SMA25 > SMA100）+ RSI適正（60.5）+ 上昇トレンド",
+        "stop_loss": 1765.0,
+        "shares": 16,
+        "composite_score": 0.6253,
+        "tv_score": 0.5769,
+        "llm_review": null,
+        "valuation": {
+          "signal": "BUY",
+          "signal_label": "割安",
+          "score": 0.5,
+          "confidence": 93,
+          "fair_value": 1942.0,
+          "upside_pct": 1.2,
+          "agents": [
+            {
+              "agent": "DCF",
+              "score": 0.5,
+              "confidence": 83,
+              "reasons": [
+                "理論株価 ¥1,942 vs 現在 ¥1,918（+1.2%）",
+                "WACC 9.0%, 永続成長率 1.5%"
+              ],
+              "fair_value": 1942.0,
+              "upside_pct": 1.2
+            },
+            {
+              "agent": "三表財務",
+              "score": 1.3,
+              "confidence": 100,
+              "reasons": [
+                "自己資本比率 66.9% → 財務健全",
+                "流動比率 3.09 → 高い安全性"
+              ],
+              "fair_value": null,
+              "upside_pct": null
+            },
+            {
+              "agent": "類似企業比較",
+              "score": 0.0,
+              "confidence": 100,
+              "reasons": [
+                "PER 24.0 → セクター中央値24.3と同水準"
+              ],
+              "fair_value": null,
+              "upside_pct": null
+            },
+            {
+              "agent": "オペレーティング",
+              "score": 0.6,
+              "confidence": 100,
+              "reasons": [
+                "ROIC 8.5% → 平均的",
+                "営業レバレッジ 52.0x → 増収時の利益拡大効果大"
+              ],
+              "fair_value": null,
+              "upside_pct": null
+            },
+            {
+              "agent": "感応度",
+              "score": 0.0,
+              "confidence": 87,
+              "reasons": [
+                "Bull ¥3,090 / Base ¥1,942 / Bear ¥1,449",
+                "現在株価 ¥1,918 → 5/9 シナリオで割安"
+              ],
+              "fair_value": null,
+              "upside_pct": null
+            }
+          ],
+          "reasons_summary": [
+            "【DCF】理論株価 ¥1,942 vs 現在 ¥1,918（+1.2%）",
+            "【三表財務】自己資本比率 66.9% → 財務健全",
+            "【類似企業比較】PER 24.0 → セクター中央値24.3と同水準",
+            "【オペレーティング】ROIC 8.5% → 平均的",
+            "【感応度】Bull ¥3,090 / Base ¥1,942 / Bear ¥1,449"
+          ]
+        },
+        "sma_short": 1839.6,
+        "sma_long": 1633.0,
+        "sma_trend": 1434.2
+      },
+      {
+        "ticker": "6971.T",
+        "name": "京セラ",
+        "price": 3561.0,
+        "rsi": 54.1,
+        "reason": "ゴールデンクロス（SMA25 > SMA100）+ RSI適正（54.1）+ 上昇トレンド",
+        "stop_loss": 3276.1,
+        "shares": 8,
+        "composite_score": 0.6252,
+        "tv_score": 0.5,
+        "llm_review": null,
+        "valuation": {
+          "signal": "SELL",
+          "signal_label": "割高",
+          "score": -0.54,
+          "confidence": 87,
+          "fair_value": 504.0,
+          "upside_pct": -85.8,
+          "agents": [
+            {
+              "agent": "DCF",
+              "score": -2.0,
+              "confidence": 70,
+              "reasons": [
+                "理論株価 ¥504 vs 現在 ¥3,561（-85.8%）",
+                "WACC 9.0%, 永続成長率 1.5%"
+              ],
+              "fair_value": 504.0,
+              "upside_pct": -85.8
+            },
+            {
+              "agent": "三表財務",
+              "score": 1.3,
+              "confidence": 100,
+              "reasons": [
+                "自己資本比率 71.9% → 財務健全",
+                "流動比率 2.86 → 高い安全性"
+              ],
+              "fair_value": null,
+              "upside_pct": null
+            },
+            {
+              "agent": "類似企業比較",
+              "score": -0.5,
+              "confidence": 100,
+              "reasons": [
+                "PER 34.6 → セクター中央値24.3対比 +42.5% 割高",
+                "PBR 1.40 → セクター中央値2.07対比 -32.2% 割安"
+              ],
+              "fair_value": null,
+              "upside_pct": null
+            },
+            {
+              "agent": "オペレーティング",
+              "score": 0.5,
+              "confidence": 100,
+              "reasons": [
+                "ROIC 2.5% → WACC 割れの可能性",
+                "営業レバレッジ 92.5x → 増収時の利益拡大効果大"
+              ],
+              "fair_value": null,
+              "upside_pct": null
+            },
+            {
+              "agent": "感応度",
+              "score": -1.5,
+              "confidence": 60,
+              "reasons": [
+                "Bull ¥744 / Base ¥504 / Bear ¥401",
+                "現在株価 ¥3,561 → 0/9 シナリオで割安"
+              ],
+              "fair_value": null,
+              "upside_pct": null
+            }
+          ],
+          "reasons_summary": [
+            "【DCF】理論株価 ¥504 vs 現在 ¥3,561（-85.8%）",
+            "【三表財務】自己資本比率 71.9% → 財務健全",
+            "【類似企業比較】PER 34.6 → セクター中央値24.3対比 +42.5% 割高",
+            "【オペレーティング】ROIC 2.5% → WACC 割れの可能性",
+            "【感応度】Bull ¥744 / Base ¥504 / Bear ¥401"
+          ]
+        },
+        "sma_short": 3599.4,
+        "sma_long": 2880.4,
+        "sma_trend": 2486.4
+      },
+      {
+        "ticker": "6723.T",
+        "name": "ルネサスエレクトロニクス",
+        "price": 4807.0,
+        "rsi": 60.5,
+        "reason": "ゴールデンクロス（SMA25 > SMA100）+ RSI適正（60.5）+ 上昇トレンド",
+        "stop_loss": 4422.4,
+        "shares": 6,
+        "composite_score": 0.6213,
+        "tv_score": 0.5385,
+        "llm_review": null,
+        "valuation": {
+          "signal": "SELL",
+          "signal_label": "割高",
+          "score": -0.58,
+          "confidence": 91,
+          "fair_value": 2774.0,
+          "upside_pct": -42.3,
+          "agents": [
+            {
+              "agent": "DCF",
+              "score": -2.0,
+              "confidence": 83,
+              "reasons": [
+                "理論株価 ¥2,774 vs 現在 ¥4,807（-42.3%）",
+                "WACC 9.0%, 永続成長率 1.5%"
+              ],
+              "fair_value": 2774.0,
+              "upside_pct": -42.3
+            },
+            {
+              "agent": "三表財務",
+              "score": 1.2,
+              "confidence": 100,
+              "reasons": [
+                "営業利益率 15.2% → 高収益",
+                "営業利益率 悪化傾向"
+              ],
+              "fair_value": null,
+              "upside_pct": null
+            },
+            {
+              "agent": "類似企業比較",
+              "score": 0.0,
+              "confidence": 100,
+              "reasons": [
+                "PER 18.0 → セクター中央値24.3対比 -25.9% やや割安",
+                "PBR 3.43 → セクター中央値2.07対比 +65.8% 割高"
+              ],
+              "fair_value": null,
+              "upside_pct": null
+            },
+            {
+              "agent": "オペレーティング",
+              "score": -0.5,
+              "confidence": 100,
+              "reasons": [
+                "ROIC 4.2% → WACC 割れの可能性",
+                "マージン安定性 σ=5.8pp → 変動大"
+              ],
+              "fair_value": null,
+              "upside_pct": null
+            },
+            {
+              "agent": "感応度",
+              "score": -1.5,
+              "confidence": 65,
+              "reasons": [
+                "Bull ¥4,851 / Base ¥2,774 / Bear ¥1,880",
+                "現在株価 ¥4,807 → 1/9 シナリオで割安"
+              ],
+              "fair_value": null,
+              "upside_pct": null
+            }
+          ],
+          "reasons_summary": [
+            "【DCF】理論株価 ¥2,774 vs 現在 ¥4,807（-42.3%）",
+            "【三表財務】営業利益率 15.2% → 高収益",
+            "【類似企業比較】PER 18.0 → セクター中央値24.3対比 -25.9% やや割安",
+            "【オペレーティング】ROIC 4.2% → WACC 割れの可能性",
+            "【感応度】Bull ¥4,851 / Base ¥2,774 / Bear ¥1,880"
+          ]
+        },
+        "sma_short": 4573.3,
+        "sma_long": 3323.4,
+        "sma_trend": 2647.9
+      },
+      {
+        "ticker": "8750.T",
+        "name": "第一生命ホールディングス",
+        "price": 1778.5,
+        "rsi": 61.0,
+        "reason": "ゴールデンクロス（SMA25 > SMA100）+ RSI適正（61.0）+ 上昇トレンド",
+        "stop_loss": 1636.2,
+        "shares": 17,
+        "composite_score": 0.6149,
+        "tv_score": 0.6154,
+        "llm_review": null,
+        "valuation": {
+          "signal": "BUY",
+          "signal_label": "割安",
+          "score": 0.97,
+          "confidence": 91,
+          "fair_value": 2444.0,
+          "upside_pct": 37.4,
+          "agents": [
+            {
+              "agent": "DCF",
+              "score": 2.0,
+              "confidence": 70,
+              "reasons": [
+                "理論株価 ¥2,444 vs 現在 ¥1,778（+37.4%）",
+                "WACC 8.0%, 永続成長率 1.5%"
+              ],
+              "fair_value": 2444.0,
+              "upside_pct": 37.4
+            },
+            {
+              "agent": "三表財務",
+              "score": 0.5,
+              "confidence": 100,
+              "reasons": [
+                "売上成長率 平均+9.0%",
+                "営業利益率 改善傾向"
+              ],
+              "fair_value": null,
+              "upside_pct": null
+            },
+            {
+              "agent": "類似企業比較",
+              "score": 0.0,
+              "confidence": 100,
+              "reasons": [
+                "PER 14.7 → セクター中央値15.4と同水準"
+              ],
+              "fair_value": null,
+              "upside_pct": null
+            },
+            {
+              "agent": "オペレーティング",
+              "score": 0.5,
+              "confidence": 100,
+              "reasons": [
+                "ROIC 13.2% → 平均的",
+                "マージン安定性 σ=1.5pp → 高い安定性"
+              ],
+              "fair_value": null,
+              "upside_pct": null
+            },
+            {
+              "agent": "感応度",
+              "score": 2.0,
+              "confidence": 100,
+              "reasons": [
+                "Bull ¥4,181 / Base ¥2,444 / Bear ¥1,798",
+                "現在株価 ¥1,778 → 9/9 シナリオで割安"
+              ],
+              "fair_value": null,
+              "upside_pct": null
+            }
+          ],
+          "reasons_summary": [
+            "【DCF】理論株価 ¥2,444 vs 現在 ¥1,778（+37.4%）",
+            "【三表財務】売上成長率 平均+9.0%",
+            "【類似企業比較】PER 14.7 → セクター中央値15.4と同水準",
+            "【オペレーティング】ROIC 13.2% → 平均的",
+            "【感応度】Bull ¥4,181 / Base ¥2,444 / Bear ¥1,798"
+          ]
+        },
+        "sma_short": 1722.0,
+        "sma_long": 1534.5,
+        "sma_trend": 1363.4
+      },
+      {
+        "ticker": "2802.T",
+        "name": "味の素",
+        "price": 5873.0,
+        "rsi": 61.0,
+        "reason": "ゴールデンクロス（SMA25 > SMA100）+ RSI適正（61.0）+ 上昇トレンド",
+        "stop_loss": 5403.2,
+        "shares": 5,
+        "composite_score": 0.6127,
+        "tv_score": 0.5769,
+        "llm_review": null,
+        "valuation": {
+          "signal": "SELL",
+          "signal_label": "割高",
+          "score": -0.83,
+          "confidence": 91,
+          "fair_value": 3680.0,
+          "upside_pct": -37.3,
+          "agents": [
+            {
+              "agent": "DCF",
+              "score": -2.0,
+              "confidence": 83,
+              "reasons": [
+                "理論株価 ¥3,680 vs 現在 ¥5,873（-37.3%）",
+                "WACC 8.0%, 永続成長率 1.5%"
+              ],
+              "fair_value": 3680.0,
+              "upside_pct": -37.3
+            },
+            {
+              "agent": "三表財務",
+              "score": 0.8,
+              "confidence": 100,
+              "reasons": [
+                "売上成長率 平均+5.2%",
+                "自己資本比率 42.5% → 標準"
+              ],
+              "fair_value": null,
+              "upside_pct": null
+            },
+            {
+              "agent": "類似企業比較",
+              "score": -1.5,
+              "confidence": 100,
+              "reasons": [
+                "PER 42.4 → セクター中央値18.7対比 +126.7% 割高",
+                "PBR 7.30 → セクター中央値1.52対比 +379.0% 割高"
+              ],
+              "fair_value": null,
+              "upside_pct": null
+            },
+            {
+              "agent": "オペレーティング",
+              "score": 0.9,
+              "confidence": 100,
+              "reasons": [
+                "ROIC 13.0% → 平均的",
+                "営業レバレッジ 22.4x → 増収時の利益拡大効果大"
+              ],
+              "fair_value": null,
+              "upside_pct": null
+            },
+            {
+              "agent": "感応度",
+              "score": -1.5,
+              "confidence": 65,
+              "reasons": [
+                "Bull ¥7,096 / Base ¥3,680 / Bear ¥2,420",
+                "現在株価 ¥5,873 → 1/9 シナリオで割安"
+              ],
+              "fair_value": null,
+              "upside_pct": null
+            }
+          ],
+          "reasons_summary": [
+            "【DCF】理論株価 ¥3,680 vs 現在 ¥5,873（-37.3%）",
+            "【三表財務】売上成長率 平均+5.2%",
+            "【類似企業比較】PER 42.4 → セクター中央値18.7対比 +126.7% 割高",
+            "【オペレーティング】ROIC 13.0% → 平均的",
+            "【感応度】Bull ¥7,096 / Base ¥3,680 / Bear ¥2,420"
+          ]
+        },
+        "sma_short": 5344.5,
+        "sma_long": 4823.2,
+        "sma_trend": 4311.2
+      },
+      {
+        "ticker": "4208.T",
+        "name": "UBE",
+        "price": 3180.0,
+        "rsi": 61.1,
+        "reason": "ゴールデンクロス（SMA25 > SMA100）+ RSI適正（61.1）+ 上昇トレンド",
+        "stop_loss": 2925.6,
+        "shares": 9,
+        "composite_score": 0.6047,
+        "tv_score": 0.5769,
+        "llm_review": null,
+        "valuation": {
+          "signal": "SELL",
+          "signal_label": "割高",
+          "score": -0.35,
+          "confidence": 81,
+          "fair_value": 1057.0,
+          "upside_pct": -66.8,
+          "agents": [
+            {
+              "agent": "DCF",
+              "score": -2.0,
+              "confidence": 70,
+              "reasons": [
+                "理論株価 ¥1,057 vs 現在 ¥3,180（-66.8%）",
+                "WACC 9.0%, 永続成長率 1.5%"
+              ],
+              "fair_value": 1057.0,
+              "upside_pct": -66.8
+            },
+            {
+              "agent": "三表財務",
+              "score": -0.6,
+              "confidence": 100,
+              "reasons": [
+                "売上成長率 平均-8.6% → 減収傾向",
+                "営業利益率 悪化傾向"
+              ],
+              "fair_value": null,
+              "upside_pct": null
+            },
+            {
+              "agent": "類似企業比較",
+              "score": 2.0,
+              "confidence": 100,
+              "reasons": [
+                "PER 12.9 → セクター中央値22.1対比 -41.5% 割安",
+                "PBR 0.71 → セクター中央値1.88対比 -62.4% 割安"
+              ],
+              "fair_value": null,
+              "upside_pct": null
+            },
+            {
+              "agent": "オペレーティング",
+              "score": 0.1,
+              "confidence": 66,
+              "reasons": [
+                "ROIC 2.1% → WACC 割れの可能性",
+                "マージン安定性 σ=1.3pp → 高い安定性"
+              ],
+              "fair_value": null,
+              "upside_pct": null
+            },
+            {
+              "agent": "感応度",
+              "score": -1.5,
+              "confidence": 60,
+              "reasons": [
+                "Bull ¥3,064 / Base ¥1,057 / Bear ¥191",
+                "現在株価 ¥3,180 → 0/9 シナリオで割安"
+              ],
+              "fair_value": null,
+              "upside_pct": null
+            }
+          ],
+          "reasons_summary": [
+            "【DCF】理論株価 ¥1,057 vs 現在 ¥3,180（-66.8%）",
+            "【三表財務】売上成長率 平均-8.6% → 減収傾向",
+            "【類似企業比較】PER 12.9 → セクター中央値22.1対比 -41.5% 割安",
+            "【オペレーティング】ROIC 2.1% → WACC 割れの可能性",
+            "【感応度】Bull ¥3,064 / Base ¥1,057 / Bear ¥191"
+          ]
+        },
+        "sma_short": 3070.0,
+        "sma_long": 2685.4,
+        "sma_trend": 2534.1
+      }
+    ],
+    "sell_signals": [],
+    "executions": {
+      "entries": [],
+      "exits": [],
+      "partial_exits": [],
+      "topups": [],
+      "trailing_stop_updates": [
+        {
+          "ticker": "3436.T",
+          "name": "SUMCO",
+          "new_stop": 3908.1,
+          "current_price": 4029.0,
+          "gain_pct": 6.2
+        }
+      ]
+    },
+    "portfolio_snapshot": {
+      "open_count": 9,
+      "stock_value": 258699.0,
+      "cash": 59968.7,
+      "total_assets": 318668.0,
+      "positions": [
+        {
+          "ticker": "4188.T",
+          "name": "三菱ケミカルグループ",
+          "entry_price": 1088.0,
+          "current_price": 1128.5,
+          "shares": 28,
+          "pnl": 1134.0,
+          "valuation": {
+            "signal": "STRONG_BUY",
+            "signal_label": "大幅割安",
+            "score": 1.18,
+            "confidence": 94,
+            "fair_value": 2033.0,
+            "upside_pct": 80.2,
+            "agents": [
+              {
+                "agent": "DCF",
+                "score": 2.0,
+                "confidence": 83,
+                "reasons": [
+                  "理論株価 ¥2,033 vs 現在 ¥1,128（+80.2%）",
+                  "WACC 9.0%, 永続成長率 1.5%"
+                ],
+                "fair_value": 2033.0,
+                "upside_pct": 80.2
+              },
+              {
+                "agent": "三表財務",
+                "score": -0.7,
+                "confidence": 100,
+                "reasons": [
+                  "売上成長率 平均-7.2% → 減収傾向",
+                  "営業利益率 0.9% → 低収益"
+                ],
+                "fair_value": null,
+                "upside_pct": null
+              },
+              {
+                "agent": "類似企業比較",
+                "score": 2.0,
+                "confidence": 100,
+                "reasons": [
+                  "PER 12.4 → セクター中央値22.1対比 -44.0% 割安",
+                  "PBR 0.87 → セクター中央値1.88対比 -53.7% 割安"
+                ],
+                "fair_value": null,
+                "upside_pct": null
+              },
+              {
+                "agent": "オペレーティング",
+                "score": 0.1,
+                "confidence": 100,
+                "reasons": [
+                  "ROIC 0.5% → WACC 割れの可能性",
+                  "マージン安定性 σ=1.7pp → 高い安定性"
+                ],
+                "fair_value": null,
+                "upside_pct": null
+              },
+              {
+                "agent": "感応度",
+                "score": 2.0,
+                "confidence": 100,
+                "reasons": [
+                  "Bull ¥4,043 / Base ¥2,033 / Bear ¥1,171",
+                  "現在株価 ¥1,128 → 9/9 シナリオで割安"
+                ],
+                "fair_value": null,
+                "upside_pct": null
+              }
+            ],
+            "reasons_summary": [
+              "【DCF】理論株価 ¥2,033 vs 現在 ¥1,128（+80.2%）",
+              "【三表財務】売上成長率 平均-7.2% → 減収傾向",
+              "【類似企業比較】PER 12.4 → セクター中央値22.1対比 -44.0% 割安",
+              "【オペレーティング】ROIC 0.5% → WACC 割れの可能性",
+              "【感応度】Bull ¥4,043 / Base ¥2,033 / Bear ¥1,171"
+            ]
+          }
+        },
+        {
+          "ticker": "8308.T",
+          "name": "りそなホールディングス",
+          "entry_price": 2036.5,
+          "current_price": 2106.0,
+          "shares": 8,
+          "pnl": 556.0,
+          "valuation": {
+            "signal": "SELL",
+            "signal_label": "割高",
+            "score": -0.62,
+            "confidence": 53,
+            "fair_value": null,
+            "upside_pct": null,
+            "agents": [
+              {
+                "agent": "DCF",
+                "score": -1.0,
+                "confidence": 30,
+                "reasons": [
+                  "FCF がマイナス → DCF 算出不可"
+                ],
+                "fair_value": null,
+                "upside_pct": null
+              },
+              {
+                "agent": "三表財務",
+                "score": -0.5,
+                "confidence": 87,
+                "reasons": [
+                  "売上成長率 平均+11.3% → 高成長",
+                  "自己資本比率 3.8% → やや低い"
+                ],
+                "fair_value": null,
+                "upside_pct": null
+              },
+              {
+                "agent": "類似企業比較",
+                "score": -0.5,
+                "confidence": 100,
+                "reasons": [
+                  "PER 18.5 → セクター中央値15.4対比 +20.2% やや割高"
+                ],
+                "fair_value": null,
+                "upside_pct": null
+              },
+              {
+                "agent": "オペレーティング",
+                "score": 0.0,
+                "confidence": 0,
+                "reasons": [
+                  "分析に必要なデータが不足しています"
+                ],
+                "fair_value": null,
+                "upside_pct": null
+              },
+              {
+                "agent": "感応度",
+                "score": -1.0,
+                "confidence": 20,
+                "reasons": [
+                  "FCF がマイナスのため感応度分析不可"
+                ],
+                "fair_value": null,
+                "upside_pct": null
+              }
+            ],
+            "reasons_summary": [
+              "【DCF】FCF がマイナス → DCF 算出不可",
+              "【三表財務】売上成長率 平均+11.3% → 高成長",
+              "【類似企業比較】PER 18.5 → セクター中央値15.4対比 +20.2% やや割高",
+              "【オペレーティング】分析に必要なデータが不足しています",
+              "【感応度】FCF がマイナスのため感応度分析不可"
+            ]
+          }
+        },
+        {
+          "ticker": "9147.T",
+          "name": "NIPPON EXPRESSホールディングス",
+          "entry_price": 5035.0,
+          "current_price": 5044.0,
+          "shares": 6,
+          "pnl": 54.0,
+          "valuation": {
+            "signal": "SELL",
+            "signal_label": "割高",
+            "score": -0.34,
+            "confidence": 90,
+            "fair_value": 5029.0,
+            "upside_pct": -0.3,
+            "agents": [
+              {
+                "agent": "DCF",
+                "score": 0.0,
+                "confidence": 80,
+                "reasons": [
+                  "理論株価 ¥5,029 vs 現在 ¥5,044（-0.3%）",
+                  "WACC 8.0%, 永続成長率 1.5%"
+                ],
+                "fair_value": 5029.0,
+                "upside_pct": -0.3
+              },
+              {
+                "agent": "三表財務",
+                "score": 0.1,
+                "confidence": 100,
+                "reasons": [
+                  "営業利益率 2.0% → 低収益",
+                  "営業利益率 悪化傾向"
+                ],
+                "fair_value": null,
+                "upside_pct": null
+              },
+              {
+                "agent": "類似企業比較",
+                "score": -1.5,
+                "confidence": 100,
+                "reasons": [
+                  "PER 456.9 → セクター中央値11.6対比 +3846.0% 割高",
+                  "PBR 1.48 → セクター中央値1.04対比 +42.9% 割高"
+                ],
+                "fair_value": null,
+                "upside_pct": null
+              },
+              {
+                "agent": "オペレーティング",
+                "score": 0.1,
+                "confidence": 100,
+                "reasons": [
+                  "ROIC 1.8% → WACC 割れの可能性",
+                  "マージン安定性 σ=1.7pp → 高い安定性"
+                ],
+                "fair_value": null,
+                "upside_pct": null
+              },
+              {
+                "agent": "感応度",
+                "score": 0.0,
+                "confidence": 67,
+                "reasons": [
+                  "Bull ¥10,735 / Base ¥5,029 / Bear ¥2,905",
+                  "現在株価 ¥5,044 → 4/9 シナリオで割安"
+                ],
+                "fair_value": null,
+                "upside_pct": null
+              }
+            ],
+            "reasons_summary": [
+              "【DCF】理論株価 ¥5,029 vs 現在 ¥5,044（-0.3%）",
+              "【三表財務】営業利益率 2.0% → 低収益",
+              "【類似企業比較】PER 456.9 → セクター中央値11.6対比 +3846.0% 割高",
+              "【オペレーティング】ROIC 1.8% → WACC 割れの可能性",
+              "【感応度】Bull ¥10,735 / Base ¥5,029 / Bear ¥2,905"
+            ]
+          }
+        },
+        {
+          "ticker": "8306.T",
+          "name": "三菱UFJフィナンシャル・グループ",
+          "entry_price": 3121.0,
+          "current_price": 3207.0,
+          "shares": 10,
+          "pnl": 860.0,
+          "valuation": {
+            "signal": "BUY",
+            "signal_label": "割安",
+            "score": 0.72,
+            "confidence": 73,
+            "fair_value": 24131.0,
+            "upside_pct": 652.5,
+            "agents": [
+              {
+                "agent": "DCF",
+                "score": 2.0,
+                "confidence": 70,
+                "reasons": [
+                  "理論株価 ¥24,131 vs 現在 ¥3,207（+652.5%）",
+                  "WACC 8.0%, 永続成長率 1.5%"
+                ],
+                "fair_value": 24131.0,
+                "upside_pct": 652.5
+              },
+              {
+                "agent": "三表財務",
+                "score": -0.4,
+                "confidence": 87,
+                "reasons": [
+                  "売上成長率 平均+7.8%",
+                  "自己資本比率 5.2% → やや低い"
+                ],
+                "fair_value": null,
+                "upside_pct": null
+              },
+              {
+                "agent": "類似企業比較",
+                "score": 0.0,
+                "confidence": 100,
+                "reasons": [
+                  "PER 15.1 → セクター中央値15.4と同水準"
+                ],
+                "fair_value": null,
+                "upside_pct": null
+              },
+              {
+                "agent": "オペレーティング",
+                "score": 0.0,
+                "confidence": 0,
+                "reasons": [
+                  "分析に必要なデータが不足しています"
+                ],
+                "fair_value": null,
+                "upside_pct": null
+              },
+              {
+                "agent": "感応度",
+                "score": 2.0,
+                "confidence": 100,
+                "reasons": [
+                  "Bull ¥39,491 / Base ¥24,131 / Bear ¥18,435",
+                  "現在株価 ¥3,207 → 9/9 シナリオで割安"
+                ],
+                "fair_value": null,
+                "upside_pct": null
+              }
+            ],
+            "reasons_summary": [
+              "【DCF】理論株価 ¥24,131 vs 現在 ¥3,207（+652.5%）",
+              "【三表財務】売上成長率 平均+7.8%",
+              "【類似企業比較】PER 15.1 → セクター中央値15.4と同水準",
+              "【オペレーティング】分析に必要なデータが不足しています",
+              "【感応度】Bull ¥39,491 / Base ¥24,131 / Bear ¥18,435"
+            ]
+          }
+        },
+        {
+          "ticker": "6098.T",
+          "name": "リクルートホールディングス",
+          "entry_price": 10865.0,
+          "current_price": 11330.0,
+          "shares": 2,
+          "pnl": 930.0,
+          "valuation": {
+            "signal": "HOLD",
+            "signal_label": "適正",
+            "score": -0.1,
+            "confidence": 92,
+            "fair_value": 9288.0,
+            "upside_pct": -18.0,
+            "agents": [
+              {
+                "agent": "DCF",
+                "score": -0.5,
+                "confidence": 83,
+                "reasons": [
+                  "理論株価 ¥9,288 vs 現在 ¥11,330（-18.0%）",
+                  "WACC 9.0%, 永続成長率 1.5%"
+                ],
+                "fair_value": 9288.0,
+                "upside_pct": -18.0
+              },
+              {
+                "agent": "三表財務",
+                "score": 1.6,
+                "confidence": 100,
+                "reasons": [
+                  "営業利益率 17.1% → 高収益",
+                  "営業利益率 改善傾向"
+                ],
+                "fair_value": null,
+                "upside_pct": null
+              },
+              {
+                "agent": "類似企業比較",
+                "score": -1.5,
+                "confidence": 100,
+                "reasons": [
+                  "PER 32.6 → セクター中央値23.2対比 +40.2% 割高",
+                  "PBR 9.99 → セクター中央値2.07対比 +382.5% 割高"
+                ],
+                "fair_value": null,
+                "upside_pct": null
+              },
+              {
+                "agent": "オペレーティング",
+                "score": 1.0,
+                "confidence": 100,
+                "reasons": [
+                  "ROIC 46.5% → 高い資本効率",
+                  "営業レバレッジ 7.3x → 増収時の利益拡大効果大"
+                ],
+                "fair_value": null,
+                "upside_pct": null
+              },
+              {
+                "agent": "感応度",
+                "score": -0.5,
+                "confidence": 71,
+                "reasons": [
+                  "Bull ¥15,052 / Base ¥9,288 / Bear ¥6,810",
+                  "現在株価 ¥11,330 → 2/9 シナリオで割安"
+                ],
+                "fair_value": null,
+                "upside_pct": null
+              }
+            ],
+            "reasons_summary": [
+              "【DCF】理論株価 ¥9,288 vs 現在 ¥11,330（-18.0%）",
+              "【三表財務】営業利益率 17.1% → 高収益",
+              "【類似企業比較】PER 32.6 → セクター中央値23.2対比 +40.2% 割高",
+              "【オペレーティング】ROIC 46.5% → 高い資本効率",
+              "【感応度】Bull ¥15,052 / Base ¥9,288 / Bear ¥6,810"
+            ]
+          }
+        },
+        {
+          "ticker": "6178.T",
+          "name": "日本郵政",
+          "entry_price": 2227.5,
+          "current_price": 2169.0,
+          "shares": 14,
+          "pnl": -819.0,
+          "valuation": {
+            "signal": "STRONG_BUY",
+            "signal_label": "大幅割安",
+            "score": 1.32,
+            "confidence": 71,
+            "fair_value": 31727.0,
+            "upside_pct": 1362.7,
+            "agents": [
+              {
+                "agent": "DCF",
+                "score": 2.0,
+                "confidence": 70,
+                "reasons": [
+                  "理論株価 ¥31,727 vs 現在 ¥2,169（+1362.7%）",
+                  "WACC 9.0%, 永続成長率 1.5%"
+                ],
+                "fair_value": 31727.0,
+                "upside_pct": 1362.7
+              },
+              {
+                "agent": "三表財務",
+                "score": 0.1,
+                "confidence": 75,
+                "reasons": [
+                  "自己資本比率 3.1% → やや低い",
+                  "D/E レシオ 0.38 → 低負債"
+                ],
+                "fair_value": null,
+                "upside_pct": null
+              },
+              {
+                "agent": "類似企業比較",
+                "score": 2.0,
+                "confidence": 100,
+                "reasons": [
+                  "PER 16.8 → セクター中央値24.3対比 -30.9% 割安",
+                  "PBR 0.63 → セクター中央値2.13対比 -70.5% 割安"
+                ],
+                "fair_value": null,
+                "upside_pct": null
+              },
+              {
+                "agent": "オペレーティング",
+                "score": 0.0,
+                "confidence": 0,
+                "reasons": [
+                  "分析に必要なデータが不足しています"
+                ],
+                "fair_value": null,
+                "upside_pct": null
+              },
+              {
+                "agent": "感応度",
+                "score": 2.0,
+                "confidence": 100,
+                "reasons": [
+                  "Bull ¥36,991 / Base ¥31,727 / Bear ¥29,445",
+                  "現在株価 ¥2,169 → 9/9 シナリオで割安"
+                ],
+                "fair_value": null,
+                "upside_pct": null
+              }
+            ],
+            "reasons_summary": [
+              "【DCF】理論株価 ¥31,727 vs 現在 ¥2,169（+1362.7%）",
+              "【三表財務】自己資本比率 3.1% → やや低い",
+              "【類似企業比較】PER 16.8 → セクター中央値24.3対比 -30.9% 割安",
+              "【オペレーティング】分析に必要なデータが不足しています",
+              "【感応度】Bull ¥36,991 / Base ¥31,727 / Bear ¥29,445"
+            ]
+          }
+        },
+        {
+          "ticker": "4208.T",
+          "name": "UBE",
+          "entry_price": 3129.0,
+          "current_price": 3180.0,
+          "shares": 10,
+          "pnl": 510.0,
+          "valuation": {
+            "signal": "SELL",
+            "signal_label": "割高",
+            "score": -0.35,
+            "confidence": 81,
+            "fair_value": 1057.0,
+            "upside_pct": -66.8,
+            "agents": [
+              {
+                "agent": "DCF",
+                "score": -2.0,
+                "confidence": 70,
+                "reasons": [
+                  "理論株価 ¥1,057 vs 現在 ¥3,180（-66.8%）",
+                  "WACC 9.0%, 永続成長率 1.5%"
+                ],
+                "fair_value": 1057.0,
+                "upside_pct": -66.8
+              },
+              {
+                "agent": "三表財務",
+                "score": -0.6,
+                "confidence": 100,
+                "reasons": [
+                  "売上成長率 平均-8.6% → 減収傾向",
+                  "営業利益率 悪化傾向"
+                ],
+                "fair_value": null,
+                "upside_pct": null
+              },
+              {
+                "agent": "類似企業比較",
+                "score": 2.0,
+                "confidence": 100,
+                "reasons": [
+                  "PER 12.9 → セクター中央値22.1対比 -41.5% 割安",
+                  "PBR 0.71 → セクター中央値1.88対比 -62.4% 割安"
+                ],
+                "fair_value": null,
+                "upside_pct": null
+              },
+              {
+                "agent": "オペレーティング",
+                "score": 0.1,
+                "confidence": 66,
+                "reasons": [
+                  "ROIC 2.1% → WACC 割れの可能性",
+                  "マージン安定性 σ=1.3pp → 高い安定性"
+                ],
+                "fair_value": null,
+                "upside_pct": null
+              },
+              {
+                "agent": "感応度",
+                "score": -1.5,
+                "confidence": 60,
+                "reasons": [
+                  "Bull ¥3,064 / Base ¥1,057 / Bear ¥191",
+                  "現在株価 ¥3,180 → 0/9 シナリオで割安"
+                ],
+                "fair_value": null,
+                "upside_pct": null
+              }
+            ],
+            "reasons_summary": [
+              "【DCF】理論株価 ¥1,057 vs 現在 ¥3,180（-66.8%）",
+              "【三表財務】売上成長率 平均-8.6% → 減収傾向",
+              "【類似企業比較】PER 12.9 → セクター中央値22.1対比 -41.5% 割安",
+              "【オペレーティング】ROIC 2.1% → WACC 割れの可能性",
+              "【感応度】Bull ¥3,064 / Base ¥1,057 / Bear ¥191"
+            ]
+          }
+        },
+        {
+          "ticker": "5301.T",
+          "name": "東海カーボン",
+          "entry_price": 1728.0,
+          "current_price": 1714.5,
+          "shares": 18,
+          "pnl": -243.0,
+          "valuation": {
+            "signal": "SELL",
+            "signal_label": "割高",
+            "score": -0.66,
+            "confidence": 87,
+            "fair_value": 356.0,
+            "upside_pct": -79.3,
+            "agents": [
+              {
+                "agent": "DCF",
+                "score": -2.0,
+                "confidence": 70,
+                "reasons": [
+                  "理論株価 ¥356 vs 現在 ¥1,714（-79.3%）",
+                  "WACC 10.0%, 永続成長率 1.5%"
+                ],
+                "fair_value": 356.0,
+                "upside_pct": -79.3
+              },
+              {
+                "agent": "三表財務",
+                "score": 0.6,
+                "confidence": 100,
+                "reasons": [
+                  "営業利益率 悪化傾向",
+                  "自己資本比率 47.9% → 標準"
+                ],
+                "fair_value": null,
+                "upside_pct": null
+              },
+              {
+                "agent": "類似企業比較",
+                "score": 0.0,
+                "confidence": 100,
+                "reasons": [
+                  "PER 18.2 → セクター中央値18.0と同水準"
+                ],
+                "fair_value": null,
+                "upside_pct": null
+              },
+              {
+                "agent": "オペレーティング",
+                "score": -0.2,
+                "confidence": 100,
+                "reasons": [
+                  "ROIC 4.5% → WACC 割れの可能性"
+                ],
+                "fair_value": null,
+                "upside_pct": null
+              },
+              {
+                "agent": "感応度",
+                "score": -1.5,
+                "confidence": 60,
+                "reasons": [
+                  "Bull ¥816 / Base ¥356 / Bear ¥134",
+                  "現在株価 ¥1,714 → 0/9 シナリオで割安"
+                ],
+                "fair_value": null,
+                "upside_pct": null
+              }
+            ],
+            "reasons_summary": [
+              "【DCF】理論株価 ¥356 vs 現在 ¥1,714（-79.3%）",
+              "【三表財務】営業利益率 悪化傾向",
+              "【類似企業比較】PER 18.2 → セクター中央値18.0と同水準",
+              "【オペレーティング】ROIC 4.5% → WACC 割れの可能性",
+              "【感応度】Bull ¥816 / Base ¥356 / Bear ¥134"
+            ]
+          }
+        },
+        {
+          "ticker": "3436.T",
+          "name": "SUMCO",
+          "entry_price": 3794.0,
+          "current_price": 4029.0,
+          "shares": 8,
+          "pnl": 1880.0,
+          "valuation": {
+            "signal": "STRONG_SELL",
+            "signal_label": "大幅割高",
+            "score": -1.23,
+            "confidence": 87,
+            "fair_value": 1755.0,
+            "upside_pct": -56.4,
+            "agents": [
+              {
+                "agent": "DCF",
+                "score": -2.0,
+                "confidence": 70,
+                "reasons": [
+                  "理論株価 ¥1,755 vs 現在 ¥4,029（-56.4%）",
+                  "WACC 8.0%, 永続成長率 1.5%"
+                ],
+                "fair_value": 1755.0,
+                "upside_pct": -56.4
+              },
+              {
+                "agent": "三表財務",
+                "score": 0.1,
+                "confidence": 100,
+                "reasons": [
+                  "営業利益率 0.3% → 低収益",
+                  "営業利益率 悪化傾向"
+                ],
+                "fair_value": null,
+                "upside_pct": null
+              },
+              {
+                "agent": "類似企業比較",
+                "score": -1.5,
+                "confidence": 100,
+                "reasons": [
+                  "PER 81.8 → セクター中央値19.0対比 +329.7% 割高",
+                  "PBR 2.47 → セクター中央値1.21対比 +105.1% 割高"
+                ],
+                "fair_value": null,
+                "upside_pct": null
+              },
+              {
+                "agent": "オペレーティング",
+                "score": -0.8,
+                "confidence": 100,
+                "reasons": [
+                  "ROIC 0.1% → WACC 割れの可能性",
+                  "営業レバレッジ -29.3x → 増収減益"
+                ],
+                "fair_value": null,
+                "upside_pct": null
+              },
+              {
+                "agent": "感応度",
+                "score": -1.5,
+                "confidence": 60,
+                "reasons": [
+                  "Bull ¥3,808 / Base ¥1,755 / Bear ¥994",
+                  "現在株価 ¥4,029 → 0/9 シナリオで割安"
+                ],
+                "fair_value": null,
+                "upside_pct": null
+              }
+            ],
+            "reasons_summary": [
+              "【DCF】理論株価 ¥1,755 vs 現在 ¥4,029（-56.4%）",
+              "【三表財務】営業利益率 0.3% → 低収益",
+              "【類似企業比較】PER 81.8 → セクター中央値19.0対比 +329.7% 割高",
+              "【オペレーティング】ROIC 0.1% → WACC 割れの可能性",
+              "【感応度】Bull ¥3,808 / Base ¥1,755 / Bear ¥994"
+            ]
+          }
+        }
+      ]
+    }
   }
 ]
