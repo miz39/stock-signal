@@ -65,7 +65,7 @@ a.stock-link:hover { text-decoration:underline; }
 </head>
 <body>
 <h1>Paper Trade Dashboard</h1>
-<div class="updated">最終更新: 2026-07-01 17:56 JST &nbsp;|&nbsp; <a href="history.html" style="color:#64B5F6;text-decoration:none">実行履歴 &rarr;</a> &nbsp;|&nbsp; <a href="weekly-review.html" style="color:#64B5F6;text-decoration:none">週次レビュー &rarr;</a> &nbsp;|&nbsp; <a href="analysis.html" style="color:#64B5F6;text-decoration:none">AI分析 &rarr;</a></div>
+<div class="updated">最終更新: 2026-07-02 08:59 JST &nbsp;|&nbsp; <a href="history.html" style="color:#64B5F6;text-decoration:none">実行履歴 &rarr;</a> &nbsp;|&nbsp; <a href="weekly-review.html" style="color:#64B5F6;text-decoration:none">週次レビュー &rarr;</a> &nbsp;|&nbsp; <a href="analysis.html" style="color:#64B5F6;text-decoration:none">AI分析 &rarr;</a></div>
 
 <div class="hero-card">
   <div class="label">総資産</div>
@@ -216,7 +216,7 @@ a.stock-link:hover { text-decoration:underline; }
 <td class="num">59.1</td>
 <td class="num">0.60</td>
 <td class="num"><span style="color:#FFC107;font-weight:600">TV:NEUTRAL</span></td>
-<td class="num">9</td>
+<td class="num">10</td>
 </tr></tbody>
   </table>
   </div>
@@ -695,7 +695,7 @@ if (sigAcc.some(b => b.count > 0)) {
 }
 
 // RSI Analysis Chart
-const rsiAna = [{"range": "50-55", "count": 3, "wins": 2, "win_rate": 66.7, "avg_pnl_pct": 5.67}, {"range": "55-60", "count": 4, "wins": 0, "win_rate": 0.0, "avg_pnl_pct": -4.17}, {"range": "60-65", "count": 6, "wins": 4, "win_rate": 66.7, "avg_pnl_pct": 3.77}];
+const rsiAna = [{"range": "50-55", "count": 2, "wins": 2, "win_rate": 100.0, "avg_pnl_pct": 12.62}, {"range": "55-60", "count": 2, "wins": 0, "win_rate": 0.0, "avg_pnl_pct": -1.52}, {"range": "60-65", "count": 5, "wins": 4, "win_rate": 80.0, "avg_pnl_pct": 6.86}];
 if (rsiAna.some(b => b.count > 0)) {
   new Chart(document.getElementById('rsiChart'), {
     type: 'bar',
